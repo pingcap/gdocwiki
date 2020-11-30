@@ -3,8 +3,9 @@ import TreeView, { TreeNode } from 'carbon-components-react/lib/components/TreeV
 import React, { useCallback, useMemo } from 'react';
 import { IDocTreeItem, useDocTree } from '../context/DocTree';
 import { useHistory } from 'react-router-dom';
+import cx from 'classnames';
 
-import styles from './Nav.module.scss';
+import styles from './Sider.module.scss';
 
 interface INavItemProps {
   id: string;
@@ -35,7 +36,7 @@ function renderTree(nodes?: INavItemProps[], expanded?: boolean) {
 function mapDocTreeItem(nodes?: IDocTreeItem[]): INavItemProps[] {
   return (nodes ?? [])?.map((node) => {
     const optionalChildren: any = {};
-    if (node.children.length > 0) {
+    if (node.mimeType === 'application/vnd.google-apps.folder') {
       optionalChildren.children = mapDocTreeItem(node.children);
     }
     return {
@@ -47,7 +48,7 @@ function mapDocTreeItem(nodes?: IDocTreeItem[]): INavItemProps[] {
   });
 }
 
-export default function Nav() {
+function Sider({ isExpanded = true }: { isExpanded?: boolean }) {
   const { loading, data } = useDocTree();
   const treeData = useMemo(() => mapDocTreeItem(data), [data]);
 
@@ -66,15 +67,32 @@ export default function Nav() {
     }
   }, []);
 
-  if (loading) {
-    return <SkeletonText paragraph />;
-  }
-
   return (
-    <div className={styles.nav}>
-      <TreeView label="Table of Content" selected={[]} onSelect={handleSelect}>
-        {renderTree(treeData, false)}
-      </TreeView>
+    <div className={cx(styles.sider, { [styles.isExpanded]: isExpanded })}>
+      {loading && (
+        <div className={styles.skeleton}>
+          <SkeletonText paragraph />
+        </div>
+      )}
+      {!loading && (
+        <TreeView label="Table of Content" selected={[]} onSelect={handleSelect}>
+          {renderTree(treeData, false)}
+        </TreeView>
+      )}
     </div>
   );
 }
+
+export default React.memo(Sider);
+
+function Content_({
+  isExpanded = true,
+  children,
+}: {
+  isExpanded?: boolean;
+  children?: React.ReactNode;
+}) {
+  return <div className={cx(styles.content, { [styles.isExpanded]: isExpanded })}>{children}</div>;
+}
+
+export const Content = React.memo(Content_);

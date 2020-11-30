@@ -1,0 +1,43 @@
+@import 'carbon-components/scss/globals/scss/_vars';
+@import 'carbon-components/scss/globals/scss/vendor/@carbon/elements/scss/import-once/import-once';
+@import 'carbon-components/scss/globals/scss/_helper-mixins';
+
+$sider-width: 300px;
+
+.sider {
+  position: fixed;
+  top: 3rem;
+  width: $sider-width;
+  left: 0;
+  bottom: 0;
+
+  overflow-y: auto;
+  padding: 1rem 0;
+  background-color: $ui-01;
+
+  z-index: 10000;
+
+  :global {
+    .bx--label {
+      display: none;
+    }
+  }
+
+  display: none;
+}
+
+.sider.isExpanded {
+  display: block;
+}
+
+.skeleton {
+  padding: 2rem;
+}
+
+.content {
+  margin-top: 3rem;
+}
+
+.content.isExpanded {
+  margin-left: $sider-width;
+}

@@ -3,7 +3,7 @@ import { HeaderGlobalAction } from 'carbon-components-react';
 import React, { useCallback, useMemo, useState } from 'react';
 import useBus from 'use-bus';
 
-export default function HeaderUserAction() {
+function HeaderUserAction() {
   const [isSignedIn, setIsSignedIn] = useState(gapi.auth2.getAuthInstance().isSignedIn.get());
 
   useBus(
@@ -44,3 +44,5 @@ export default function HeaderUserAction() {
     );
   }
 }
+
+export default React.memo(HeaderUserAction);

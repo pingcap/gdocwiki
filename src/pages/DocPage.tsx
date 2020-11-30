@@ -1,6 +1,8 @@
-import { InlineLoading } from 'carbon-components-react';
+import { InlineLoading, SkeletonText } from 'carbon-components-react';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+
+import styles from './DocPage.module.scss';
 
 export default function DocPage() {
   const { id } = useParams();
@@ -19,6 +21,8 @@ export default function DocPage() {
         const htmlDoc = parser.parseFromString(resp.body, 'text/html');
         const bodyEl = htmlDoc.querySelector('body');
         if (bodyEl) {
+          const styleEls = htmlDoc.querySelectorAll('style');
+          styleEls.forEach((el) => bodyEl.appendChild(el));
           setDocContent(bodyEl.innerHTML);
         } else {
           setDocContent('Error?');
@@ -30,9 +34,15 @@ export default function DocPage() {
     x();
   }, [id]);
 
-  if (isLoading) {
-    return <InlineLoading description="Loading document content..." />;
-  }
-
-  return <div dangerouslySetInnerHTML={{ __html: docContent }}></div>;
+  return (
+    <div className={styles.contentContainer}>
+      {isLoading && (
+        <div>
+          <SkeletonText heading />
+          <SkeletonText paragraph lineCount={10} />
+        </div>
+      )}
+      {!isLoading && <div dangerouslySetInnerHTML={{ __html: docContent }}></div>}
+    </div>
+  );
 }
