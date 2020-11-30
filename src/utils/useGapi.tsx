@@ -11,7 +11,7 @@ export default function useGapi() {
         apiKey: 'AIzaSyCr53G4OrNdOpjjejsM4wStjW_Uagudq8E',
         clientId: '814839399439-cm9t983r5374hk28v5lt5ne75i6eit6c.apps.googleusercontent.com',
         discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
-        scope: 'https://www.googleapis.com/auth/drive.metadata.readonly',
+        scope: 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/documents',
       });
     } catch (ex) {
       console.error(ex);

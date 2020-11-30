@@ -28,10 +28,12 @@ export function DocTreeProvider({ children }) {
         driveId: RootDriveId,
         includeItemsFromAllDrives: true,
         supportsAllDrives: true,
-        pageSize: 1000,
+        pageSize: 500,
         q: 'trashed = false',
-        fields: '*',
+        fields: 'nextPageToken, files(name, id, parents, mimeType)',
       });
+
+      console.log(resp);
 
       const itemsWithChildren: IDocTreeItem[] =
         resp.result.files?.map((file) => {
