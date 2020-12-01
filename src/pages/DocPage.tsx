@@ -1,8 +1,9 @@
-import dayjs from 'dayjs';
-import React, { useEffect, useState } from 'react';
-import Avatar from 'react-avatar';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Stack } from 'office-ui-fabric-react/lib/Stack';
 import { MultiLineSkeleton } from '../components';
+import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
+import { Edit16 } from '@carbon/icons-react';
+import LastModificatioNote from '../components/LastModificationNote';
 
 export interface IDocPageProps {
   file: gapi.client.drive.File;
@@ -41,24 +42,31 @@ export default function DocPage({ file }: IDocPageProps) {
     loadPreview();
   }, [file.id]);
 
+  const handleOpen = useCallback(() => {
+    window.open(file.webViewLink, '_blank');
+  }, [file]);
+
   return (
     <div>
       <div style={{ marginBottom: 32 }}>
-        <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 16 }}>
-          <Avatar
-            name={file.lastModifyingUser?.displayName}
-            src={file.lastModifyingUser?.photoLink}
-            size="20"
-            round
-          />
-          <span>
-            Last modified by {file.lastModifyingUser?.displayName}{' '}
-            {dayjs(file.modifiedTime).fromNow()}
-          </span>
+        <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 20 }}>
+          <LastModificatioNote file={file} />
+          {file.webViewLink && (
+            <DefaultButton onClick={handleOpen}>
+              <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
+                <Edit16 />
+                <div>Open in Google Doc</div>
+              </Stack>
+            </DefaultButton>
+          )}
         </Stack>
       </div>
-      {isLoading && <MultiLineSkeleton />}
-      {!isLoading && <div dangerouslySetInnerHTML={{ __html: docContent }}></div>}
+      <div style={{ maxWidth: '50rem' }}>
+        {isLoading && <MultiLineSkeleton />}
+        {!isLoading && (
+          <div style={{ maxWidth: '50rem' }} dangerouslySetInnerHTML={{ __html: docContent }}></div>
+        )}
+      </div>
     </div>
   );
 }

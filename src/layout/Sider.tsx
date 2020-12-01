@@ -79,8 +79,8 @@ function Sider({ isExpanded = true }: { isExpanded?: boolean }) {
   const history = useHistory();
 
   const handleSelect = useCallback(
-    (_ev, file) => {
-      mdLink.handleFileLinkClick(history, file);
+    (_ev, payload) => {
+      mdLink.handleFileLinkClick(history, payload.value);
     },
     [history]
   );

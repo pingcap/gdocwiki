@@ -1,8 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { DriveIcon, MultiLineSkeleton } from '../components';
+import { DriveIcon } from '../components';
 import { useDocTree } from '../context/DocTree';
-import { InlineNotification, NotificationActionButton } from 'carbon-components-react';
+import {
+  InlineLoading,
+  InlineNotification,
+  NotificationActionButton,
+} from 'carbon-components-react';
 import { Stack } from 'office-ui-fabric-react/lib/Stack';
 import {
   Breadcrumb,
@@ -191,7 +195,7 @@ export default function Page() {
           />
         </div>
       )}
-      {isLoading && <MultiLineSkeleton />}
+      {isLoading && <InlineLoading description="Loading..." />}
       {!isLoading && error && <ErrorDisplay error={error} />}
       {!isLoading && contentNode}
     </div>

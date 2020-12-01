@@ -46,7 +46,7 @@ export default function FolderPage({ file }: IFolderPageProps) {
         },
       },
       {
-        key: 'type',
+        key: 'name',
         name: 'Name',
         minWidth: 200,
         isRowHeader: true,

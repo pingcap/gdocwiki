@@ -21,7 +21,7 @@ function copyAndSort<T>(items: T[], columnKey: string, isSortedDescending?: bool
     .sort((a: T, b: T) => ((isSortedDescending ? a[key] < b[key] : a[key] > b[key]) ? 1 : -1));
 }
 
-export interface ICardTableProps extends IDetailsListProps {
+export interface ITableProps extends IDetailsListProps {
   extendLastColumn?: boolean;
 
   // Handle sort
@@ -62,7 +62,7 @@ function dummyColumn(): IColumn {
   };
 }
 
-export default function CardTable(props: ICardTableProps) {
+export default function Table(props: ITableProps) {
   const {
     className,
     extendLastColumn,
