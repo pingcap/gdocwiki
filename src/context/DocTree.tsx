@@ -33,7 +33,7 @@ export function DocTreeProvider({ children }) {
         pageSize: 500,
         q: 'trashed = false',
         fields:
-          'nextPageToken, files(name, id, parents, mimeType, modifiedTime, createdTime, lastModifyingUser(displayName, photoLink), iconLink, webViewLink)',
+          'nextPageToken, files(name, id, parents, mimeType, modifiedTime, createdTime, lastModifyingUser(displayName, photoLink), iconLink, webViewLink, shortcutDetails)',
       });
       console.log('files.list', RootDriveId, resp);
 
@@ -71,9 +71,8 @@ export function DocTreeProvider({ children }) {
         data: itemsByParent[RootDriveId] ?? [],
         dataFlat: allItems,
       }));
-    }
-    catch (e) {
-      console.log(e)
+    } catch (e) {
+      console.log(e);
     } finally {
       setData((currentData) => ({ ...currentData, loading: false }));
     }

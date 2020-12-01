@@ -1,13 +1,14 @@
 import dayjs from 'dayjs';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useDocTree } from '../context/DocTree';
+import { useDocTree } from '../../context/DocTree';
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList';
 import { SkeletonText } from 'carbon-components-react';
-import { DriveIcon, Table } from '../components';
-import { mdLink } from '../utils';
-import { Launch16 } from '@carbon/icons-react';
+import { DriveIcon, ShortcutIcon, Table } from '../../components';
+import { mdLink } from '../../utils';
+import { Launch16, Link16 } from '@carbon/icons-react';
 import { useHistory } from 'react-router';
 import DocPage from './DocPage';
+import { Stack } from 'office-ui-fabric-react/lib/Stack';
 
 export interface IFolderPageProps {
   file: gapi.client.drive.File;
@@ -56,7 +57,7 @@ export default function FolderPage({ file }: IFolderPageProps) {
           if (link) {
             return <Launch16 />;
           } else {
-            return <DriveIcon src={item.iconLink} />;
+            return <DriveIcon file={item} />;
           }
         },
       },
@@ -70,7 +71,12 @@ export default function FolderPage({ file }: IFolderPageProps) {
           if (link) {
             return link.title;
           } else {
-            return item.name;
+            return (
+              <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
+                <span>{item.name}</span>
+                {item.mimeType === 'application/vnd.google-apps.shortcut' && <ShortcutIcon />}
+              </Stack>
+            );
           }
         },
       },

@@ -4,11 +4,10 @@ import React, { useCallback, useMemo } from 'react';
 import { IDocTreeItem, useDocTree } from '../context/DocTree';
 import { useHistory } from 'react-router-dom';
 import cx from 'classnames';
-
-import styles from './Sider.module.scss';
-import { mdLink } from '../utils';
 import { Launch16 } from '@carbon/icons-react';
 import { Stack } from 'office-ui-fabric-react/lib/Stack';
+import styles from './Sider.module.scss';
+import { mdLink } from '../utils';
 
 interface INavItemProps {
   id: string;

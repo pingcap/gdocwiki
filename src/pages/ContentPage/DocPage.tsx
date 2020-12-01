@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { MultiLineSkeleton } from '../components';
+import { MultiLineSkeleton, LastModificationNote } from '../../components';
 import { CommandBar, ICommandBarItemProps } from 'office-ui-fabric-react/lib/CommandBar';
-import LastModificatioNote from '../components/LastModificationNote';
 
 export interface IDocPageProps {
   file: gapi.client.drive.File;
@@ -44,7 +43,7 @@ export default function DocPage({ file }: IDocPageProps) {
     const r: ICommandBarItemProps[] = [
       {
         key: 'modify_user',
-        text: (<LastModificatioNote file={file} />) as any,
+        text: (<LastModificationNote file={file} />) as any,
       },
     ];
     if (file.webViewLink) {

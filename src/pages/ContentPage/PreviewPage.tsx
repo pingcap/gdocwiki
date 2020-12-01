@@ -1,7 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { MultiLineSkeleton } from '../components';
+import React, { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
 import { CommandBar, ICommandBarItemProps } from 'office-ui-fabric-react/lib/CommandBar';
-import LastModificatioNote from '../components/LastModificationNote';
+import LastModificatioNote from '../../components/LastModificationNote';
 import { InlineLoading } from 'carbon-components-react';
 import { useEventListener } from 'ahooks';
 
@@ -57,12 +56,25 @@ export default function PreviewPage({ file }: IDocPageProps) {
     return r;
   }, [file.mimeType, file.webViewLink]);
 
+  const contentStyle = useMemo(() => {
+    const baseStyle: CSSProperties = {};
+    if (
+      file.mimeType !== 'application/vnd.google-apps.spreadsheet' &&
+      file.mimeType !== 'application/vnd.google-apps.presentation'
+    ) {
+      baseStyle.maxWidth = '50rem';
+    }
+    return baseStyle;
+  }, [file.mimeType]);
+
+  useEffect(() => {}, [file.mimeType]);
+
   return (
     <div>
       <div style={{ marginBottom: 32 }}>
         <CommandBar items={commandBarItems} />
       </div>
-      <div style={{ maxWidth: '50rem' }}>
+      <div style={contentStyle}>
         {file.webViewLink && (
           <div>
             {isLoading && <InlineLoading description="Loading..." />}

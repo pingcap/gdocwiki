@@ -34,19 +34,21 @@ A wiki based on Google Doc / Drive.
   - [ ] Load Multi-Page Tree Data
 - [x] Render Doc
   - [ ] Rewrite links in Doc to open in Wiki
-- [ ] Render Spreadsheet
+- [x] Render Spreadsheet
 - [x] Render Folder
   - [ ] Clickable Folder Item
   - [ ] Sortable Folder Item
   - [x] Render README in the Folder
-- [ ] Render File Shortcut
-- [ ] Render Folder Shortcut
-- [x] Render Drive Root
+- [x] Render Shortcut
+  - [x] File
+  - [ ] Folder
+- [ ] Render Drive Root
 - [x] Breadcrumb Navigation
 - [x] Support external link in syntax `[xxx](https://yyy)`
+  - [ ] Open Google Drive External Links in Wiki
 - [ ] Customize Menu Item Sort Order
 - [ ] Create File in Current Directory
 - [ ] Open Current File in Google Doc
   - [x] Doc
-  - [ ] Spreadsheet
+  - [x] Spreadsheet
 - [ ] Open Current Directory in Google Drive
