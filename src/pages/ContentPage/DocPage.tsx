@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { MultiLineSkeleton, LastModificationNote } from '../../components';
+import { LastModificationNote } from '../../components';
 import { CommandBar, ICommandBarItemProps } from 'office-ui-fabric-react/lib/CommandBar';
+import { InlineLoading } from 'carbon-components-react';
 
 export interface IDocPageProps {
   file: gapi.client.drive.File;
@@ -65,7 +66,7 @@ export default function DocPage({ file }: IDocPageProps) {
         <CommandBar items={commandBarItems} />
       </div>
       <div style={{ maxWidth: '50rem' }}>
-        {isLoading && <MultiLineSkeleton />}
+        {isLoading && <InlineLoading description="Loading document content..." />}
         {!isLoading && (
           <div style={{ maxWidth: '50rem' }} dangerouslySetInnerHTML={{ __html: docContent }}></div>
         )}

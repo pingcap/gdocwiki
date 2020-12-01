@@ -21,7 +21,7 @@ function App() {
   const handleCloseTOC = useCallback(() => setIsExpanded(false), []);
 
   if (!gapiLoaded) {
-    return <InlineLoading description="Loading Google API" />;
+    return <InlineLoading description="Loading Google API..." />;
   }
 
   return (

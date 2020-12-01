@@ -15,7 +15,7 @@ export default function Page() {
   return (
     <div className={styles.contentContainer}>
       {(paths?.length ?? 0) > 0 && <Breadcrumb items={paths!} />}
-      {loading && <InlineLoading description="Loading..." />}
+      {loading && <InlineLoading description="Loading file metadata..." />}
       {!loading && !!error && error}
       {!loading && !!file && <ContentPage file={file} />}
     </div>
