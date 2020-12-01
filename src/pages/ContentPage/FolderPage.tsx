@@ -1,49 +1,39 @@
 import dayjs from 'dayjs';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useDocTree } from '../../context/DocTree';
+import React, { useCallback, useMemo } from 'react';
 import { IColumn } from 'office-ui-fabric-react/lib/DetailsList';
-import { SkeletonText } from 'carbon-components-react';
+import { InlineLoading } from 'carbon-components-react';
 import { DriveIcon, ShortcutIcon, Table } from '../../components';
 import { mdLink } from '../../utils';
-import { Launch16, Link16 } from '@carbon/icons-react';
+import { Launch16 } from '@carbon/icons-react';
 import { useHistory } from 'react-router';
 import DocPage from './DocPage';
 import { Stack } from 'office-ui-fabric-react/lib/Stack';
+import { useFolderFilesMeta } from '../../hooks/useFolderFilesMeta';
+import { useDocTree } from '../../context/DocTree';
 
 export interface IFolderPageProps {
   file: gapi.client.drive.File;
+  shortCutFile?: gapi.client.drive.File;
 }
 
-export default function FolderPage({ file }: IFolderPageProps) {
-  // The content of the folder is simply loaded from the tree list.
-  // TODO: A folder outside the tree is supplied?
+export default function FolderPage({ file, shortCutFile }: IFolderPageProps) {
+  const history = useHistory();
   const docTree = useDocTree();
 
-  const history = useHistory();
-
-  const [subItems, setSubItems] = useState<gapi.client.drive.File[]>([]);
-  const [readMeFile, setReadMeFile] = useState<gapi.client.drive.File | undefined>(undefined);
-
-  useEffect(() => {
-    setReadMeFile(undefined);
-    setSubItems([]);
-
-    const fileInTree = docTree.dataFlat?.[file.id ?? ''];
-    if (!fileInTree) {
-      return;
+  const { files, loading, error } = useFolderFilesMeta(file.id);
+  const readMeFile = useMemo(() => {
+    if (!files) {
+      return undefined;
     }
-    setSubItems([...fileInTree.children]);
-
-    for (const item of fileInTree.children) {
+    for (const item of files) {
       if (
         item.name?.toLowerCase() === 'readme' &&
         item.mimeType === 'application/vnd.google-apps.document'
       ) {
-        setReadMeFile(item);
-        break;
+        return item;
       }
     }
-  }, [file.id, docTree.dataFlat]);
+  }, [files]);
 
   const columns = useMemo(() => {
     const r: IColumn[] = [
@@ -105,20 +95,32 @@ export default function FolderPage({ file }: IFolderPageProps) {
   }, []);
 
   const handleRowClick = useCallback(
-    (file: gapi.client.drive.File) => {
-      mdLink.handleFileLinkClick(history, file);
+    (targetFile: gapi.client.drive.File) => {
+      let openInNewWindow = false;
+      // If current folder is not in the tree, open new window
+      if (!docTree.dataFlat?.[file?.id ?? ''] && shortCutFile) {
+        openInNewWindow = true;
+      }
+
+      mdLink.handleFileLinkClick(history, targetFile, openInNewWindow);
     },
-    [history]
+    [history, docTree.dataFlat, file, shortCutFile]
   );
 
   return (
     <div>
-      {docTree.loading && <SkeletonText paragraph lineCount={10} />}
+      {loading && <InlineLoading description="Loading folder contents..." />}
       {readMeFile && <DocPage file={readMeFile} />}
-      {!docTree.loading && (
+      {!loading && !!error && error}
+      {!loading && !error && (
         <>
-          <Table items={subItems} columns={columns} onRowClicked={handleRowClick} getKey={getKey} />
-          <div style={{ marginTop: 16 }}>{subItems.length} files in the folder.</div>
+          <Table
+            items={files ?? []}
+            columns={columns}
+            onRowClicked={handleRowClick}
+            getKey={getKey}
+          />
+          <div style={{ marginTop: 16 }}>{files?.length ?? 0} files in the folder.</div>
         </>
       )}
     </div>

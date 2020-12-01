@@ -39,16 +39,17 @@ A wiki based on Google Doc / Drive.
   - [ ] Clickable Folder Item
   - [ ] Sortable Folder Item
   - [x] Render README in the Folder
+  - [ ] Support > 1000 Items
 - [x] Render Shortcut
   - [x] File
-  - [ ] Folder
+  - [x] Folder
 - [ ] Render Drive Root
 - [x] Breadcrumb Navigation
 - [x] Support external link in syntax `[xxx](https://yyy)`
   - [ ] Open Google Drive External Links in Wiki
 - [ ] Customize Menu Item Sort Order
 - [ ] Create File in Current Directory
-- [ ] Open Current File in Google Doc
+- [x] Open Current File in Google Doc
   - [x] Doc
   - [x] Spreadsheet
 - [ ] Open Current Directory in Google Drive

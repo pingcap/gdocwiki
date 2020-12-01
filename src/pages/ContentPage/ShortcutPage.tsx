@@ -9,7 +9,7 @@ export default function ShortcutPage({ file }: { file: gapi.client.drive.File })
     <>
       {loading && <InlineLoading description="Loading Shortcut..." />}
       {!loading && !!error && error}
-      {!loading && !!pointingFile && <ContentPage file={pointingFile} allowShortcut={false} />}
+      {!loading && !!pointingFile && <ContentPage file={pointingFile} shortCutFile={file} />}
     </>
   );
 }

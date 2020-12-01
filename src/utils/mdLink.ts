@@ -21,11 +21,15 @@ function parse(link?: string): MarkdownLink | null {
 
 function handleFileLinkClick<HistoryLocationState = H.LocationState>(
   history: H.History<HistoryLocationState>,
-  file: gapi.client.drive.File
+  file: gapi.client.drive.File,
+  alwaysOpenInNewWindow?: boolean
 ) {
   const link = mdLink.parse(file.name);
   if (link) {
     window.open(link.url, '_blank');
+  } else if (alwaysOpenInNewWindow) {
+    // FIXME: Will be broken when we switch from HashRouter to BrowserRouter
+    window.open(`#/view/${file.id}`);
   } else {
     history.push(`/view/${file.id}`);
   }

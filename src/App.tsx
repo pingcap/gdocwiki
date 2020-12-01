@@ -1,5 +1,4 @@
 import React, { useCallback, useState } from 'react';
-import { useGapi } from './utils';
 import {
   Header,
   HeaderGlobalAction,
@@ -12,6 +11,7 @@ import { Content, HeaderUserAction, Sider } from './layout';
 import { DocTreeProvider } from './context/DocTree';
 import { Add20, Close20, Menu20, Subtract20 } from '@carbon/icons-react';
 import Page from './pages/Page';
+import useGapi from './hooks/useGapi';
 
 function App() {
   const { gapiLoaded } = useGapi();

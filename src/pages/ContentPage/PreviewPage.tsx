@@ -77,7 +77,7 @@ export default function PreviewPage({ file }: IDocPageProps) {
       <div style={contentStyle}>
         {file.webViewLink && (
           <div>
-            {isLoading && <InlineLoading description="Loading..." />}
+            {isLoading && <InlineLoading description="Loading preview..." />}
             <iframe
               width="100%"
               src={file.webViewLink.replace(/\/(edit|view)\?usp=drivesdk/, '/preview')}

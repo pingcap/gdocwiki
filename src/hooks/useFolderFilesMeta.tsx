@@ -2,14 +2,14 @@ import React, { useEffect, useRef, useState } from 'react';
 import { GapiErrorDisplay } from '../components';
 import { useDocTree } from '../context/DocTree';
 
-export interface IFileMeta {
+export interface IFolderFilesMeta {
   loading: boolean;
-  file?: gapi.client.drive.File;
+  files?: gapi.client.drive.File[];
   error?: React.ReactNode;
 }
 
-export default function useFileMeta(id?: string) {
-  const [data, setData] = useState<IFileMeta>({ loading: true });
+export function useFolderFilesMeta(id?: string) {
+  const [data, setData] = useState<IFolderFilesMeta>({ loading: true });
 
   const docTree = useDocTree();
 
@@ -21,19 +21,20 @@ export default function useFileMeta(id?: string) {
       return;
     }
 
-    async function loadFileMetadata(checkpoint: number) {
+    async function loadFolderFilesMetadata(checkpoint: number) {
       setData({ loading: true });
 
       try {
-        const respFile = await gapi.client.drive.files.get({
+        // FIXME: Handle pagination
+        const resp = await gapi.client.drive.files.list({
+          includeItemsFromAllDrives: true,
           supportsAllDrives: true,
-          fileId: id!,
+          q: `'${id}' in parents`,
           fields: '*',
+          pageSize: 1000,
         });
         if (reqRef.current === checkpoint) {
-          // If another request is performed, simply ignore this result.
-          // This may happen when id changes very frequently
-          setData({ loading: false, file: respFile.result });
+          setData({ loading: false, files: resp.result.files });
         }
       } catch (e) {
         if (reqRef.current === checkpoint) {
@@ -47,12 +48,11 @@ export default function useFileMeta(id?: string) {
       }
     }
 
-    // If data is available in the doc tree, use it directly.
     if (docTree.dataFlat?.[id] === undefined) {
       reqRef.current++;
-      loadFileMetadata(reqRef.current);
+      loadFolderFilesMetadata(reqRef.current);
     } else {
-      setData({ loading: false, file: docTree.dataFlat[id] });
+      setData({ loading: false, files: docTree.dataFlat[id].children });
     }
 
     // Ignore docTree.dataFlat change
