@@ -6,8 +6,11 @@ import ReactDOM from 'react-dom';
 import App from './App';
 import './global.carbon.scss';
 import './global.index.scss';
+import { registerIcons } from './utils';
 
 dayjs.extend(relativeTime);
+
+registerIcons();
 
 ReactDOM.render(
   <React.StrictMode>

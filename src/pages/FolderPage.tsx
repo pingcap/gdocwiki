@@ -94,7 +94,10 @@ export default function FolderPage({ file }: IFolderPageProps) {
     <div>
       {docTree.loading && <SkeletonText paragraph lineCount={10} />}
       {!docTree.loading && (
-        <Table items={subItems} columns={columns} onRowClicked={handleRowClick} getKey={getKey} />
+        <>
+          <Table items={subItems} columns={columns} onRowClicked={handleRowClick} getKey={getKey} />
+          <div style={{ marginTop: 16 }}>{subItems.length} files in the folder.</div>
+        </>
       )}
     </div>
   );

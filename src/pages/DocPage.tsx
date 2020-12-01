@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Stack } from 'office-ui-fabric-react/lib/Stack';
 import { MultiLineSkeleton } from '../components';
 import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
+import { CommandBar, ICommandBarItemProps } from 'office-ui-fabric-react/lib/CommandBar';
 import { Edit16 } from '@carbon/icons-react';
 import LastModificatioNote from '../components/LastModificationNote';
 
@@ -46,20 +47,27 @@ export default function DocPage({ file }: IDocPageProps) {
     window.open(file.webViewLink, '_blank');
   }, [file]);
 
+  const commandBarItems = useMemo(() => {
+    const r: ICommandBarItemProps[] = [
+      {
+        key: 'modify_user',
+        text: (<LastModificatioNote file={file} />) as any,
+      },
+    ];
+    if (file.webViewLink) {
+      r.push({
+        key: 'open',
+        text: 'Open in Google Doc',
+        iconProps: { iconName: 'Edit' },
+      });
+    }
+    return r;
+  }, [file.webViewLink]);
+
   return (
     <div>
       <div style={{ marginBottom: 32 }}>
-        <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 20 }}>
-          <LastModificatioNote file={file} />
-          {file.webViewLink && (
-            <DefaultButton onClick={handleOpen}>
-              <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
-                <Edit16 />
-                <div>Open in Google Doc</div>
-              </Stack>
-            </DefaultButton>
-          )}
-        </Stack>
+        <CommandBar items={commandBarItems} />
       </div>
       <div style={{ maxWidth: '50rem' }}>
         {isLoading && <MultiLineSkeleton />}

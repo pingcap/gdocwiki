@@ -13,7 +13,7 @@ import {
   IBreadcrumbItem,
   IDividerAsProps,
 } from 'office-ui-fabric-react/lib/Breadcrumb';
-import { ChevronRight20, OverflowMenuHorizontal20 } from '@carbon/icons-react';
+import { ChevronRight16 } from '@carbon/icons-react';
 import { useHistory } from 'react-router-dom';
 import DocPage from './DocPage';
 import FolderPage from './FolderPage';
@@ -54,18 +54,6 @@ function ErrorDisplay({ error }) {
       />
     );
   }
-}
-
-function _getCustomDivider(dividerProps: IDividerAsProps): JSX.Element {
-  return <ChevronRight20 />;
-}
-
-function _getCustomOverflowIcon(): JSX.Element {
-  return (
-    <div>
-      <OverflowMenuHorizontal20 />
-    </div>
-  );
 }
 
 export default function Page() {
@@ -144,8 +132,8 @@ export default function Page() {
       if (iterateId === id) {
         text = (
           <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
-            <DriveIcon src={currentItem.iconLink} />
             <span>{currentItem.name}</span>
+            <DriveIcon src={currentItem.iconLink} />
           </Stack>
         );
       }
@@ -186,15 +174,7 @@ export default function Page() {
 
   return (
     <div className={styles.contentContainer}>
-      {filePath.length > 0 && (
-        <div style={{ marginBottom: 16 }}>
-          <Breadcrumb
-            items={filePath}
-            dividerAs={_getCustomDivider}
-            onRenderOverflowIcon={_getCustomOverflowIcon}
-          />
-        </div>
-      )}
+      {filePath.length > 0 && <Breadcrumb items={filePath} />}
       {isLoading && <InlineLoading description="Loading..." />}
       {!isLoading && error && <ErrorDisplay error={error} />}
       {!isLoading && contentNode}
