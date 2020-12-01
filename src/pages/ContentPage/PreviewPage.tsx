@@ -54,7 +54,7 @@ export default function PreviewPage({ file }: IDocPageProps) {
       });
     }
     return r;
-  }, [file.mimeType, file.webViewLink]);
+  }, [file]);
 
   const contentStyle = useMemo(() => {
     const baseStyle: CSSProperties = {};

@@ -57,7 +57,7 @@ export default function DocPage({ file }: IDocPageProps) {
       });
     }
     return r;
-  }, [file.webViewLink]);
+  }, [file]);
 
   return (
     <div>
