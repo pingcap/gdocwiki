@@ -1,11 +1,14 @@
 import { useMount } from 'ahooks';
-import React, { useCallback, useContext, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useState } from 'react';
 
 const RootDriveId = '0AIURj86T5hpoUk9PVA';
 
 export interface IDocTree {
   loading: boolean;
+  // All items, in tree form
   data?: IDocTreeItem[];
+  // All items, in flat form
+  dataFlat?: Record<string, IDocTreeItem>;
 }
 
 export interface IDocTreeItem extends gapi.client.drive.File {
@@ -15,11 +18,10 @@ export interface IDocTreeItem extends gapi.client.drive.File {
 const Ctx = React.createContext<IDocTree>({ loading: true });
 
 export function DocTreeProvider({ children }) {
-  const [docTreeIsLoading, setDocTreeIsLoading] = useState(true);
-  const [docTreeData, setDocTreeData] = useState<IDocTreeItem[] | undefined>(undefined);
+  const [data, setData] = useState<IDocTree>({ loading: true });
 
   const loadTreeData = useCallback(async () => {
-    setDocTreeIsLoading(true);
+    setData((currentData) => ({ ...currentData, loading: true }));
 
     try {
       // FIXME: Support pagination
@@ -30,10 +32,10 @@ export function DocTreeProvider({ children }) {
         supportsAllDrives: true,
         pageSize: 500,
         q: 'trashed = false',
-        fields: 'nextPageToken, files(name, id, parents, mimeType)',
+        fields:
+          'nextPageToken, files(name, id, parents, mimeType, modifiedTime, lastModifyingUser(displayName, photoLink))',
       });
-
-      console.log(resp);
+      console.log('files.list', RootDriveId, resp);
 
       const itemsWithChildren: IDocTreeItem[] =
         resp.result.files?.map((file) => {
@@ -43,6 +45,7 @@ export function DocTreeProvider({ children }) {
           };
         }) ?? [];
       const itemsByParent: Record<string, IDocTreeItem[]> = {};
+      const allItems: Record<string, IDocTreeItem> = {};
 
       itemsWithChildren.forEach((file) => {
         if ((file.parents?.length ?? 0) === 0) {
@@ -59,21 +62,27 @@ export function DocTreeProvider({ children }) {
         file.children = itemsByParent[file.id ?? ''] ?? [];
       });
 
-      setDocTreeData(itemsByParent[RootDriveId] ?? []);
+      itemsWithChildren?.forEach((file) => {
+        allItems[file.id ?? ''] = file;
+      });
+
+      setData((currentData) => ({
+        ...currentData,
+        data: itemsByParent[RootDriveId] ?? [],
+        dataFlat: allItems,
+      }));
     } finally {
-      setDocTreeIsLoading(false);
+      setData((currentData) => ({ ...currentData, loading: false }));
     }
   }, []);
 
-  const docTree = useMemo(() => {
-    return { data: docTreeData, loading: docTreeIsLoading } as IDocTree;
-  }, [docTreeIsLoading, docTreeData]);
-
   useMount(() => {
+    // Only load tree data once when webpage is loaded. There is no need to reload
+    // in other scenarios.
     loadTreeData();
   });
 
-  return <Ctx.Provider value={docTree}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={data}>{children}</Ctx.Provider>;
 }
 
 export function useDocTree() {

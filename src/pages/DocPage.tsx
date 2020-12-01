@@ -1,22 +1,33 @@
-import { InlineLoading, SkeletonText } from 'carbon-components-react';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import Avatar from 'react-avatar';
+import { Stack } from 'office-ui-fabric-react/lib/Stack';
+import { MultiLineSkeleton } from '../components';
 
-import styles from './DocPage.module.scss';
+dayjs.extend(relativeTime);
 
-export default function DocPage() {
-  const { id } = useParams();
+export interface IDocPageProps {
+  file: gapi.client.drive.File;
+}
+
+export default function DocPage({ file }: IDocPageProps) {
   const [docContent, setDocContent] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function x() {
+    async function loadPreview() {
       setIsLoading(true);
+      setDocContent('');
+
       try {
         const resp = await gapi.client.drive.files.export({
-          fileId: id,
+          fileId: file.id!,
           mimeType: 'text/html',
         });
+        console.log('files.export', file.id, resp);
+
         const parser = new DOMParser();
         const htmlDoc = parser.parseFromString(resp.body, 'text/html');
         const bodyEl = htmlDoc.querySelector('body');
@@ -31,17 +42,29 @@ export default function DocPage() {
         setIsLoading(false);
       }
     }
-    x();
-  }, [id]);
+    loadPreview();
+  }, [file.id]);
 
   return (
-    <div className={styles.contentContainer}>
-      {isLoading && (
-        <div>
-          <SkeletonText heading />
-          <SkeletonText paragraph lineCount={10} />
-        </div>
-      )}
+    <div>
+      <div style={{ marginBottom: 32 }}>
+        <Stack tokens={{ childrenGap: 16 }}>
+          {/* <h1>{file.name}</h1> */}
+          <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 16 }}>
+            <Avatar
+              name={file.lastModifyingUser?.displayName}
+              src={file.lastModifyingUser?.photoLink}
+              size="20"
+              round
+            />
+            <span>
+              Last modified by {file.lastModifyingUser?.displayName}{' '}
+              {dayjs(file.modifiedTime).fromNow()}
+            </span>
+          </Stack>
+        </Stack>
+      </div>
+      {isLoading && <MultiLineSkeleton />}
       {!isLoading && <div dangerouslySetInnerHTML={{ __html: docContent }}></div>}
     </div>
   );

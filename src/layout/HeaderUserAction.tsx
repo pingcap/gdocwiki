@@ -1,5 +1,6 @@
 import { UserAvatar20 } from '@carbon/icons-react';
 import { HeaderGlobalAction } from 'carbon-components-react';
+import Avatar from 'react-avatar';
 import React, { useCallback, useMemo, useState } from 'react';
 import useBus from 'use-bus';
 
@@ -39,7 +40,7 @@ function HeaderUserAction() {
   } else {
     return (
       <HeaderGlobalAction aria-label="Sign Out" onClick={handleSignOut}>
-        <img src={profile!.getImageUrl()} width="30" />
+        <Avatar name={profile!.getName()} src={profile!.getImageUrl()} size="30" round />
       </HeaderGlobalAction>
     );
   }

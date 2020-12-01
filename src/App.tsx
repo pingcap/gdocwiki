@@ -10,8 +10,8 @@ import {
 import { HashRouter as Router, Switch, Route } from 'react-router-dom';
 import { Content, HeaderUserAction, Sider } from './layout';
 import { DocTreeProvider } from './context/DocTree';
-import DocPage from './pages/DocPage';
 import { Add20, Close20, Menu20, Subtract20 } from '@carbon/icons-react';
+import Page from './pages/Page';
 
 function App() {
   const { gapiLoaded } = useGapi();
@@ -58,8 +58,8 @@ function App() {
         </Header>
         <Content isExpanded={isExpanded}>
           <Switch>
-            <Route path="/doc/:id">
-              <DocPage />
+            <Route path="/view/:id">
+              <Page />
             </Route>
           </Switch>
         </Content>

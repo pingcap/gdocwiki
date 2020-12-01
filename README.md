@@ -6,10 +6,16 @@ A wiki based on Google Doc / Drive.
 
 1. Install [Node.js](https://nodejs.org/en/download/package-manager/), [yarn](https://classic.yarnpkg.com/en/docs/install)
 
-2. Start a local development server:
+2. Install dependencies:
+
+   ```shell
+   yarn
+   ```
+
+3. Start a local development server:
 
    ```shell
    yarn start
    ```
 
-3. Navigate to http://localhost:3000
+4. Navigate to http://localhost:3000

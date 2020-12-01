@@ -37,6 +37,8 @@ function mapDocTreeItem(nodes?: IDocTreeItem[]): INavItemProps[] {
   return (nodes ?? [])?.map((node) => {
     const optionalChildren: any = {};
     if (node.mimeType === 'application/vnd.google-apps.folder') {
+      // Always assign a children field when it is a folder.
+      // This results in a triangle icon in the sidebar.
       optionalChildren.children = mapDocTreeItem(node.children);
     }
     return {
@@ -56,15 +58,7 @@ function Sider({ isExpanded = true }: { isExpanded?: boolean }) {
 
   const handleSelect = useCallback((_ev, node) => {
     const file = node.value as IDocTreeItem;
-    console.log(file.mimeType);
-    switch (file.mimeType) {
-      case 'application/vnd.google-apps.document':
-        history.push(`/doc/${file.id}`);
-        break;
-      case 'application/vnd.google-apps.folder':
-        history.push(`/folder/${file.id}`);
-        break;
-    }
+    history.push(`/view/${file.id}`);
   }, []);
 
   return (
