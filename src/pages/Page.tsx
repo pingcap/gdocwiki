@@ -8,12 +8,7 @@ import {
   NotificationActionButton,
 } from 'carbon-components-react';
 import { Stack } from 'office-ui-fabric-react/lib/Stack';
-import {
-  Breadcrumb,
-  IBreadcrumbItem,
-  IDividerAsProps,
-} from 'office-ui-fabric-react/lib/Breadcrumb';
-import { ChevronRight16 } from '@carbon/icons-react';
+import { Breadcrumb, IBreadcrumbItem } from 'office-ui-fabric-react/lib/Breadcrumb';
 import { useHistory } from 'react-router-dom';
 import DocPage from './DocPage';
 import FolderPage from './FolderPage';

@@ -7,6 +7,7 @@ import { DriveIcon, Table } from '../components';
 import { mdLink } from '../utils';
 import { Launch16 } from '@carbon/icons-react';
 import { useHistory } from 'react-router';
+import DocPage from './DocPage';
 
 export interface IFolderPageProps {
   file: gapi.client.drive.File;
@@ -20,13 +21,27 @@ export default function FolderPage({ file }: IFolderPageProps) {
   const history = useHistory();
 
   const [subItems, setSubItems] = useState<gapi.client.drive.File[]>([]);
+  const [readMeFile, setReadMeFile] = useState<gapi.client.drive.File | undefined>(undefined);
 
   useEffect(() => {
+    setReadMeFile(undefined);
+    setSubItems([]);
+
     const fileInTree = docTree.dataFlat?.[file.id ?? ''];
     if (!fileInTree) {
       return;
     }
     setSubItems([...fileInTree.children]);
+
+    for (const item of fileInTree.children) {
+      if (
+        item.name?.toLowerCase() === 'readme' &&
+        item.mimeType === 'application/vnd.google-apps.document'
+      ) {
+        setReadMeFile(item);
+        break;
+      }
+    }
   }, [file.id, docTree.dataFlat]);
 
   const columns = useMemo(() => {
@@ -93,6 +108,7 @@ export default function FolderPage({ file }: IFolderPageProps) {
   return (
     <div>
       {docTree.loading && <SkeletonText paragraph lineCount={10} />}
+      {readMeFile && <DocPage file={readMeFile} />}
       {!docTree.loading && (
         <>
           <Table items={subItems} columns={columns} onRowClicked={handleRowClick} getKey={getKey} />
