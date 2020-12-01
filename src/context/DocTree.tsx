@@ -71,7 +71,7 @@ export function DocTreeProvider({ children }) {
         data: itemsByParent[RootDriveId] ?? [],
         dataFlat: allItems,
       }));
-    } 
+    }
     catch (e) {
       console.log(e)
     } finally {
