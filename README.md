@@ -37,6 +37,7 @@ A wiki based on Google Doc / Drive.
 - [x] Render Folder
   - [ ] Clickable Folder Item
   - [ ] Sortable Folder Item
+  - [ ] Render README in the Folder
 - [ ] Render File Shortcut
 - [ ] Render Folder Shortcut
 - [x] Render Drive Root

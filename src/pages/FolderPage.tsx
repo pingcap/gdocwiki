@@ -6,6 +6,7 @@ import { SkeletonText } from 'carbon-components-react';
 import { DriveIcon, Table } from '../components';
 import { mdLink } from '../utils';
 import { Launch16 } from '@carbon/icons-react';
+import { useHistory } from 'react-router';
 
 export interface IFolderPageProps {
   file: gapi.client.drive.File;
@@ -15,6 +16,8 @@ export default function FolderPage({ file }: IFolderPageProps) {
   // The content of the folder is simply loaded from the tree list.
   // TODO: A folder outside the tree is supplied?
   const docTree = useDocTree();
+
+  const history = useHistory();
 
   const [subItems, setSubItems] = useState<gapi.client.drive.File[]>([]);
 
@@ -76,11 +79,16 @@ export default function FolderPage({ file }: IFolderPageProps) {
     return r;
   }, []);
 
-  const getKey = useCallback((item: gapi.client.drive.File) => {
-    return item.id ?? '';
+  const getKey = useCallback((file: gapi.client.drive.File) => {
+    return file.id ?? '';
   }, []);
 
-  const handleRowClick = useCallback((item: gapi.client.drive.File) => {}, []);
+  const handleRowClick = useCallback(
+    (file: gapi.client.drive.File) => {
+      mdLink.handleFileLinkClick(history, file);
+    },
+    [history]
+  );
 
   return (
     <div>

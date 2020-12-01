@@ -1,3 +1,5 @@
+import * as H from 'history';
+
 export type MarkdownLink = {
   url: string;
   title: string;
@@ -17,8 +19,21 @@ function parse(link?: string): MarkdownLink | null {
   };
 }
 
+function handleFileLinkClick<HistoryLocationState = H.LocationState>(
+  history: H.History<HistoryLocationState>,
+  file: gapi.client.drive.File
+) {
+  const link = mdLink.parse(file.name);
+  if (link) {
+    window.open(link.url, '_blank');
+  } else {
+    history.push(`/view/${file.id}`);
+  }
+}
+
 const mdLink = {
   parse,
+  handleFileLinkClick,
 };
 
 export default mdLink;

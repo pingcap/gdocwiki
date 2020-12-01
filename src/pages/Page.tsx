@@ -65,7 +65,7 @@ function _getCustomOverflowIcon(): JSX.Element {
 }
 
 export default function Page() {
-  const { id } = useParams();
+  const { id } = useParams<any>();
   const [file, setFile] = useState<gapi.client.drive.File | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<any>(null);
