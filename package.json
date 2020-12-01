@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@iconify-icons/flat-color-icons": "^1.1.0",
+    "@iconify-icons/logos": "^1.1.0",
+    "@iconify/react": "^1.1.3",
     "ahooks": "^2.9.1",
     "carbon-components": "^10.24.0",
     "carbon-components-react": "^7.24.0",
@@ -10,6 +13,7 @@
     "classnames": "^2.2.6",
     "cra-template": "1.1.1",
     "dayjs": "^1.9.6",
+    "eventemitter2": "^6.4.3",
     "office-ui-fabric-react": "^7.153.2",
     "react": "^17.0.1",
     "react-avatar": "^3.9.7",

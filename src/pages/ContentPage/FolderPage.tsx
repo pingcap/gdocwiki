@@ -6,18 +6,26 @@ import React, { useCallback, useMemo } from 'react';
 import { useHistory } from 'react-router';
 import { DriveIcon, ShortcutIcon, Table } from '../../components';
 import { useDocTree } from '../../context/DocTree';
+import { useManagedRenderStack } from '../../context/RenderStack';
 import { useFolderFilesMeta } from '../../hooks/useFolderFilesMeta';
-import { mdLink } from '../../utils';
+import { mdLink, MimeTypes } from '../../utils';
 import DocPage from './DocPage';
 
 export interface IFolderPageProps {
   file: gapi.client.drive.File;
   shortCutFile?: gapi.client.drive.File;
+  renderStackOffset?: number;
 }
 
-export default function FolderPage({ file, shortCutFile }: IFolderPageProps) {
+function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPageProps) {
   const history = useHistory();
   const docTree = useDocTree();
+
+  useManagedRenderStack({
+    depth: renderStackOffset,
+    id: 'FolderPage',
+    file,
+  });
 
   const { files, loading, error } = useFolderFilesMeta(file.id);
   const readMeFile = useMemo(() => {
@@ -25,10 +33,7 @@ export default function FolderPage({ file, shortCutFile }: IFolderPageProps) {
       return undefined;
     }
     for (const item of files) {
-      if (
-        item.name?.toLowerCase() === 'readme' &&
-        item.mimeType === 'application/vnd.google-apps.document'
-      ) {
+      if (item.name?.toLowerCase() === 'readme' && item.mimeType === MimeTypes.GoogleDocument) {
         return item;
       }
     }
@@ -63,7 +68,7 @@ export default function FolderPage({ file, shortCutFile }: IFolderPageProps) {
             return (
               <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
                 <span>{item.name}</span>
-                {item.mimeType === 'application/vnd.google-apps.shortcut' && <ShortcutIcon />}
+                {item.mimeType === MimeTypes.GoogleShortcut && <ShortcutIcon />}
               </Stack>
             );
           }
@@ -109,7 +114,7 @@ export default function FolderPage({ file, shortCutFile }: IFolderPageProps) {
   return (
     <div>
       {loading && <InlineLoading description="Loading folder contents..." />}
-      {readMeFile && <DocPage file={readMeFile} />}
+      {readMeFile && <DocPage file={readMeFile} renderStackOffset={renderStackOffset + 1} />}
       {!loading && !!error && error}
       {!loading && !error && (
         <>
@@ -125,3 +130,5 @@ export default function FolderPage({ file, shortCutFile }: IFolderPageProps) {
     </div>
   );
 }
+
+export default React.memo(FolderPage);

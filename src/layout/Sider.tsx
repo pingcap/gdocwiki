@@ -6,7 +6,7 @@ import { Stack } from 'office-ui-fabric-react';
 import React, { useCallback, useMemo } from 'react';
 import { useHistory } from 'react-router-dom';
 import { IDocTreeItem, useDocTree } from '../context/DocTree';
-import { mdLink } from '../utils';
+import { mdLink, MimeTypes } from '../utils';
 import styles from './Sider.module.scss';
 
 interface INavItemProps {
@@ -38,7 +38,7 @@ function renderTree(nodes?: INavItemProps[], expanded?: boolean) {
 function mapDocTreeItem(nodes?: IDocTreeItem[]): INavItemProps[] {
   return (nodes ?? [])?.map((node) => {
     const optionalChildren: any = {};
-    if (node.mimeType === 'application/vnd.google-apps.folder') {
+    if (node.mimeType === MimeTypes.GoogleFolder) {
       // Always assign a children field when it is a folder.
       // This results in a triangle icon in the sidebar.
       optionalChildren.children = mapDocTreeItem(node.children);

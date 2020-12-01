@@ -9,6 +9,7 @@ import {
 import React, { useCallback, useState } from 'react';
 import { HashRouter as Router, Switch, Route } from 'react-router-dom';
 import { DocTreeProvider } from './context/DocTree';
+import { RenderStackProvider } from './context/RenderStack';
 import useGapi from './hooks/useGapi';
 import { Content, HeaderUserAction, Sider } from './layout';
 import Page from './pages/Page';
@@ -57,11 +58,13 @@ function App() {
           <Sider isExpanded={isExpanded} />
         </Header>
         <Content isExpanded={isExpanded}>
-          <Switch>
-            <Route path="/view/:id">
-              <Page />
-            </Route>
-          </Switch>
+          <RenderStackProvider>
+            <Switch>
+              <Route path="/view/:id">
+                <Page />
+              </Route>
+            </Switch>
+          </RenderStackProvider>
         </Content>
       </DocTreeProvider>
     </Router>

@@ -1,15 +1,21 @@
 import { InlineLoading } from 'carbon-components-react';
-import { CommandBar, ICommandBarItemProps } from 'office-ui-fabric-react';
-import React, { useEffect, useMemo, useState } from 'react';
-import { LastModificationNote } from '../../components';
+import React, { useEffect, useState } from 'react';
+import { useManagedRenderStack } from '../../context/RenderStack';
 
 export interface IDocPageProps {
   file: gapi.client.drive.File;
+  renderStackOffset?: number;
 }
 
-export default function DocPage({ file }: IDocPageProps) {
+function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
   const [docContent, setDocContent] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+
+  useManagedRenderStack({
+    depth: renderStackOffset,
+    id: 'DocPage',
+    file,
+  });
 
   useEffect(() => {
     async function loadPreview() {
@@ -40,37 +46,14 @@ export default function DocPage({ file }: IDocPageProps) {
     loadPreview();
   }, [file.id]);
 
-  const commandBarItems = useMemo(() => {
-    const r: ICommandBarItemProps[] = [
-      {
-        key: 'modify_user',
-        text: (<LastModificationNote file={file} />) as any,
-      },
-    ];
-    if (file.webViewLink) {
-      r.push({
-        key: 'open',
-        text: 'Open in Google Doc',
-        iconProps: { iconName: 'Edit' },
-        onClick: () => {
-          window.open(file.webViewLink, '_blank');
-        },
-      });
-    }
-    return r;
-  }, [file]);
-
   return (
-    <div>
-      <div style={{ marginBottom: 32 }}>
-        <CommandBar items={commandBarItems} />
-      </div>
-      <div style={{ maxWidth: '50rem' }}>
-        {isLoading && <InlineLoading description="Loading document content..." />}
-        {!isLoading && (
-          <div style={{ maxWidth: '50rem' }} dangerouslySetInnerHTML={{ __html: docContent }}></div>
-        )}
-      </div>
+    <div style={{ maxWidth: '50rem' }}>
+      {isLoading && <InlineLoading description="Loading document content..." />}
+      {!isLoading && (
+        <div style={{ maxWidth: '50rem' }} dangerouslySetInnerHTML={{ __html: docContent }}></div>
+      )}
     </div>
   );
 }
+
+export default React.memo(DocPage);

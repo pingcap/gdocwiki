@@ -1,16 +1,23 @@
 import { useEventListener } from 'ahooks';
 import { InlineLoading } from 'carbon-components-react';
-import { CommandBar, ICommandBarItemProps } from 'office-ui-fabric-react';
 import React, { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
-import LastModificatioNote from '../../components/LastModificationNote';
+import { useManagedRenderStack } from '../../context/RenderStack';
+import { MimeTypes } from '../../utils';
 
 export interface IDocPageProps {
   file: gapi.client.drive.File;
+  renderStackOffset?: number;
 }
 
-export default function PreviewPage({ file }: IDocPageProps) {
+function PreviewPage({ file, renderStackOffset = 0 }: IDocPageProps) {
   const [isLoading, setIsLoading] = useState(true);
   const ref = useRef<HTMLIFrameElement>(null);
+
+  useManagedRenderStack({
+    depth: renderStackOffset,
+    id: 'PreviewPage',
+    file,
+  });
 
   useEventListener(
     'load',
@@ -24,43 +31,11 @@ export default function PreviewPage({ file }: IDocPageProps) {
     setIsLoading(true);
   }, [file, file.webViewLink]);
 
-  const commandBarItems = useMemo(() => {
-    const r: ICommandBarItemProps[] = [
-      {
-        key: 'modify_user',
-        text: (<LastModificatioNote file={file} />) as any,
-      },
-    ];
-
-    let previewText = 'Preview in Google Drive';
-    let previewIcon = 'Launch';
-
-    switch (file.mimeType) {
-      case 'application/vnd.google-apps.presentation':
-      case 'application/vnd.google-apps.spreadsheet':
-        previewText = 'Open in Google Doc';
-        previewIcon = 'Edit';
-        break;
-    }
-
-    if (file.webViewLink) {
-      r.push({
-        key: 'view',
-        text: previewText,
-        iconProps: { iconName: previewIcon },
-        onClick: () => {
-          window.open(file.webViewLink, '_blank');
-        },
-      });
-    }
-    return r;
-  }, [file]);
-
   const contentStyle = useMemo(() => {
     const baseStyle: CSSProperties = {};
     if (
-      file.mimeType !== 'application/vnd.google-apps.spreadsheet' &&
-      file.mimeType !== 'application/vnd.google-apps.presentation'
+      file.mimeType !== MimeTypes.GoogleSpreadsheet &&
+      file.mimeType !== MimeTypes.GooglePresentation
     ) {
       baseStyle.maxWidth = '50rem';
     }
@@ -70,23 +45,20 @@ export default function PreviewPage({ file }: IDocPageProps) {
   useEffect(() => {}, [file.mimeType]);
 
   return (
-    <div>
-      <div style={{ marginBottom: 32 }}>
-        <CommandBar items={commandBarItems} />
-      </div>
-      <div style={contentStyle}>
-        {file.webViewLink && (
-          <div>
-            {isLoading && <InlineLoading description="Loading preview..." />}
-            <iframe
-              width="100%"
-              src={file.webViewLink.replace(/\/(edit|view)\?usp=drivesdk/, '/preview')}
-              ref={ref}
-              style={{ height: 'calc(100vh - 300px)', minHeight: 500 }}
-            />
-          </div>
-        )}
-      </div>
+    <div style={contentStyle}>
+      {file.webViewLink && (
+        <div>
+          {isLoading && <InlineLoading description="Loading preview..." />}
+          <iframe
+            width="100%"
+            src={file.webViewLink.replace(/\/(edit|view)\?usp=drivesdk/, '/preview')}
+            ref={ref}
+            style={{ height: 'calc(100vh - 300px)', minHeight: 500 }}
+          />
+        </div>
+      )}
     </div>
   );
 }
+
+export default React.memo(PreviewPage);

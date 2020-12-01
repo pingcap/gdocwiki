@@ -1,32 +1,41 @@
 import React from 'react';
+import { MimeTypes } from '../../utils';
 import DocPage from './DocPage';
 import FolderPage from './FolderPage';
 import PreviewPage from './PreviewPage';
 import ShortcutPage from './ShortcutPage';
 
-export default function ContentPage({
-  file,
-  shortCutFile,
-}: {
+export interface IContentPageProps {
   file: gapi.client.drive.File;
   shortCutFile?: gapi.client.drive.File;
-}) {
+  renderStackOffset?: number;
+}
+
+function ContentPage({ file, shortCutFile, renderStackOffset = 0 }: IContentPageProps) {
   switch (file?.mimeType ?? '') {
-    case 'application/vnd.google-apps.document':
-      return <DocPage file={file!} />;
-    case 'application/vnd.google-apps.folder':
-      return <FolderPage file={file!} shortCutFile={shortCutFile} />;
-    case 'application/vnd.google-apps.spreadsheet':
-    case 'application/vnd.google-apps.drawing':
-    case 'application/vnd.google-apps.presentation':
-    case 'application/pdf':
-      return <PreviewPage file={file!} />;
-    case 'application/vnd.google-apps.shortcut':
+    case MimeTypes.GoogleDocument:
+      return <DocPage file={file!} renderStackOffset={renderStackOffset} />;
+    case MimeTypes.GoogleFolder:
+      return (
+        <FolderPage
+          file={file!}
+          shortCutFile={shortCutFile}
+          renderStackOffset={renderStackOffset}
+        />
+      );
+    case MimeTypes.GoogleSpreadsheet:
+    case MimeTypes.GooglePresentation:
+    case MimeTypes.GoogleDrawing:
+    case MimeTypes.PDF:
+      return <PreviewPage file={file!} renderStackOffset={renderStackOffset} />;
+    case MimeTypes.GoogleShortcut:
       if (!shortCutFile) {
-        return <ShortcutPage file={file!} />;
+        return <ShortcutPage file={file!} renderStackOffset={renderStackOffset} />;
       }
       break;
   }
 
   return <div>Unsupported file: {file.mimeType}</div>;
 }
+
+export default React.memo(ContentPage);

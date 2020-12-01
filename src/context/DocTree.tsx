@@ -3,6 +3,8 @@ import React, { useCallback, useContext, useState } from 'react';
 
 const RootDriveId = '0AIURj86T5hpoUk9PVA';
 
+// This context provides data about the loaded doc tree.
+
 export interface IDocTree {
   loading: boolean;
   // All items, in tree form

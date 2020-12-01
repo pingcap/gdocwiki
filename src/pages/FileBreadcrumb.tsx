@@ -1,37 +1,27 @@
-import { IBreadcrumbItem, Stack } from 'office-ui-fabric-react';
+import { Breadcrumb, IBreadcrumbItem, Stack } from 'office-ui-fabric-react';
 import React, { useMemo } from 'react';
 import { useHistory } from 'react-router-dom';
 import { DriveIcon, ShortcutIcon } from '../components';
 import { useDocTree } from '../context/DocTree';
-
-export interface IFilePathBreadcrumb {
-  loading: boolean;
-  paths?: IBreadcrumbItem[];
-}
+import { MimeTypes } from '../utils';
 
 function LastBreadcrumbItem({ file }: { file: gapi.client.drive.File }) {
   return (
     <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
       <span>{file.name}</span>
       <DriveIcon file={file} />
-      {file.mimeType === 'application/vnd.google-apps.shortcut' && <ShortcutIcon />}
+      {file.mimeType === MimeTypes.GoogleShortcut && <ShortcutIcon />}
     </Stack>
   );
 }
 
-export default function useFilePathBreadcrumb(
-  file?: gapi.client.drive.File,
-  fileIsLoading?: boolean
-) {
+function useFilePathBreadcrumb(file?: gapi.client.drive.File) {
   const docTree = useDocTree();
   const history = useHistory();
 
-  return useMemo<IFilePathBreadcrumb>(() => {
-    if (docTree.loading || fileIsLoading) {
-      return { loading: true };
-    }
+  return useMemo<IBreadcrumbItem[] | undefined>(() => {
     if (!file) {
-      return { loading: false };
+      return undefined;
     }
     let paths: IBreadcrumbItem[] = [];
 
@@ -43,7 +33,7 @@ export default function useFilePathBreadcrumb(
           key: file.id ?? '',
         },
       ];
-      return { loading: false, paths };
+      return paths;
     }
 
     let iterateId = file.id;
@@ -58,13 +48,15 @@ export default function useFilePathBreadcrumb(
       }
 
       let text: any = currentItem.name;
+      let onClick: any = () => history.push(`/view/${currentItem.id}`);
       if (iterateId === file.id) {
         text = (<LastBreadcrumbItem file={currentItem} />) as any;
+        onClick = null;
       }
       paths.push({
         text,
         key: currentItem.id,
-        onClick: () => history.push(`/view/${currentItem.id}`),
+        onClick,
       });
 
       if (!currentItem.parents) {
@@ -79,6 +71,17 @@ export default function useFilePathBreadcrumb(
       onClick: () => history.push(`/`),
     });
 
-    return { loading: false, paths: paths.reverse() };
-  }, [file, fileIsLoading, docTree.loading, docTree.dataFlat, history]);
+    return paths.reverse();
+  }, [file, docTree.dataFlat, history]);
 }
+
+function FileBreadcrumb({ file }: { file?: gapi.client.drive.File }) {
+  const paths = useFilePathBreadcrumb(file);
+  if ((paths?.length ?? 0) > 0) {
+    return <Breadcrumb items={paths!} />;
+  } else {
+    return null;
+  }
+}
+
+export default React.memo(FileBreadcrumb);

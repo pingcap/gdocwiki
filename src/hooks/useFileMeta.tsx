@@ -30,6 +30,8 @@ export default function useFileMeta(id?: string) {
           fileId: id!,
           fields: '*',
         });
+        console.log('files.get', respFile);
+
         if (reqRef.current === checkpoint) {
           // If another request is performed, simply ignore this result.
           // This may happen when id changes very frequently

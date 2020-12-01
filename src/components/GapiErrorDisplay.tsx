@@ -1,9 +1,11 @@
+import googleIcon from '@iconify-icons/flat-color-icons/google';
+import { InlineIcon } from '@iconify/react';
 import { InlineNotification, NotificationActionButton } from 'carbon-components-react';
 import { Stack } from 'office-ui-fabric-react';
 import React, { useMemo } from 'react';
 import { handleGapiError, signIn } from '../utils';
 
-export default function GapiErrorDisplay({ error }) {
+function GapiErrorDisplay({ error }) {
   const e = useMemo(() => handleGapiError(error), [error]);
 
   if (gapi.auth2.getAuthInstance().isSignedIn.get()) {
@@ -27,7 +29,14 @@ export default function GapiErrorDisplay({ error }) {
     return (
       <InlineNotification
         kind="error"
-        actions={<NotificationActionButton onClick={signIn}>Sign In</NotificationActionButton>}
+        actions={
+          <NotificationActionButton onClick={signIn}>
+            <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
+              <InlineIcon icon={googleIcon} />
+              <span>Sign In</span>
+            </Stack>
+          </NotificationActionButton>
+        }
         subtitle={<div style={{ marginTop: 8 }}>You may need to sign-in to view the content.</div>}
         title={`Failed to load content: ${e.message}`}
         hideCloseButton
@@ -35,3 +44,5 @@ export default function GapiErrorDisplay({ error }) {
     );
   }
 }
+
+export default React.memo(GapiErrorDisplay);
