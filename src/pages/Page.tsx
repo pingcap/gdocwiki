@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { DriveIcon, MultiLineSkeleton } from '../components';
 import { useDocTree } from '../context/DocTree';
@@ -14,12 +14,9 @@ import { useHistory } from 'react-router-dom';
 import DocPage from './DocPage';
 import FolderPage from './FolderPage';
 import styles from './Page.module.scss';
+import { signIn } from '../utils'
 
 function ErrorDisplay({ error }) {
-  const handleSignIn = useCallback(() => {
-    gapi.auth2.getAuthInstance().signIn();
-  }, []);
-
   if (gapi.auth2.getAuthInstance().isSignedIn.get()) {
     return (
       <InlineNotification
@@ -42,7 +39,7 @@ function ErrorDisplay({ error }) {
       <InlineNotification
         kind="error"
         actions={
-          <NotificationActionButton onClick={handleSignIn}>Sign In</NotificationActionButton>
+          <NotificationActionButton onClick={signIn}>Sign In</NotificationActionButton>
         }
         subtitle={<div style={{ marginTop: 8 }}>You may need to sign-in to view the content.</div>}
         title={`Failed to load content: ${error.message}`}
