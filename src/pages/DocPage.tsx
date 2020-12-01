@@ -1,12 +1,8 @@
 import dayjs from 'dayjs';
-import relativeTime from 'dayjs/plugin/relativeTime';
-
 import React, { useEffect, useState } from 'react';
 import Avatar from 'react-avatar';
 import { Stack } from 'office-ui-fabric-react/lib/Stack';
 import { MultiLineSkeleton } from '../components';
-
-dayjs.extend(relativeTime);
 
 export interface IDocPageProps {
   file: gapi.client.drive.File;
@@ -48,20 +44,17 @@ export default function DocPage({ file }: IDocPageProps) {
   return (
     <div>
       <div style={{ marginBottom: 32 }}>
-        <Stack tokens={{ childrenGap: 16 }}>
-          {/* <h1>{file.name}</h1> */}
-          <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 16 }}>
-            <Avatar
-              name={file.lastModifyingUser?.displayName}
-              src={file.lastModifyingUser?.photoLink}
-              size="20"
-              round
-            />
-            <span>
-              Last modified by {file.lastModifyingUser?.displayName}{' '}
-              {dayjs(file.modifiedTime).fromNow()}
-            </span>
-          </Stack>
+        <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 16 }}>
+          <Avatar
+            name={file.lastModifyingUser?.displayName}
+            src={file.lastModifyingUser?.photoLink}
+            size="20"
+            round
+          />
+          <span>
+            Last modified by {file.lastModifyingUser?.displayName}{' '}
+            {dayjs(file.modifiedTime).fromNow()}
+          </span>
         </Stack>
       </div>
       {isLoading && <MultiLineSkeleton />}

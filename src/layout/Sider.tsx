@@ -6,6 +6,9 @@ import { useHistory } from 'react-router-dom';
 import cx from 'classnames';
 
 import styles from './Sider.module.scss';
+import { mdLink } from '../utils';
+import { Launch16 } from '@carbon/icons-react';
+import { Stack } from 'office-ui-fabric-react/lib/Stack';
 
 interface INavItemProps {
   id: string;
@@ -41,9 +44,28 @@ function mapDocTreeItem(nodes?: IDocTreeItem[]): INavItemProps[] {
       // This results in a triangle icon in the sidebar.
       optionalChildren.children = mapDocTreeItem(node.children);
     }
+
+    let label: React.ReactNode = node.name;
+
+    // Try to parse as a Markdown link
+    const link = mdLink.parse(node.name);
+    if (link) {
+      label = (
+        <Stack
+          verticalAlign="center"
+          horizontal
+          tokens={{ childrenGap: 8 }}
+          style={{ cursor: 'pointer' }}
+        >
+          <span>{link.title}</span>
+          <Launch16 />
+        </Stack>
+      );
+    }
+
     return {
       id: node.id,
-      label: node.name,
+      label,
       value: node,
       ...optionalChildren,
     } as INavItemProps;
@@ -58,7 +80,12 @@ function Sider({ isExpanded = true }: { isExpanded?: boolean }) {
 
   const handleSelect = useCallback((_ev, node) => {
     const file = node.value as IDocTreeItem;
-    history.push(`/view/${file.id}`);
+    const link = mdLink.parse(file.name);
+    if (link) {
+      window.open(link.url, '_blank');
+    } else {
+      history.push(`/view/${file.id}`);
+    }
   }, []);
 
   return (

@@ -1,8 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { MultiLineSkeleton } from '../components';
+import { DriveIcon, MultiLineSkeleton } from '../components';
 import { useDocTree } from '../context/DocTree';
-import DocPage from './DocPage';
 import { InlineNotification, NotificationActionButton } from 'carbon-components-react';
 import { Stack } from 'office-ui-fabric-react/lib/Stack';
 import {
@@ -12,7 +11,8 @@ import {
 } from 'office-ui-fabric-react/lib/Breadcrumb';
 import { ChevronRight20, OverflowMenuHorizontal20 } from '@carbon/icons-react';
 import { useHistory } from 'react-router-dom';
-
+import DocPage from './DocPage';
+import FolderPage from './FolderPage';
 import styles from './Page.module.scss';
 
 function ErrorDisplay({ error }) {
@@ -132,9 +132,20 @@ export default function Page() {
       if (!currentItem.name || !currentItem.id) {
         break;
       }
+
+      let text: any = currentItem.name;
+      if (iterateId === id) {
+        text = (
+          <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
+            <DriveIcon src={currentItem.iconLink} />
+            <span>{currentItem.name}</span>
+          </Stack>
+        );
+      }
+
       // if (iterateId !== id) {
       paths.push({
-        text: currentItem.name,
+        text,
         key: currentItem.id,
         onClick: () => history.push(`/view/${currentItem.id}`),
       });
@@ -159,6 +170,9 @@ export default function Page() {
     switch (file?.mimeType ?? '') {
       case 'application/vnd.google-apps.document':
         contentNode = <DocPage file={file!} />;
+        break;
+      case 'application/vnd.google-apps.folder':
+        contentNode = <FolderPage file={file!} />;
         break;
     }
   }
