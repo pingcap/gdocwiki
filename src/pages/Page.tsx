@@ -112,6 +112,9 @@ export default function Page() {
       setError(null);
       setFile(docTree.dataFlat[id]);
     }
+
+    // Ignore docTree.dataFlat change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   // Build a breadcumb according to loaded tree data.
@@ -163,7 +166,7 @@ export default function Page() {
     });
 
     return paths.reverse();
-  }, [docTree.data, docTree.dataFlat, file]);
+  }, [docTree.dataFlat, file, history, id]);
 
   let contentNode: React.ReactNode = null;
   if (!isLoading) {

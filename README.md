@@ -28,12 +28,17 @@ A wiki based on Google Doc / Drive.
 - [x] Sign Out
   - [ ] Better UI for Sign Out
 - [x] Sidebar
-- [ ] Sidebar Expand All & Collapse All
+  - [ ] Expand All & Collapse All
+  - [ ] Manage Folder Children Display in Sidebar or Not
+  - [ ] Activate and Expand Sidebar Item after Reload
 - [x] Render Doc
+  - [ ] Rewrite links in Doc to open in Wiki
 - [ ] Render Spreadsheet
 - [x] Render Folder
   - [ ] Clickable Folder Item
   - [ ] Sortable Folder Item
+- [ ] Render File Shortcut
+- [ ] Render Folder Shortcut
 - [x] Render Drive Root
 - [x] Breadcrumb Navigation
 - [x] Support external link in syntax `[xxx](https://yyy)`

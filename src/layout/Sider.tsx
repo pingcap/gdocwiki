@@ -78,15 +78,18 @@ function Sider({ isExpanded = true }: { isExpanded?: boolean }) {
 
   const history = useHistory();
 
-  const handleSelect = useCallback((_ev, node) => {
-    const file = node.value as IDocTreeItem;
-    const link = mdLink.parse(file.name);
-    if (link) {
-      window.open(link.url, '_blank');
-    } else {
-      history.push(`/view/${file.id}`);
-    }
-  }, []);
+  const handleSelect = useCallback(
+    (_ev, node) => {
+      const file = node.value as IDocTreeItem;
+      const link = mdLink.parse(file.name);
+      if (link) {
+        window.open(link.url, '_blank');
+      } else {
+        history.push(`/view/${file.id}`);
+      }
+    },
+    [history]
+  );
 
   return (
     <div className={cx(styles.sider, { [styles.isExpanded]: isExpanded })}>
