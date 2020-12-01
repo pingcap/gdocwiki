@@ -1,5 +1,5 @@
 import { ChevronRight16, Edit16, Launch16, OverflowMenuHorizontal16 } from '@carbon/icons-react';
-import { registerIcons as register } from 'office-ui-fabric-react/lib/Styling';
+import { registerIcons as register } from 'office-ui-fabric-react';
 import React from 'react';
 
 export default function registerIcons() {

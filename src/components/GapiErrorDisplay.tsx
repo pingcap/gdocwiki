@@ -1,5 +1,5 @@
 import { InlineNotification, NotificationActionButton } from 'carbon-components-react';
-import { Stack } from 'office-ui-fabric-react/lib/Stack';
+import { Stack } from 'office-ui-fabric-react';
 import React, { useMemo } from 'react';
 import { handleGapiError, signIn } from '../utils';
 

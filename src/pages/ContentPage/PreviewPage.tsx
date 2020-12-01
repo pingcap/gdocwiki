@@ -1,8 +1,8 @@
-import React, { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
-import { CommandBar, ICommandBarItemProps } from 'office-ui-fabric-react/lib/CommandBar';
-import LastModificatioNote from '../../components/LastModificationNote';
-import { InlineLoading } from 'carbon-components-react';
 import { useEventListener } from 'ahooks';
+import { InlineLoading } from 'carbon-components-react';
+import { CommandBar, ICommandBarItemProps } from 'office-ui-fabric-react';
+import React, { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
+import LastModificatioNote from '../../components/LastModificationNote';
 
 export interface IDocPageProps {
   file: gapi.client.drive.File;

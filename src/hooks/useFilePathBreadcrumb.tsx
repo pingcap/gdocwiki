@@ -1,7 +1,6 @@
+import { IBreadcrumbItem, Stack } from 'office-ui-fabric-react';
 import React, { useMemo } from 'react';
 import { useHistory } from 'react-router-dom';
-import { IBreadcrumbItem } from 'office-ui-fabric-react/lib/Breadcrumb';
-import { Stack } from 'office-ui-fabric-react/lib/Stack';
 import { DriveIcon, ShortcutIcon } from '../components';
 import { useDocTree } from '../context/DocTree';
 

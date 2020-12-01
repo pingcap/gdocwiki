@@ -1,7 +1,7 @@
+import { InlineLoading } from 'carbon-components-react';
+import { CommandBar, ICommandBarItemProps } from 'office-ui-fabric-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { LastModificationNote } from '../../components';
-import { CommandBar, ICommandBarItemProps } from 'office-ui-fabric-react/lib/CommandBar';
-import { InlineLoading } from 'carbon-components-react';
 
 export interface IDocPageProps {
   file: gapi.client.drive.File;

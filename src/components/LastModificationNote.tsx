@@ -1,8 +1,7 @@
 import dayjs from 'dayjs';
-import { Stack } from 'office-ui-fabric-react/lib/Stack';
+import { Stack } from 'office-ui-fabric-react';
 import React from 'react';
 import Avatar from 'react-avatar';
-
 import styles from './LastModificationNote.module.scss';
 
 export default function LastModificatioNote({ file }: { file: gapi.client.drive.File }) {

@@ -1,13 +1,13 @@
+import { Launch16 } from '@carbon/icons-react';
 import { SkeletonText } from 'carbon-components-react';
 import TreeView, { TreeNode } from 'carbon-components-react/lib/components/TreeView';
-import React, { useCallback, useMemo } from 'react';
-import { IDocTreeItem, useDocTree } from '../context/DocTree';
-import { useHistory } from 'react-router-dom';
 import cx from 'classnames';
-import { Launch16 } from '@carbon/icons-react';
-import { Stack } from 'office-ui-fabric-react/lib/Stack';
-import styles from './Sider.module.scss';
+import { Stack } from 'office-ui-fabric-react';
+import React, { useCallback, useMemo } from 'react';
+import { useHistory } from 'react-router-dom';
+import { IDocTreeItem, useDocTree } from '../context/DocTree';
 import { mdLink } from '../utils';
+import styles from './Sider.module.scss';
 
 interface INavItemProps {
   id: string;

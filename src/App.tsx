@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import { Add20, Close20, Menu20, Subtract20 } from '@carbon/icons-react';
 import {
   Header,
   HeaderGlobalAction,
@@ -6,12 +6,12 @@ import {
   HeaderName,
   InlineLoading,
 } from 'carbon-components-react';
+import React, { useCallback, useState } from 'react';
 import { HashRouter as Router, Switch, Route } from 'react-router-dom';
-import { Content, HeaderUserAction, Sider } from './layout';
 import { DocTreeProvider } from './context/DocTree';
-import { Add20, Close20, Menu20, Subtract20 } from '@carbon/icons-react';
-import Page from './pages/Page';
 import useGapi from './hooks/useGapi';
+import { Content, HeaderUserAction, Sider } from './layout';
+import Page from './pages/Page';
 
 function App() {
   const { gapiLoaded } = useGapi();

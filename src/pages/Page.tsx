@@ -1,11 +1,11 @@
+import { InlineLoading } from 'carbon-components-react';
+import { Breadcrumb } from 'office-ui-fabric-react';
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import { InlineLoading } from 'carbon-components-react';
-import { Breadcrumb } from 'office-ui-fabric-react/lib/Breadcrumb';
-import styles from './Page.module.scss';
-import ContentPage from './ContentPage';
 import useFileMeta from '../hooks/useFileMeta';
 import useFilePathBreadcrumb from '../hooks/useFilePathBreadcrumb';
+import ContentPage from './ContentPage';
+import styles from './Page.module.scss';
 
 export default function Page() {
   const { id } = useParams<any>();

@@ -7,9 +7,8 @@ import {
   IColumn,
   IDetailsListProps,
   SelectionMode,
-} from 'office-ui-fabric-react/lib/DetailsList';
+} from 'office-ui-fabric-react';
 import React, { useCallback, useMemo } from 'react';
-
 import styles from './Table.module.scss';
 
 export const MemoDetailsList = React.memo(DetailsList);

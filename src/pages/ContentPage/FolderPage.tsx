@@ -1,15 +1,14 @@
-import dayjs from 'dayjs';
-import React, { useCallback, useMemo } from 'react';
-import { IColumn } from 'office-ui-fabric-react/lib/DetailsList';
-import { InlineLoading } from 'carbon-components-react';
-import { DriveIcon, ShortcutIcon, Table } from '../../components';
-import { mdLink } from '../../utils';
 import { Launch16 } from '@carbon/icons-react';
+import { InlineLoading } from 'carbon-components-react';
+import dayjs from 'dayjs';
+import { Stack, IColumn } from 'office-ui-fabric-react';
+import React, { useCallback, useMemo } from 'react';
 import { useHistory } from 'react-router';
-import DocPage from './DocPage';
-import { Stack } from 'office-ui-fabric-react/lib/Stack';
-import { useFolderFilesMeta } from '../../hooks/useFolderFilesMeta';
+import { DriveIcon, ShortcutIcon, Table } from '../../components';
 import { useDocTree } from '../../context/DocTree';
+import { useFolderFilesMeta } from '../../hooks/useFolderFilesMeta';
+import { mdLink } from '../../utils';
+import DocPage from './DocPage';
 
 export interface IFolderPageProps {
   file: gapi.client.drive.File;

@@ -1,0 +1,12 @@
+extends: react-app
+plugins:
+  - prettier
+rules:
+  jsx-a11y/anchor-is-valid: off
+  prettier/prettier: warn
+  import/order:
+    - warn
+    - newlines-between: never
+      groups: [builtin, external, internal, parent, sibling, index]
+      alphabetize:
+        order: asc
