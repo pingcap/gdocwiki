@@ -1,9 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Stack } from 'office-ui-fabric-react/lib/Stack';
+import React, { useEffect, useMemo, useState } from 'react';
 import { MultiLineSkeleton } from '../components';
-import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 import { CommandBar, ICommandBarItemProps } from 'office-ui-fabric-react/lib/CommandBar';
-import { Edit16 } from '@carbon/icons-react';
 import LastModificatioNote from '../components/LastModificationNote';
 
 export interface IDocPageProps {
@@ -43,10 +40,6 @@ export default function DocPage({ file }: IDocPageProps) {
     loadPreview();
   }, [file.id]);
 
-  const handleOpen = useCallback(() => {
-    window.open(file.webViewLink, '_blank');
-  }, [file]);
-
   const commandBarItems = useMemo(() => {
     const r: ICommandBarItemProps[] = [
       {
@@ -59,6 +52,9 @@ export default function DocPage({ file }: IDocPageProps) {
         key: 'open',
         text: 'Open in Google Doc',
         iconProps: { iconName: 'Edit' },
+        onClick: () => {
+          window.open(file.webViewLink, '_blank');
+        },
       });
     }
     return r;

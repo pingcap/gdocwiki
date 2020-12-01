@@ -10,9 +10,10 @@ import {
 import { Stack } from 'office-ui-fabric-react/lib/Stack';
 import { Breadcrumb, IBreadcrumbItem } from 'office-ui-fabric-react/lib/Breadcrumb';
 import { useHistory } from 'react-router-dom';
+import styles from './Page.module.scss';
 import DocPage from './DocPage';
 import FolderPage from './FolderPage';
-import styles from './Page.module.scss';
+import PreviewPage from './PreviewPage';
 
 function ErrorDisplay({ error }) {
   const handleSignIn = useCallback(() => {
@@ -163,6 +164,12 @@ export default function Page() {
         break;
       case 'application/vnd.google-apps.folder':
         contentNode = <FolderPage file={file!} />;
+        break;
+      case 'application/vnd.google-apps.spreadsheet':
+      case 'application/vnd.google-apps.drawing':
+      case 'application/vnd.google-apps.presentation':
+      case 'application/pdf':
+        contentNode = <PreviewPage file={file!} />;
         break;
     }
   }
