@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { DriveIcon } from '../components';
 import { useDocTree } from '../context/DocTree';
@@ -11,15 +11,12 @@ import { Stack } from 'office-ui-fabric-react/lib/Stack';
 import { Breadcrumb, IBreadcrumbItem } from 'office-ui-fabric-react/lib/Breadcrumb';
 import { useHistory } from 'react-router-dom';
 import styles from './Page.module.scss';
+import { signIn } from '../utils';
 import DocPage from './DocPage';
 import FolderPage from './FolderPage';
 import PreviewPage from './PreviewPage';
 
 function ErrorDisplay({ error }) {
-  const handleSignIn = useCallback(() => {
-    gapi.auth2.getAuthInstance().signIn();
-  }, []);
-
   if (gapi.auth2.getAuthInstance().isSignedIn.get()) {
     return (
       <InlineNotification
@@ -41,9 +38,7 @@ function ErrorDisplay({ error }) {
     return (
       <InlineNotification
         kind="error"
-        actions={
-          <NotificationActionButton onClick={handleSignIn}>Sign In</NotificationActionButton>
-        }
+        actions={<NotificationActionButton onClick={signIn}>Sign In</NotificationActionButton>}
         subtitle={<div style={{ marginTop: 8 }}>You may need to sign-in to view the content.</div>}
         title={`Failed to load content: ${error.message}`}
         hideCloseButton
