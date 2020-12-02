@@ -9,7 +9,7 @@ import { useDocTree } from '../../context/DocTree';
 import { useManagedRenderStack } from '../../context/RenderStack';
 import { useFolderFilesMeta } from '../../hooks/useFolderFilesMeta';
 import { mdLink, MimeTypes } from '../../utils';
-import DocPage from './DocPage';
+import ContentPage from '.';
 
 export interface IFolderPageProps {
   file: gapi.client.drive.File;
@@ -33,7 +33,7 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
       return undefined;
     }
     for (const item of files) {
-      if (item.name?.toLowerCase() === 'readme' && item.mimeType === MimeTypes.GoogleDocument) {
+      if (item.name?.toLowerCase() === 'readme') {
         return item;
       }
     }
@@ -114,7 +114,7 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
   return (
     <div>
       {loading && <InlineLoading description="Loading folder contents..." />}
-      {readMeFile && <DocPage file={readMeFile} renderStackOffset={renderStackOffset + 1} />}
+      {readMeFile && <ContentPage file={readMeFile} renderStackOffset={renderStackOffset + 1} />}
       {!loading && !!error && error}
       {!loading && !error && (
         <>
