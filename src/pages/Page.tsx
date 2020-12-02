@@ -1,5 +1,5 @@
 import { InlineLoading } from 'carbon-components-react';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import useFileMeta from '../hooks/useFileMeta';
 import ContentPage from './ContentPage';
@@ -11,6 +11,12 @@ function Page({ overrideId }: { overrideId?: string }) {
   const { id: paramId } = useParams<any>();
   const id = overrideId ?? paramId;
   const { file, loading, error } = useFileMeta(id);
+
+  useEffect(() => {
+    if (file?.name) {
+      document.title = `${file.name} - Gdoc Wiki`;
+    }
+  }, [file]);
 
   return (
     <div className={styles.contentContainer}>

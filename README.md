@@ -53,4 +53,4 @@ A wiki based on Google Doc / Drive.
   - [x] Doc
   - [x] Spreadsheet
 - [x] Open Current Directory in Google Drive
-- [ ] Update Title Dynamically
+- [x] Update Title Dynamically

@@ -49,7 +49,11 @@ function App() {
             </HeaderGlobalAction>
           )}
           {isExpanded && (
-            <HeaderGlobalAction key="collapse" aria-label="Collapse All" onClick={handleTreeCollapse}>
+            <HeaderGlobalAction
+              key="collapse"
+              aria-label="Collapse All"
+              onClick={handleTreeCollapse}
+            >
               <Subtract20 />
             </HeaderGlobalAction>
           )}
@@ -57,7 +61,7 @@ function App() {
           <HeaderGlobalBar>
             <HeaderUserAction />
           </HeaderGlobalBar>
-          <Sider isExpanded={isExpanded} expanded={treeExpanded}/>
+          <Sider isExpanded={isExpanded} expanded={treeExpanded} />
         </Header>
         <Content isExpanded={isExpanded}>
           <RenderStackProvider>

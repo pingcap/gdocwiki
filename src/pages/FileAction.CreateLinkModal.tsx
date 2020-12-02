@@ -127,12 +127,11 @@ export function showCreateLinkModal<T>(
         return;
       }
       render(false);
+      destroy();
       resolve(resolveResult);
-      setTimeout(() => destroy, 1000);
       closed = true;
     }
 
-    render(false);
-    setTimeout(() => render(true), 100);
+    render(true);
   });
 }
