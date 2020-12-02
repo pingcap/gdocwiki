@@ -7,8 +7,11 @@ import FileAction from './FileAction';
 import FileBreadcrumb from './FileBreadcrumb';
 import styles from './Page.module.scss';
 
-function Page() {
-  const { id } = useParams<any>();
+function Page({ overrideId }: { overrideId?: string }) {
+  const { id: paramId } = useParams<any>();
+  const id = overrideId ?? paramId;
+
+  console.log(id, overrideId, paramId);
   const { file, loading, error } = useFileMeta(id);
 
   return (

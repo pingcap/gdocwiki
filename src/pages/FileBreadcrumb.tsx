@@ -65,11 +65,14 @@ function useFilePathBreadcrumb(file?: gapi.client.drive.File) {
       iterateId = currentItem.parents[0];
     }
 
-    paths.push({
-      text: 'Wiki Root',
-      key: 'root',
-      onClick: () => history.push(`/`),
-    });
+    // Only needed when rootId is a drive.
+    // Another way is to get rootId and add into dataFlat. Then this is no longer needed.
+    //
+    // paths.push({
+    //   text: 'Wiki Root',
+    //   key: 'root',
+    //   onClick: () => history.push(`/`),
+    // });
 
     return paths.reverse();
   }, [file, docTree.dataFlat, history]);

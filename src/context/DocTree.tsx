@@ -1,9 +1,10 @@
 import { useMount } from 'ahooks';
 import React, { useCallback, useContext, useState } from 'react';
-
-const RootDriveId = '0AIURj86T5hpoUk9PVA';
+import config from '../config';
 
 // This context provides data about the loaded doc tree.
+//
+// This actually act as a cache. Maybe rename it is better?
 
 export interface IDocTree {
   loading: boolean;
@@ -29,7 +30,7 @@ export function DocTreeProvider({ children }) {
       // FIXME: Support pagination
       const resp = await gapi.client.drive.files.list({
         corpora: 'drive',
-        driveId: RootDriveId,
+        driveId: config.rootDriveId,
         includeItemsFromAllDrives: true,
         supportsAllDrives: true,
         pageSize: 500,
@@ -37,7 +38,7 @@ export function DocTreeProvider({ children }) {
         fields:
           'nextPageToken, files(name, id, parents, mimeType, modifiedTime, createdTime, lastModifyingUser(displayName, photoLink), iconLink, webViewLink, shortcutDetails)',
       });
-      console.log('files.list', RootDriveId, resp);
+      console.log('files.list', config.rootDriveId, resp);
 
       const itemsWithChildren: IDocTreeItem[] =
         resp.result.files?.map((file) => {
@@ -70,7 +71,7 @@ export function DocTreeProvider({ children }) {
 
       setData((currentData) => ({
         ...currentData,
-        data: itemsByParent[RootDriveId] ?? [],
+        data: itemsByParent[config.rootId] ?? [],
         dataFlat: allItems,
       }));
     } catch (e) {

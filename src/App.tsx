@@ -3,15 +3,16 @@ import {
   Header,
   HeaderGlobalAction,
   HeaderGlobalBar,
-  HeaderName,
   InlineLoading,
 } from 'carbon-components-react';
 import React, { useCallback, useState } from 'react';
 import { HashRouter as Router, Switch, Route } from 'react-router-dom';
+import config from './config';
 import { DocTreeProvider } from './context/DocTree';
 import { RenderStackProvider } from './context/RenderStack';
 import useGapi from './hooks/useGapi';
 import { Content, HeaderUserAction, Sider } from './layout';
+import HeaderTitle from './layout/HeaderTitle';
 import Page from './pages/Page';
 
 function App() {
@@ -49,9 +50,7 @@ function App() {
               <Subtract20 />
             </HeaderGlobalAction>
           )}
-          <HeaderName href="#" prefix="Gdoc Wiki:">
-            Home
-          </HeaderName>
+          <HeaderTitle />
           <HeaderGlobalBar>
             <HeaderUserAction />
           </HeaderGlobalBar>
@@ -60,7 +59,10 @@ function App() {
         <Content isExpanded={isExpanded}>
           <RenderStackProvider>
             <Switch>
-              <Route path="/view/:id">
+              <Route exact path="/">
+                <Page overrideId={config.rootId} />
+              </Route>
+              <Route exact path="/view/:id">
                 <Page />
               </Route>
             </Switch>

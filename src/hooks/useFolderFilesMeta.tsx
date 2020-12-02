@@ -29,7 +29,7 @@ export function useFolderFilesMeta(id?: string) {
         const resp = await gapi.client.drive.files.list({
           includeItemsFromAllDrives: true,
           supportsAllDrives: true,
-          q: `'${id}' in parents`,
+          q: `'${id}' in parents and trashed = false`,
           fields: '*',
           pageSize: 1000,
         });
