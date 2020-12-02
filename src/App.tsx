@@ -18,9 +18,12 @@ import Page from './pages/Page';
 function App() {
   const { gapiLoaded } = useGapi();
   const [isExpanded, setIsExpanded] = useState(true);
+  const [treeExpanded, setTreeExpanded] = useState(true);
 
   const handleOpenTOC = useCallback(() => setIsExpanded(true), []);
   const handleCloseTOC = useCallback(() => setIsExpanded(false), []);
+  const handleTreeExpand = useCallback(() => setTreeExpanded(true), []);
+  const handleTreeCollapse = useCallback(() => setTreeExpanded(false), []);
 
   if (!gapiLoaded) {
     return <InlineLoading description="Loading Google API..." />;
@@ -41,12 +44,12 @@ function App() {
             </HeaderGlobalAction>
           )}
           {isExpanded && (
-            <HeaderGlobalAction key="expand" aria-label="Expand All">
+            <HeaderGlobalAction key="expand" aria-label="Expand All" onClick={handleTreeExpand}>
               <Add20 />
             </HeaderGlobalAction>
           )}
           {isExpanded && (
-            <HeaderGlobalAction key="collapse" aria-label="Collapse All">
+            <HeaderGlobalAction key="collapse" aria-label="Collapse All" onClick={handleTreeCollapse}>
               <Subtract20 />
             </HeaderGlobalAction>
           )}
@@ -54,7 +57,7 @@ function App() {
           <HeaderGlobalBar>
             <HeaderUserAction />
           </HeaderGlobalBar>
-          <Sider isExpanded={isExpanded} />
+          <Sider isExpanded={isExpanded} expanded={treeExpanded}/>
         </Header>
         <Content isExpanded={isExpanded}>
           <RenderStackProvider>
