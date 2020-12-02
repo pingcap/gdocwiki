@@ -71,7 +71,7 @@ function mapDocTreeItem(nodes?: IDocTreeItem[]): INavItemProps[] {
   });
 }
 
-function Sider({ isExpanded = true }: { isExpanded?: boolean }) {
+function Sider({ isExpanded = true, expanded }: { isExpanded?: boolean; expanded?: boolean }) {
   const { loading, data } = useDocTree();
   const treeData = useMemo(() => mapDocTreeItem(data), [data]);
 
@@ -93,7 +93,7 @@ function Sider({ isExpanded = true }: { isExpanded?: boolean }) {
       )}
       {!loading && (
         <TreeView label="Table of Content" selected={[]} onSelect={handleSelect}>
-          {renderTree(treeData, false)}
+          {renderTree(treeData, expanded)}
         </TreeView>
       )}
     </div>
