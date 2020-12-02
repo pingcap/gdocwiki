@@ -1,4 +1,4 @@
-import googleIcon from '@iconify-icons/flat-color-icons/google';
+import googleIcon from '@iconify-icons/logos/google-icon';
 import { InlineIcon } from '@iconify/react';
 import { InlineNotification, NotificationActionButton } from 'carbon-components-react';
 import { Stack } from 'office-ui-fabric-react';

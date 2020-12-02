@@ -6,13 +6,15 @@ export default function DriveIcon({ file }: { file?: gapi.client.drive.File }) {
   }
   let src = file.iconLink ?? '';
   if (file.mimeType === MimeTypes.GoogleShortcut && file.shortcutDetails?.targetMimeType) {
-    src = `https://drive-thirdparty.googleusercontent.com/16/type/${file.shortcutDetails?.targetMimeType}`;
+    src = DriveIcon.getIconSrc(file.shortcutDetails?.targetMimeType);
   }
-  if (src.indexOf('/16/type/') > -1) {
-    src = src.replace('/16/type/', '/32/type/');
-  }
+  src = src.replace('/16/type/', '/32/type/');
   if (!src) {
     return null;
   }
   return <img src={src} width={16} alt="File Icon" />;
 }
+
+DriveIcon.getIconSrc = (mimeType, size = 32) => {
+  return `https://drive-thirdparty.googleusercontent.com/${size}/type/${mimeType}`;
+};

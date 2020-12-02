@@ -48,7 +48,7 @@ A wiki based on Google Doc / Drive.
 - [x] Support external link in syntax `[xxx](https://yyy)`
   - [ ] Open Google Drive External Links in Wiki
 - [ ] Customize Menu Item Sort Order
-- [ ] Create File in Current Directory
+- [x] Create File in Current Directory
 - [x] Open Current File in Google Doc
   - [x] Doc
   - [x] Spreadsheet

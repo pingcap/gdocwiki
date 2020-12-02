@@ -36,7 +36,7 @@ export function DocTreeProvider({ children }) {
         pageSize: 500,
         q: 'trashed = false',
         fields:
-          'nextPageToken, files(name, id, parents, mimeType, modifiedTime, createdTime, lastModifyingUser(displayName, photoLink), iconLink, webViewLink, shortcutDetails)',
+          'nextPageToken, files(name, id, parents, mimeType, modifiedTime, createdTime, lastModifyingUser(displayName, photoLink), iconLink, webViewLink, shortcutDetails, capabilities/canAddChildren)',
       });
       console.log('files.list', config.rootDriveId, resp);
 
