@@ -38,10 +38,10 @@ export class RenderStack {
     this.eventBus.emit('change');
   }
 
-  public getDeepestRender(): IRenderStackItem | null {
+  public getInMostRender(): IRenderStackItem | undefined {
     const items = Object.values(this.stack);
     if (items.length === 0) {
-      return null;
+      return undefined;
     }
     let maxItem = items[0];
     for (const item of items) {
@@ -50,6 +50,20 @@ export class RenderStack {
       }
     }
     return maxItem;
+  }
+
+  public getOutMostRender(): IRenderStackItem | undefined {
+    const items = Object.values(this.stack);
+    if (items.length === 0) {
+      return undefined;
+    }
+    let minItem = items[0];
+    for (const item of items) {
+      if (item.depth < minItem.depth) {
+        minItem = item;
+      }
+    }
+    return minItem;
   }
 }
 
@@ -64,13 +78,21 @@ export function useRenderStack() {
   return useContext(Ctx);
 }
 
-export function useDeepestRender() {
+export interface IRenderState {
+  outMost?: IRenderStackItem;
+  inMost?: IRenderStackItem;
+}
+
+export function useRender(): IRenderState {
   const rs = useRenderStack();
-  const [data, setData] = useState<IRenderStackItem | null>(null);
+  const [data, setData] = useState<IRenderState>({});
 
   useEffect(() => {
     function listener() {
-      setData(rs.getDeepestRender());
+      setData({
+        outMost: rs.getOutMostRender(),
+        inMost: rs.getInMostRender(),
+      });
     }
     rs.eventBus.addListener('change', listener);
     return () => {
