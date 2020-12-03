@@ -1,4 +1,5 @@
 import { createSlice, createSelector } from '@reduxjs/toolkit';
+import naturalCompare from 'natural-compare-lite';
 
 export type DriveFile = gapi.client.drive.File;
 
@@ -75,7 +76,12 @@ export const selectMapIdToChildren: (state: any) => Record<string, DriveFile[]> 
       for (const childId of map[id]) {
         retMap[id].push(mapIdToFile[childId]);
       }
+
+      retMap[id].sort((a, b) => {
+        return naturalCompare(a.name?.toLowerCase() ?? '', b.name?.toLowerCase() ?? '');
+      });
     }
+
     return retMap;
   }
 );

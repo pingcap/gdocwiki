@@ -23,7 +23,7 @@ A wiki based on Google Doc / Drive.
 ## Roadmap
 
 - [x] Sign In
-  - [ ] Homepage Sign In Notification
+  - [x] Homepage Sign In Notification
   - [ ] Better Error Handling
 - [x] Sign Out
   - [ ] Better UI for Sign Out
@@ -36,7 +36,7 @@ A wiki based on Google Doc / Drive.
   - [ ] Rewrite links in Doc to open in Wiki
 - [x] Render Spreadsheet
 - [x] Render Folder
-  - [ ] Clickable Folder Item
+  - [x] Clickable Folder Item
   - [ ] Sortable Folder Item
   - [x] Render README in the Folder
   - [ ] Support > 1000 Items
@@ -47,7 +47,7 @@ A wiki based on Google Doc / Drive.
 - [x] Breadcrumb Navigation
 - [x] Support external link in syntax `[xxx](https://yyy)`
   - [ ] Open Google Drive External Links in Wiki
-- [ ] Customize Menu Item Sort Order
+- [x] Natural Sort
 - [x] Create File in Current Directory
 - [x] Open Current File in Google Doc
   - [x] Doc

@@ -1,7 +1,8 @@
+import naturalCompare from 'natural-compare-lite';
 import React, { useEffect, useRef, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { GapiErrorDisplay } from '../components';
-import { selectMapIdToChildren } from '../reduxSlices/files';
+import { selectMapIdToChildren, updateFiles } from '../reduxSlices/files';
 
 export interface IFolderFilesMeta {
   loading: boolean;
@@ -10,6 +11,7 @@ export interface IFolderFilesMeta {
 }
 
 export function useFolderFilesMeta(id?: string) {
+  const dispatch = useDispatch();
   const [data, setData] = useState<IFolderFilesMeta>({ loading: true });
   const mapIdToChildren = useSelector(selectMapIdToChildren);
 
@@ -36,6 +38,10 @@ export function useFolderFilesMeta(id?: string) {
           pageSize: 1000,
         });
         if (reqRef.current === checkpoint) {
+          resp.result.files?.sort((a, b) => {
+            return naturalCompare(a.name?.toLowerCase() ?? '', b.name?.toLowerCase() ?? '');
+          });
+          dispatch(updateFiles(resp.result.files ?? []));
           setData({ loading: false, files: resp.result.files });
         }
       } catch (e) {
