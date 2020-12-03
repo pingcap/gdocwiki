@@ -4,10 +4,11 @@ import TreeView, { TreeNode, TreeNodeProps } from 'carbon-components-react/lib/c
 import cx from 'classnames';
 import { Stack } from 'office-ui-fabric-react';
 import React, { useCallback } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import config from '../config';
 import { DriveFile, selectLoading, selectMapIdToChildren } from '../reduxSlices/files';
+import { select, selectExpanded, selectSelected } from '../reduxSlices/sider-tree';
 import { mdLink, MimeTypes } from '../utils';
 import styles from './Sider.module.scss';
 
@@ -16,7 +17,7 @@ function dummy() {}
 function renderChildren(
   mapIdToChildren: Record<string, DriveFile[]>,
   parentId?: string,
-  isExpanded?: boolean
+  expanded?: ReadonlySet<string>,
 ) {
   if (!parentId) {
     return null;
@@ -43,9 +44,10 @@ function renderChildren(
       );
     }
 
-    const childrenNode = renderChildren(mapIdToChildren, file.id, isExpanded);
+    const childrenNode = renderChildren(mapIdToChildren, file.id, expanded);
+
     const nodeProps: TreeNodeProps = {
-      isExpanded,
+      isExpanded: expanded?.has(file.id ?? ''),
       onToggle: dummy,
       label,
       value: file as any,
@@ -65,21 +67,27 @@ function renderChildren(
 
 function Sider({
   isExpanded = true,
-  isTreeExpanded,
+  overrideId
 }: {
   isExpanded?: boolean;
-  isTreeExpanded?: boolean;
+  overrideId?: string;
 }) {
+  const dispatch = useDispatch()
+
   const loading = useSelector(selectLoading);
   const mapIdToChildren = useSelector(selectMapIdToChildren);
+
+  const selected = useSelector(selectSelected);
+  const expanded = useSelector(selectExpanded);
 
   const history = useHistory();
 
   const handleSelect = useCallback(
     (_ev, payload) => {
+      dispatch(select([payload.key]));
       mdLink.handleFileLinkClick(history, payload.value);
     },
-    [history]
+    [history, dispatch]
   );
 
   return (
@@ -90,8 +98,8 @@ function Sider({
         </div>
       )}
       {!loading && (
-        <TreeView label="Table of Content" selected={[]} onSelect={handleSelect}>
-          {renderChildren(mapIdToChildren, config.rootId, isTreeExpanded)}
+        <TreeView label="Table of Content" selected={selected} onSelect={handleSelect}>
+          {renderChildren(mapIdToChildren, config.rootId, expanded)}
         </TreeView>
       )}
     </div>

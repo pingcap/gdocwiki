@@ -6,6 +6,7 @@ import {
   InlineLoading,
 } from 'carbon-components-react';
 import React, { useCallback, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { HashRouter as Router, Switch, Route } from 'react-router-dom';
 import config from './config';
 import { PageReloaderProvider } from './context/PageReloader';
@@ -15,6 +16,8 @@ import useLoadDriveFiles from './hooks/useLoadDriveFiles';
 import { Content, HeaderUserAction, Sider } from './layout';
 import HeaderTitle from './layout/HeaderTitle';
 import Page from './pages/Page';
+import { selectMapIdToFile } from './reduxSlices/files';
+import { collapseAll, expand } from './reduxSlices/sider-tree';
 
 function DriveFilesLoader({ children }) {
   useLoadDriveFiles();
@@ -22,14 +25,21 @@ function DriveFilesLoader({ children }) {
 }
 
 function App() {
+  const dispatch = useDispatch();
   const { gapiLoaded } = useGapi();
   const [isExpanded, setIsExpanded] = useState(true);
-  const [treeExpanded, setTreeExpanded] = useState(true);
+  const mapIdToFile = useSelector(selectMapIdToFile);
 
   const handleOpenTOC = useCallback(() => setIsExpanded(true), []);
   const handleCloseTOC = useCallback(() => setIsExpanded(false), []);
-  const handleTreeExpand = useCallback(() => setTreeExpanded(true), []);
-  const handleTreeCollapse = useCallback(() => setTreeExpanded(false), []);
+  const handleTreeExpand = useCallback(() => {
+    let ids: string[] = [];
+    for (let id in mapIdToFile) {
+      ids.push(id);
+    }
+    dispatch(expand(ids));
+  }, [mapIdToFile, dispatch]);
+  const handleTreeCollapse = useCallback(() => dispatch(collapseAll()), [dispatch]);
 
   if (!gapiLoaded) {
     return <InlineLoading description="Loading Google API..." />;
@@ -67,7 +77,12 @@ function App() {
           <HeaderGlobalBar>
             <HeaderUserAction />
           </HeaderGlobalBar>
-          <Sider isExpanded={isExpanded} isTreeExpanded={treeExpanded} />
+          <Route exact path="/">
+            <Sider isExpanded={isExpanded} overrideId={config.rootId} />
+          </Route>
+          <Route exact path="/view/:id">
+            <Sider isExpanded={isExpanded} />
+          </Route>
         </Header>
         <Content isExpanded={isExpanded}>
           <RenderStackProvider>
