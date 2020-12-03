@@ -19,6 +19,8 @@ jobs:
         run: yarn --frozen-lockfile
       - name: Build
         run: yarn build
+        env:
+          CI: false
       - name: Deploy
         env:
           AccessKeyID: ${{ secrets.ACCESSKEYID }}
