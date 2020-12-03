@@ -1,11 +1,17 @@
 import { InlineLoading } from 'carbon-components-react';
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { usePageReloadToken } from '../context/PageReloader';
 import useFileMeta from '../hooks/useFileMeta';
 import ContentPage from './ContentPage';
 import FileAction from './FileAction';
 import FileBreadcrumb from './FileBreadcrumb';
 import styles from './Page.module.scss';
+
+function PageReloader({ overrideId }: { overrideId?: string }) {
+  const token = usePageReloadToken();
+  return <Page overrideId={overrideId} key={token} />;
+}
 
 function Page({ overrideId }: { overrideId?: string }) {
   const { id: paramId } = useParams<any>();
@@ -29,4 +35,4 @@ function Page({ overrideId }: { overrideId?: string }) {
   );
 }
 
-export default React.memo(Page);
+export default React.memo(PageReloader);

@@ -8,10 +8,13 @@ import {
 } from 'office-ui-fabric-react';
 import React, { useMemo } from 'react';
 import Avatar from 'react-avatar';
+import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { DriveIcon } from '../components';
+import { usePageReloader } from '../context/PageReloader';
 import { useRender } from '../context/RenderStack';
 import useFileMeta from '../hooks/useFileMeta';
+import { updateFile } from '../reduxSlices/files';
 import { handleGapiError, MimeTypes, showModal } from '../utils';
 import { showCreateFileModal } from './FileAction.CreateFileModal';
 import { showCreateLinkModal } from './FileAction.CreateLinkModal';
@@ -19,6 +22,8 @@ import styles from './FileAction.module.scss';
 
 function FileAction() {
   const history = useHistory();
+  const dispatch = useDispatch();
+  const reloadPage = usePageReloader();
 
   // Support we have a folder, containing a shortcut to a README document,
   // the rInner is README and the rOuter is the folder.
@@ -117,19 +122,18 @@ function FileAction() {
             onClick: () => {
               showCreateFileModal(text, async (name) => {
                 try {
-                  await gapi.client.drive.files.create({
+                  const resp = await gapi.client.drive.files.create({
                     supportsAllDrives: true,
+                    fields: '*',
                     resource: {
                       name,
                       mimeType,
                       parents: [outerFolder.file!.id!],
                     },
                   });
-                  // TODO: Perform inplace update
-                  setTimeout(() => {
-                    history.push(`/view/${outerFolder.file!.id!}`);
-                    window.location.reload();
-                  }, 1000);
+                  dispatch(updateFile(resp.result));
+                  history.push(`/view/${outerFolder.file!.id!}`);
+                  reloadPage();
                 } catch (e) {
                   showModal({
                     title: 'Error',
@@ -166,19 +170,18 @@ function FileAction() {
                 onClick: () => {
                   showCreateLinkModal(async (name, link) => {
                     try {
-                      await gapi.client.drive.files.create({
+                      const resp = await gapi.client.drive.files.create({
                         supportsAllDrives: true,
+                        fields: '*',
                         resource: {
                           name: `[${name}](${link})`,
                           mimeType: MimeTypes.GoogleDocument,
                           parents: [outerFolder.file!.id!],
                         },
                       });
-                      // TODO: Perform inplace update
-                      setTimeout(() => {
-                        history.push(`/view/${outerFolder.file!.id!}`);
-                        window.location.reload();
-                      }, 1000);
+                      dispatch(updateFile(resp.result));
+                      history.push(`/view/${outerFolder.file!.id!}`);
+                      reloadPage();
                     } catch (e) {
                       showModal({
                         title: 'Error',
@@ -203,7 +206,7 @@ function FileAction() {
     }
 
     return commands;
-  }, [rInner?.file, outerFolder.file, history]);
+  }, [rInner?.file, outerFolder.file, history, dispatch, reloadPage]);
 
   if (commandBarItems.length === 0) {
     return null;

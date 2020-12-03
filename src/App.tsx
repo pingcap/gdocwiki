@@ -8,6 +8,7 @@ import {
 import React, { useCallback, useState } from 'react';
 import { HashRouter as Router, Switch, Route } from 'react-router-dom';
 import config from './config';
+import { PageReloaderProvider } from './context/PageReloader';
 import { RenderStackProvider } from './context/RenderStack';
 import useGapi from './hooks/useGapi';
 import useLoadDriveFiles from './hooks/useLoadDriveFiles';
@@ -70,14 +71,16 @@ function App() {
         </Header>
         <Content isExpanded={isExpanded}>
           <RenderStackProvider>
-            <Switch>
-              <Route exact path="/">
-                <Page overrideId={config.rootId} />
-              </Route>
-              <Route exact path="/view/:id">
-                <Page />
-              </Route>
-            </Switch>
+            <PageReloaderProvider>
+              <Switch>
+                <Route exact path="/">
+                  <Page overrideId={config.rootId} />
+                </Route>
+                <Route exact path="/view/:id">
+                  <Page />
+                </Route>
+              </Switch>
+            </PageReloaderProvider>
           </RenderStackProvider>
         </Content>
       </DriveFilesLoader>
