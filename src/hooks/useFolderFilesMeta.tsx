@@ -26,21 +26,39 @@ export function useFolderFilesMeta(id?: string) {
       setData({ loading: true });
 
       try {
-        // FIXME: Handle pagination
-        const resp = await gapi.client.drive.files.list({
-          includeItemsFromAllDrives: true,
-          supportsAllDrives: true,
-          q: `'${id}' in parents and trashed = false`,
-          fields: '*',
-          pageSize: 1000,
-        });
-        if (reqRef.current === checkpoint) {
-          resp.result.files?.sort((a, b) => {
-            return naturalCompare(a.name?.toLowerCase() ?? '', b.name?.toLowerCase() ?? '');
+        let pageToken = '';
+        const files: Record<string, gapi.client.drive.File> = {};
+
+        for (let i = 0; i < 10; i++) {
+          const resp = await gapi.client.drive.files.list({
+            pageToken,
+            includeItemsFromAllDrives: true,
+            supportsAllDrives: true,
+            q: `'${id}' in parents and trashed = false`,
+            fields: '*',
+            pageSize: 1000,
           });
+          console.log(`files.list (page #${i + 1})`, id, resp);
+
+          if (reqRef.current !== checkpoint) {
+            break;
+          }
+          for (const file of resp.result.files ?? []) {
+            files[file.id ?? ''] = file;
+          }
           dispatch(updateFiles(resp.result.files ?? []));
-          setData({ loading: false, files: resp.result.files });
+          if (resp.result.nextPageToken) {
+            pageToken = resp.result.nextPageToken;
+          } else {
+            break;
+          }
         }
+
+        const filesArray = Object.values(files);
+        filesArray.sort((a, b) => {
+          return naturalCompare(a.name?.toLowerCase() ?? '', b.name?.toLowerCase() ?? '');
+        });
+        setData({ loading: false, files: filesArray });
       } catch (e) {
         if (reqRef.current === checkpoint) {
           console.log(e);

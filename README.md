@@ -39,7 +39,7 @@ A wiki based on Google Doc / Drive.
   - [x] Clickable Folder Item
   - [ ] Sortable Folder Item
   - [x] Render README in the Folder
-  - [ ] Support > 1000 Items
+  - [x] Support > 1000 Items
 - [x] Render Shortcut
   - [x] File
   - [x] Folder
