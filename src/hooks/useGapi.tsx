@@ -1,6 +1,5 @@
 import { useMount } from 'ahooks';
 import { useCallback, useState } from 'react';
-import { dispatch } from 'use-bus';
 
 export default function useGapi() {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -16,12 +15,6 @@ export default function useGapi() {
     } catch (ex) {
       console.error(ex);
     }
-
-    function dispatchSignedIn(signedIn) {
-      dispatch({ type: 'gSignedInChange', payload: { signedIn } });
-    }
-
-    gapi.auth2.getAuthInstance().isSignedIn.listen(dispatchSignedIn);
 
     setIsLoaded(true);
   }, []);

@@ -6,6 +6,7 @@
     "@iconify-icons/logos": "^1.1.0",
     "@iconify-icons/mdi": "^1.1.0",
     "@iconify/react": "^1.1.3",
+    "@reduxjs/toolkit": "^1.5.0",
     "ahooks": "^2.9.1",
     "carbon-components": "^10.24.0",
     "carbon-components-react": "^7.24.0",
@@ -20,9 +21,9 @@
     "react-avatar": "^3.9.7",
     "react-dom": "^17.0.1",
     "react-google-button": "^0.7.1",
+    "react-redux": "^7.2.2",
     "react-router-dom": "^5.2.0",
-    "react-scripts": "4.0.1",
-    "use-bus": "^2.3.1"
+    "react-scripts": "4.0.1"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -60,6 +61,7 @@
     "@types/node": "^14.14.10",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
+    "@types/react-redux": "^7.1.11",
     "@types/react-router-dom": "^5.1.6",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-prettier": "^3.1.4",

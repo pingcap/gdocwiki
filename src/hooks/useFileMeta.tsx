@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { GapiErrorDisplay } from '../components';
-import { useDocTree } from '../context/DocTree';
+import { selectMapIdToFile } from '../reduxSlices/files';
 
 export interface IFileMeta {
   loading: boolean;
@@ -10,8 +11,7 @@ export interface IFileMeta {
 
 export default function useFileMeta(id?: string) {
   const [data, setData] = useState<IFileMeta>({ loading: true });
-
-  const docTree = useDocTree();
+  const mapIdToFile = useSelector(selectMapIdToFile);
 
   const reqRef = useRef(0);
 
@@ -50,14 +50,14 @@ export default function useFileMeta(id?: string) {
     }
 
     // If data is available in the doc tree, use it directly.
-    if (docTree.dataFlat?.[id] === undefined) {
+    if (mapIdToFile?.[id] === undefined) {
       reqRef.current++;
       loadFileMetadata(reqRef.current);
     } else {
-      setData({ loading: false, file: docTree.dataFlat[id] });
+      setData({ loading: false, file: mapIdToFile[id] });
     }
 
-    // Ignore docTree.dataFlat change
+    // Ignore mapIdToFile change
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 

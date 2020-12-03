@@ -1,13 +1,14 @@
 import { HeaderName } from 'carbon-components-react';
 import React from 'react';
+import { useSelector } from 'react-redux';
 import config from '../config';
-import { useDocTree } from '../context/DocTree';
+import { selectMapIdToFile } from '../reduxSlices/files';
 
 function HeaderTitle() {
-  const docTree = useDocTree();
+  const mapIdToFile = useSelector(selectMapIdToFile);
   return (
     <HeaderName href="#" prefix="Gdoc Wiki:">
-      {docTree.dataFlat?.[config.rootId].name ?? ''}
+      {mapIdToFile?.[config.rootId]?.name ?? ''}
     </HeaderName>
   );
 }

@@ -1,21 +1,12 @@
 import { UserAvatar20 } from '@carbon/icons-react';
 import { HeaderGlobalAction } from 'carbon-components-react';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import Avatar from 'react-avatar';
-import useBus from 'use-bus';
 import { signIn, signOut } from '../utils';
 
 function HeaderUserAction() {
-  const [isSignedIn, setIsSignedIn] = useState(gapi.auth2.getAuthInstance().isSignedIn.get());
-
-  useBus(
-    'gSignedInChange',
-    (data) => {
-      setIsSignedIn(data.payload.signedIn);
-    },
-    []
-  );
-
+  // TODO: Respond to sign in state change
+  const isSignedIn = gapi.auth2.getAuthInstance().isSignedIn.get();
   const profile = useMemo(() => {
     if (isSignedIn) {
       return gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile();

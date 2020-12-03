@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { GapiErrorDisplay } from '../components';
-import { useDocTree } from '../context/DocTree';
+import { selectMapIdToChildren } from '../reduxSlices/files';
 
 export interface IFolderFilesMeta {
   loading: boolean;
@@ -10,8 +11,9 @@ export interface IFolderFilesMeta {
 
 export function useFolderFilesMeta(id?: string) {
   const [data, setData] = useState<IFolderFilesMeta>({ loading: true });
+  const mapIdToChildren = useSelector(selectMapIdToChildren);
 
-  const docTree = useDocTree();
+  console.log('useFolderFilesMeta', id, mapIdToChildren[id ?? '']);
 
   const reqRef = useRef(0);
 
@@ -48,14 +50,14 @@ export function useFolderFilesMeta(id?: string) {
       }
     }
 
-    if (docTree.dataFlat?.[id] === undefined) {
+    if (mapIdToChildren?.[id] === undefined) {
       reqRef.current++;
       loadFolderFilesMetadata(reqRef.current);
     } else {
-      setData({ loading: false, files: docTree.dataFlat[id].children });
+      setData({ loading: false, files: mapIdToChildren[id] });
     }
 
-    // Ignore docTree.dataFlat change
+    // Ignore mapIdToChildren change
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 

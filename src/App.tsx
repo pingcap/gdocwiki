@@ -8,12 +8,17 @@ import {
 import React, { useCallback, useState } from 'react';
 import { HashRouter as Router, Switch, Route } from 'react-router-dom';
 import config from './config';
-import { DocTreeProvider } from './context/DocTree';
 import { RenderStackProvider } from './context/RenderStack';
 import useGapi from './hooks/useGapi';
+import useLoadDriveFiles from './hooks/useLoadDriveFiles';
 import { Content, HeaderUserAction, Sider } from './layout';
 import HeaderTitle from './layout/HeaderTitle';
 import Page from './pages/Page';
+
+function DriveFilesLoader({ children }) {
+  useLoadDriveFiles();
+  return <>{children}</>;
+}
 
 function App() {
   const { gapiLoaded } = useGapi();
@@ -31,7 +36,7 @@ function App() {
 
   return (
     <Router>
-      <DocTreeProvider>
+      <DriveFilesLoader>
         <Header>
           {!isExpanded && (
             <HeaderGlobalAction key="open" aria-label="Open TOC" onClick={handleOpenTOC}>
@@ -61,7 +66,7 @@ function App() {
           <HeaderGlobalBar>
             <HeaderUserAction />
           </HeaderGlobalBar>
-          <Sider isExpanded={isExpanded} expanded={treeExpanded} />
+          <Sider isExpanded={isExpanded} isTreeExpanded={treeExpanded} />
         </Header>
         <Content isExpanded={isExpanded}>
           <RenderStackProvider>
@@ -75,7 +80,7 @@ function App() {
             </Switch>
           </RenderStackProvider>
         </Content>
-      </DocTreeProvider>
+      </DriveFilesLoader>
     </Router>
   );
 }

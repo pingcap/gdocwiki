@@ -1,53 +1,34 @@
 import { Launch16 } from '@carbon/icons-react';
 import { SkeletonText } from 'carbon-components-react';
-import TreeView, { TreeNode } from 'carbon-components-react/lib/components/TreeView';
+import TreeView, { TreeNode, TreeNodeProps } from 'carbon-components-react/lib/components/TreeView';
 import cx from 'classnames';
 import { Stack } from 'office-ui-fabric-react';
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback } from 'react';
+import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { IDocTreeItem, useDocTree } from '../context/DocTree';
+import config from '../config';
+import { DriveFile, selectLoading, selectMapIdToChildren } from '../reduxSlices/files';
 import { mdLink, MimeTypes } from '../utils';
 import styles from './Sider.module.scss';
 
-interface INavItemProps {
-  id: string;
-  value?: any;
-  label?: React.ReactNode;
-  children?: INavItemProps[];
-  isExpanded?: boolean;
-}
-
 function dummy() {}
 
-function renderTree(nodes?: INavItemProps[], expanded?: boolean) {
-  if (!nodes) {
-    return;
+function renderChildren(
+  mapIdToChildren: Record<string, DriveFile[]>,
+  parentId?: string,
+  isExpanded?: boolean
+) {
+  if (!parentId) {
+    return null;
   }
-  return nodes.map(({ children, isExpanded, ...nodeProps }) => (
-    <TreeNode
-      key={nodeProps.id}
-      isExpanded={expanded ?? isExpanded}
-      onToggle={dummy}
-      {...nodeProps}
-    >
-      {renderTree(children, expanded)}
-    </TreeNode>
-  ));
-}
-
-function mapDocTreeItem(nodes?: IDocTreeItem[]): INavItemProps[] {
-  return (nodes ?? [])?.map((node) => {
-    const optionalChildren: any = {};
-    if (node.mimeType === MimeTypes.GoogleFolder) {
-      // Always assign a children field when it is a folder.
-      // This results in a triangle icon in the sidebar.
-      optionalChildren.children = mapDocTreeItem(node.children);
-    }
-
-    let label: React.ReactNode = node.name;
-
+  const files = mapIdToChildren[parentId];
+  if (!mapIdToChildren[parentId]) {
+    return null;
+  }
+  return files.map((file) => {
     // Try to parse as a Markdown link
-    const link = mdLink.parse(node.name);
+    let label: React.ReactNode = file.name;
+    const link = mdLink.parse(file.name);
     if (link) {
       label = (
         <Stack
@@ -62,18 +43,35 @@ function mapDocTreeItem(nodes?: IDocTreeItem[]): INavItemProps[] {
       );
     }
 
-    return {
-      id: node.id,
+    const childrenNode = renderChildren(mapIdToChildren, file.id, isExpanded);
+    const nodeProps: TreeNodeProps = {
+      isExpanded,
+      onToggle: dummy,
       label,
-      value: node,
-      ...optionalChildren,
-    } as INavItemProps;
+      value: file as any,
+    };
+    if (file.mimeType === MimeTypes.GoogleFolder || (childrenNode?.length ?? 0) > 0) {
+      // Display a triangle icon at all the time for empty folders.
+      return (
+        <TreeNode key={file.id} {...nodeProps}>
+          {childrenNode}
+        </TreeNode>
+      );
+    } else {
+      return <TreeNode key={file.id} {...nodeProps} />;
+    }
   });
 }
 
-function Sider({ isExpanded = true, expanded }: { isExpanded?: boolean; expanded?: boolean }) {
-  const { loading, data } = useDocTree();
-  const treeData = useMemo(() => mapDocTreeItem(data), [data]);
+function Sider({
+  isExpanded = true,
+  isTreeExpanded,
+}: {
+  isExpanded?: boolean;
+  isTreeExpanded?: boolean;
+}) {
+  const loading = useSelector(selectLoading);
+  const mapIdToChildren = useSelector(selectMapIdToChildren);
 
   const history = useHistory();
 
@@ -93,7 +91,7 @@ function Sider({ isExpanded = true, expanded }: { isExpanded?: boolean; expanded
       )}
       {!loading && (
         <TreeView label="Table of Content" selected={[]} onSelect={handleSelect}>
-          {renderTree(treeData, expanded)}
+          {renderChildren(mapIdToChildren, config.rootId, isTreeExpanded)}
         </TreeView>
       )}
     </div>

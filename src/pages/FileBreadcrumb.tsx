@@ -1,8 +1,9 @@
 import { Breadcrumb, IBreadcrumbItem, Stack } from 'office-ui-fabric-react';
 import React, { useMemo } from 'react';
+import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { DriveIcon, ShortcutIcon } from '../components';
-import { useDocTree } from '../context/DocTree';
+import { selectMapIdToFile } from '../reduxSlices/files';
 import { MimeTypes } from '../utils';
 
 function LastBreadcrumbItem({ file }: { file: gapi.client.drive.File }) {
@@ -16,7 +17,7 @@ function LastBreadcrumbItem({ file }: { file: gapi.client.drive.File }) {
 }
 
 function useFilePathBreadcrumb(file?: gapi.client.drive.File) {
-  const docTree = useDocTree();
+  const mapIdToFile = useSelector(selectMapIdToFile);
   const history = useHistory();
 
   return useMemo<IBreadcrumbItem[] | undefined>(() => {
@@ -25,7 +26,7 @@ function useFilePathBreadcrumb(file?: gapi.client.drive.File) {
     }
     let paths: IBreadcrumbItem[] = [];
 
-    if (!docTree.dataFlat?.[file.id ?? '']) {
+    if (!mapIdToFile?.[file.id ?? '']) {
       // File is not in the doc tree
       paths = [
         {
@@ -39,7 +40,7 @@ function useFilePathBreadcrumb(file?: gapi.client.drive.File) {
     let iterateId = file.id;
 
     while (iterateId) {
-      const currentItem = docTree.dataFlat?.[iterateId];
+      const currentItem = mapIdToFile?.[iterateId];
       if (!currentItem) {
         break;
       }
@@ -66,7 +67,7 @@ function useFilePathBreadcrumb(file?: gapi.client.drive.File) {
     }
 
     // Only needed when rootId is a drive.
-    // Another way is to get rootId and add into dataFlat. Then this is no longer needed.
+    // Another way is to get rootId and add into mapIdToFile. Then this is no longer needed.
     //
     // paths.push({
     //   text: 'Wiki Root',
@@ -75,7 +76,7 @@ function useFilePathBreadcrumb(file?: gapi.client.drive.File) {
     // });
 
     return paths.reverse();
-  }, [file, docTree.dataFlat, history]);
+  }, [file, mapIdToFile, history]);
 }
 
 function FileBreadcrumb({ file }: { file?: gapi.client.drive.File }) {

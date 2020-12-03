@@ -3,11 +3,12 @@ import { InlineLoading } from 'carbon-components-react';
 import dayjs from 'dayjs';
 import { Stack, IColumn } from 'office-ui-fabric-react';
 import React, { useCallback, useMemo } from 'react';
+import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import { DriveIcon, ShortcutIcon, Table } from '../../components';
-import { useDocTree } from '../../context/DocTree';
 import { useManagedRenderStack } from '../../context/RenderStack';
 import { useFolderFilesMeta } from '../../hooks/useFolderFilesMeta';
+import { selectMapIdToFile } from '../../reduxSlices/files';
 import { mdLink, MimeTypes } from '../../utils';
 import ContentPage from '.';
 
@@ -19,7 +20,7 @@ export interface IFolderPageProps {
 
 function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPageProps) {
   const history = useHistory();
-  const docTree = useDocTree();
+  const mapIdToFile = useSelector(selectMapIdToFile);
 
   useManagedRenderStack({
     depth: renderStackOffset,
@@ -102,13 +103,13 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
     (targetFile: gapi.client.drive.File) => {
       let openInNewWindow = false;
       // If current folder is not in the tree, open new window
-      if (!docTree.dataFlat?.[file?.id ?? ''] && shortCutFile) {
+      if (!mapIdToFile?.[file?.id ?? ''] && shortCutFile) {
         openInNewWindow = true;
       }
 
       mdLink.handleFileLinkClick(history, targetFile, openInNewWindow);
     },
-    [history, docTree.dataFlat, file, shortCutFile]
+    [history, mapIdToFile, file, shortCutFile]
   );
 
   return (
