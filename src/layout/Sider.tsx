@@ -1,5 +1,5 @@
 import { Launch16 } from '@carbon/icons-react';
-import { SkeletonText } from 'carbon-components-react';
+import { InlineLoading, SkeletonText } from 'carbon-components-react';
 import TreeView, { TreeNode, TreeNodeProps } from 'carbon-components-react/lib/components/TreeView';
 import cx from 'classnames';
 import { Stack } from 'office-ui-fabric-react';
@@ -9,6 +9,7 @@ import { useHistory, useParams } from 'react-router-dom';
 import config from '../config';
 import {
   DriveFile,
+  selectError,
   selectLoading,
   selectMapIdToChildren,
   selectMapIdToFile,
@@ -85,6 +86,7 @@ function Sider({ isExpanded = true, overrideId }: { isExpanded?: boolean; overri
   const dispatch = useDispatch();
 
   const loading = useSelector(selectLoading);
+  const error = useSelector(selectError);
   const mapIdToFile = useSelector(selectMapIdToFile);
   const mapIdToChildren = useSelector(selectMapIdToChildren);
 
@@ -125,7 +127,12 @@ function Sider({ isExpanded = true, overrideId }: { isExpanded?: boolean; overri
           <SkeletonText paragraph />
         </div>
       )}
-      {!loading && (
+      {!loading && error && (
+        <div className={styles.skeleton}>
+          <InlineLoading description={`Error: ${error.message}`} status="error" />
+        </div>
+      )}
+      {!loading && !error && (
         <TreeView label="Table of Content" selected={[id]} onSelect={handleSelect} active={id}>
           {renderChildren(mapIdToChildren, config.rootId, expanded, handleToggle)}
         </TreeView>

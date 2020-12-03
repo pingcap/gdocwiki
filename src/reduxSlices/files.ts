@@ -5,11 +5,13 @@ export type DriveFile = gapi.client.drive.File;
 
 export interface FilesState {
   isLoading: boolean;
+  error: Error | undefined;
   mapIdToFile: Record<string, DriveFile>;
 }
 
 const initialState: FilesState = {
   isLoading: true,
+  error: undefined,
   mapIdToFile: {},
 };
 
@@ -20,12 +22,11 @@ export const slice = createSlice({
     setLoading: (state, { payload }: { payload: boolean }) => {
       state.isLoading = payload;
     },
-    resetFromFileList: (state, { payload }: { payload: DriveFile[] }) => {
-      const map: Record<string, DriveFile> = {};
-      for (const file of payload) {
-        map[file.id ?? ''] = file;
-      }
-      state.mapIdToFile = map;
+    setError: (state, { payload }: { payload: Error | undefined }) => {
+      state.error = payload;
+    },
+    clearFileList: (state) => {
+      state.mapIdToFile = {};
     },
     updateFile: (state, { payload }: { payload: DriveFile }) => {
       state.mapIdToFile[payload.id ?? ''] = payload;
@@ -38,14 +39,11 @@ export const slice = createSlice({
   },
 });
 
-export const { setLoading, resetFromFileList, updateFile, updateFiles } = slice.actions;
+export const { setLoading, setError, clearFileList, updateFile, updateFiles } = slice.actions;
 
-export const selectLoading: (state: { files: FilesState }) => boolean = (state) =>
-  state.files.isLoading;
-
-export const selectMapIdToFile: (state: { files: FilesState }) => Record<string, DriveFile> = (
-  state
-) => state.files.mapIdToFile;
+export const selectLoading = (state: { files: FilesState }) => state.files.isLoading;
+export const selectError = (state: { files: FilesState }) => state.files.error;
+export const selectMapIdToFile = (state: { files: FilesState }) => state.files.mapIdToFile;
 
 // A map to lookup all childrens for a file id.
 export const selectMapIdToChildren: (state: any) => Record<string, DriveFile[]> = createSelector(

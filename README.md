@@ -31,7 +31,7 @@ A wiki based on Google Doc / Drive.
   - [x] Expand All & Collapse All
   - [ ] Manage Folder Children Display in Sidebar or Not
   - [x] Activate and Expand Sidebar Item after Reload
-  - [ ] Load Multi-Page Tree Data
+  - [x] Load Multi-Page Tree Data
 - [x] Render Doc
   - [ ] Rewrite links in Doc to open in Wiki
 - [x] Render Spreadsheet

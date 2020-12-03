@@ -1,4 +1,4 @@
-export default function handleGapiError(e: any): { message: string } {
+export default function handleGapiError(e: any): Error {
   if (e?.result?.error) {
     return e.result.error;
   } else if (e.message) {

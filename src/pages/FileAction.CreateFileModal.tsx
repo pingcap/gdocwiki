@@ -59,7 +59,7 @@ export function showCreateFileModal<T>(
             </div>
             {isSubmitting || hasSubmitted ? (
               <InlineLoading
-                success={hasSubmitted}
+                status={hasSubmitted ? 'finished' : 'active'}
                 description={hasSubmitted ? `${fileKind} created!` : 'Creating...'}
               />
             ) : (

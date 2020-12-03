@@ -72,7 +72,7 @@ export function showCreateLinkModal<T>(
             </div>
             {isSubmitting || hasSubmitted ? (
               <InlineLoading
-                success={hasSubmitted}
+                status={hasSubmitted ? 'finished' : 'active'}
                 description={hasSubmitted ? `Link created!` : 'Creating...'}
               />
             ) : (

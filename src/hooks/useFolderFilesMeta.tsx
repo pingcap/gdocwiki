@@ -14,9 +14,6 @@ export function useFolderFilesMeta(id?: string) {
   const dispatch = useDispatch();
   const [data, setData] = useState<IFolderFilesMeta>({ loading: true });
   const mapIdToChildren = useSelector(selectMapIdToChildren);
-
-  console.log('useFolderFilesMeta', id, mapIdToChildren[id ?? '']);
-
   const reqRef = useRef(0);
 
   useEffect(() => {
