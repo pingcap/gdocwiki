@@ -7,7 +7,12 @@ import React, { useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useHistory, useParams } from 'react-router-dom';
 import config from '../config';
-import { DriveFile, selectLoading, selectMapIdToChildren } from '../reduxSlices/files';
+import {
+  DriveFile,
+  selectLoading,
+  selectMapIdToChildren,
+  selectMapIdToFile,
+} from '../reduxSlices/files';
 import {
   select,
   expand,
@@ -80,6 +85,7 @@ function Sider({ isExpanded = true, overrideId }: { isExpanded?: boolean; overri
   const dispatch = useDispatch();
 
   const loading = useSelector(selectLoading);
+  const mapIdToFile = useSelector(selectMapIdToFile);
   const mapIdToChildren = useSelector(selectMapIdToChildren);
 
   const selected = useSelector(selectSelected);
@@ -87,6 +93,7 @@ function Sider({ isExpanded = true, overrideId }: { isExpanded?: boolean; overri
 
   const history = useHistory();
   const paramId = useParams<any>().id as string;
+  const id = overrideId ?? paramId;
 
   const handleSelect = useCallback(
     (_ev, payload) => {
@@ -107,6 +114,25 @@ function Sider({ isExpanded = true, overrideId }: { isExpanded?: boolean; overri
     [dispatch]
   );
 
+  // expand by leaf
+  let activeNodes: string[] = [id];
+  const visitedNodes = new Set<string>();
+  while (activeNodes.length !== 0) {
+    let newNodes: string[] = [];
+    for (let id of activeNodes) {
+      const parents = mapIdToFile[id]?.parents;
+      if (!expanded.has(id) && !visitedNodes.has(id) && parents !== undefined) {
+        visitedNodes.add(id);
+        newNodes = [...newNodes, ...parents];
+      }
+    }
+    activeNodes = newNodes;
+  }
+
+  if (visitedNodes.size !== 0) {
+    dispatch(expand([...visitedNodes]));
+  }
+
   return (
     <div className={cx(styles.sider, { [styles.isExpanded]: isExpanded })}>
       {loading && (
@@ -115,12 +141,7 @@ function Sider({ isExpanded = true, overrideId }: { isExpanded?: boolean; overri
         </div>
       )}
       {!loading && (
-        <TreeView
-          label="Table of Content"
-          selected={selected}
-          onSelect={handleSelect}
-          active={overrideId ?? paramId}
-        >
+        <TreeView label="Table of Content" selected={selected} onSelect={handleSelect} active={id}>
           {renderChildren(mapIdToChildren, config.rootId, expanded, handleToggle)}
         </TreeView>
       )}
