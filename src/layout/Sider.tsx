@@ -5,19 +5,30 @@ import cx from 'classnames';
 import { Stack } from 'office-ui-fabric-react';
 import React, { useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 import config from '../config';
 import { DriveFile, selectLoading, selectMapIdToChildren } from '../reduxSlices/files';
-import { select, selectExpanded, selectSelected } from '../reduxSlices/sider-tree';
+import {
+  select,
+  expand,
+  collapse,
+  selectExpanded,
+  selectSelected,
+} from '../reduxSlices/sider-tree';
 import { mdLink, MimeTypes } from '../utils';
 import styles from './Sider.module.scss';
-
-function dummy() {}
 
 function renderChildren(
   mapIdToChildren: Record<string, DriveFile[]>,
   parentId?: string,
   expanded?: ReadonlySet<string>,
+  handleToggle?: (
+    event: any,
+    node: {
+      id: string;
+      isExpanded: boolean;
+    }
+  ) => void
 ) {
   if (!parentId) {
     return null;
@@ -44,35 +55,29 @@ function renderChildren(
       );
     }
 
-    const childrenNode = renderChildren(mapIdToChildren, file.id, expanded);
+    const childrenNode = renderChildren(mapIdToChildren, file.id, expanded, handleToggle);
 
     const nodeProps: TreeNodeProps = {
       isExpanded: expanded?.has(file.id ?? ''),
-      onToggle: dummy,
+      onToggle: handleToggle,
       label,
       value: file as any,
     };
     if (file.mimeType === MimeTypes.GoogleFolder || (childrenNode?.length ?? 0) > 0) {
       // Display a triangle icon at all the time for empty folders.
       return (
-        <TreeNode key={file.id} {...nodeProps}>
+        <TreeNode key={file.id} id={file.id} {...nodeProps}>
           {childrenNode}
         </TreeNode>
       );
     } else {
-      return <TreeNode key={file.id} {...nodeProps} />;
+      return <TreeNode key={file.id} id={file.id} {...nodeProps} />;
     }
   });
 }
 
-function Sider({
-  isExpanded = true,
-  overrideId
-}: {
-  isExpanded?: boolean;
-  overrideId?: string;
-}) {
-  const dispatch = useDispatch()
+function Sider({ isExpanded = true, overrideId }: { isExpanded?: boolean; overrideId?: string }) {
+  const dispatch = useDispatch();
 
   const loading = useSelector(selectLoading);
   const mapIdToChildren = useSelector(selectMapIdToChildren);
@@ -81,6 +86,7 @@ function Sider({
   const expanded = useSelector(selectExpanded);
 
   const history = useHistory();
+  const paramId = useParams<any>().id as string;
 
   const handleSelect = useCallback(
     (_ev, payload) => {
@@ -88,6 +94,17 @@ function Sider({
       mdLink.handleFileLinkClick(history, payload.value);
     },
     [history, dispatch]
+  );
+
+  const handleToggle = useCallback(
+    (_, node: TreeNodeProps) => {
+      if (node.isExpanded) {
+        dispatch(expand([node.id ?? '']));
+      } else {
+        dispatch(collapse([node.id ?? '']));
+      }
+    },
+    [dispatch]
   );
 
   return (
@@ -98,8 +115,13 @@ function Sider({
         </div>
       )}
       {!loading && (
-        <TreeView label="Table of Content" selected={selected} onSelect={handleSelect}>
-          {renderChildren(mapIdToChildren, config.rootId, expanded)}
+        <TreeView
+          label="Table of Content"
+          selected={selected}
+          onSelect={handleSelect}
+          active={overrideId ?? paramId}
+        >
+          {renderChildren(mapIdToChildren, config.rootId, expanded, handleToggle)}
         </TreeView>
       )}
     </div>

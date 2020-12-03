@@ -31,7 +31,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "predeploy": "yarn build",
-    "deploy": "gh-pages -d build"
+    "deploy": "gh-pages -d build",
+    "fmt": "prettier --config .prettierrc.yml --write 'src/**/*.ts*'"
   },
   "eslintConfig": {
     "extends": [
