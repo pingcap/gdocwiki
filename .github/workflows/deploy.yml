@@ -1,0 +1,31 @@
+name: Deploy to OSS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Prepare Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: Install dependencies
+        run: yarn --frozen-lockfile
+      - name: Build
+        run: yarn build
+      - name: Deploy
+        env:
+          AccessKeyID: ${{ secrets.ACCESSKEYID }}
+          AccessSecret: ${{ secrets.ACCESSSECRET }}
+        run: |
+          wget -q http://gosspublic.alicdn.com/ossutil/1.6.10/ossutil64
+          chmod +x ./ossutil64
+          ./ossutil64 config -e oss-cn-beijing.aliyuncs.com -i $AccessKeyID -k $AccessSecret
+          ./ossutil64 rm oss://docwiki-c407a99b/ -r -f
+          ./ossutil64 cp -r build oss://docwiki-c407a99b/

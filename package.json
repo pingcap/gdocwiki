@@ -33,7 +33,6 @@
     "predeploy": "yarn build",
     "deploy": "gh-pages -d build"
   },
-  "homepage": "https://breeswish.github.io/gdocwiki",
   "eslintConfig": {
     "extends": [
       "react-app",
