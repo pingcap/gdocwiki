@@ -14,11 +14,11 @@ import {
   selectMapIdToFile,
 } from '../reduxSlices/files';
 import {
-  select,
+  activate,
   expand,
   collapse,
   selectExpanded,
-  selectSelected,
+  selectActive,
 } from '../reduxSlices/sider-tree';
 import { mdLink, MimeTypes } from '../utils';
 import styles from './Sider.module.scss';
@@ -88,7 +88,7 @@ function Sider({ isExpanded = true, overrideId }: { isExpanded?: boolean; overri
   const mapIdToFile = useSelector(selectMapIdToFile);
   const mapIdToChildren = useSelector(selectMapIdToChildren);
 
-  const selected = useSelector(selectSelected);
+  const active = useSelector(selectActive);
   const expanded = useSelector(selectExpanded);
 
   const history = useHistory();
@@ -97,10 +97,9 @@ function Sider({ isExpanded = true, overrideId }: { isExpanded?: boolean; overri
 
   const handleSelect = useCallback(
     (_ev, payload) => {
-      dispatch(select([payload.key]));
       mdLink.handleFileLinkClick(history, payload.value);
     },
-    [history, dispatch]
+    [history]
   );
 
   const handleToggle = useCallback(
@@ -114,23 +113,9 @@ function Sider({ isExpanded = true, overrideId }: { isExpanded?: boolean; overri
     [dispatch]
   );
 
-  // expand by leaf
-  let activeNodes: string[] = [id];
-  const visitedNodes = new Set<string>();
-  while (activeNodes.length !== 0) {
-    let newNodes: string[] = [];
-    for (let id of activeNodes) {
-      const parents = mapIdToFile[id]?.parents;
-      if (!expanded.has(id) && !visitedNodes.has(id) && parents !== undefined) {
-        visitedNodes.add(id);
-        newNodes = [...newNodes, ...parents];
-      }
-    }
-    activeNodes = newNodes;
-  }
-
-  if (visitedNodes.size !== 0) {
-    dispatch(expand([...visitedNodes]));
+  // active file
+  if ((active ?? '') !== id && mapIdToFile[id] !== undefined) {
+    dispatch(activate({ id: id, mapIdToFile: mapIdToFile }));
   }
 
   return (
@@ -141,7 +126,7 @@ function Sider({ isExpanded = true, overrideId }: { isExpanded?: boolean; overri
         </div>
       )}
       {!loading && (
-        <TreeView label="Table of Content" selected={selected} onSelect={handleSelect} active={id}>
+        <TreeView label="Table of Content" selected={[]} onSelect={handleSelect} active={id}>
           {renderChildren(mapIdToChildren, config.rootId, expanded, handleToggle)}
         </TreeView>
       )}
