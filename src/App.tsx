@@ -7,7 +7,7 @@ import {
 } from 'carbon-components-react';
 import React, { useCallback, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { HashRouter as Router, Switch, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import config from './config';
 import { PageReloaderProvider } from './context/PageReloader';
 import { RenderStackProvider } from './context/RenderStack';

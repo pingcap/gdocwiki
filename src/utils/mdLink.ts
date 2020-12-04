@@ -28,8 +28,8 @@ function handleFileLinkClick<HistoryLocationState = H.LocationState>(
   if (link) {
     window.open(link.url, '_blank');
   } else if (alwaysOpenInNewWindow) {
-    // FIXME: Will be broken when we switch from HashRouter to BrowserRouter
-    window.open(`#/view/${file.id}`);
+    const href = history.createHref({ pathname: `/view/${file.id}` });
+    window.open(href);
   } else {
     history.push(`/view/${file.id}`);
   }

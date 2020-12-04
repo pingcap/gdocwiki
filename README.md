@@ -42,7 +42,8 @@ A wiki based on Google Doc / Drive.
   - [x] Activate and Expand Sidebar Item after Reload
   - [x] Load Multi-Page Tree Data
 - [x] Render Doc
-  - [ ] Rewrite links in Doc to open in Wiki
+  - [x] Rewrite links in Doc to open in Wiki
+  - [x] Support #xxx in the Doc
 - [x] Render Spreadsheet
 - [x] Render Folder
   - [x] Clickable Folder Item
@@ -67,6 +68,8 @@ A wiki based on Google Doc / Drive.
   - [x] Pretty font families
   - [ ] Pretty monospace fonts
   - [ ] Adjust incorrect margins and paddings
+- [ ] Cache
+  - [ ] Cache Preview when Doc is not mofieid
 - [ ] Search
   - [ ] Full Text Search
   - [ ] File Name Search

@@ -7,7 +7,7 @@ import { selectMapIdToFile } from '../reduxSlices/files';
 function HeaderTitle() {
   const mapIdToFile = useSelector(selectMapIdToFile);
   return (
-    <HeaderName href="#" prefix="Gdoc Wiki:">
+    <HeaderName prefix="Gdoc Wiki:">
       {mapIdToFile?.[config.REACT_APP_ROOT_ID]?.name ?? ''}
     </HeaderName>
   );

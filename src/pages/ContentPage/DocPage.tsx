@@ -1,5 +1,7 @@
 import { InlineLoading } from 'carbon-components-react';
-import React, { useEffect, useState } from 'react';
+import * as H from 'history';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useHistory } from 'react-router-dom';
 import { useManagedRenderStack } from '../../context/RenderStack';
 
 export interface IDocPageProps {
@@ -7,21 +9,66 @@ export interface IDocPageProps {
   renderStackOffset?: number;
 }
 
-function prettify(baseEl: HTMLElement) {
-  // Prettify rule: Remove all font families, except for some monospace fonts.
-  const fontWhitelist = ['Source Code Pro', 'Courier New'];
-  const elements = baseEl.getElementsByTagName('*') as HTMLCollectionOf<HTMLElement>;
-  for (const el of elements) {
-    if (el.style) {
-      let hitWhitelist = false;
-      for (const f of fontWhitelist) {
-        if (el.style.fontFamily.indexOf(f) > -1) {
-          hitWhitelist = true;
-          break;
+function isModifiedEvent(event) {
+  return !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);
+}
+
+function prettify<HistoryLocationState = H.LocationState>(
+  history: H.History<HistoryLocationState>,
+  baseEl: HTMLElement
+) {
+  {
+    // Remove all font families, except for some monospace fonts.
+    const monoFF = ['source code', 'courier', 'mono'];
+    const elements = baseEl.getElementsByTagName('*') as HTMLCollectionOf<HTMLElement>;
+    for (const el of elements) {
+      if (el.style) {
+        const ff = el.style.fontFamily.toLowerCase();
+        let isMonoFont = false;
+        for (const f of monoFF) {
+          if (ff.indexOf(f) > -1) {
+            isMonoFont = true;
+            break;
+          }
+        }
+        el.style.fontFamily = '';
+        if (isMonoFont) {
+          el.classList.add('__gdoc_monospace');
         }
       }
-      if (!hitWhitelist) {
-        el.style.fontFamily = '';
+    }
+  }
+  {
+    // Rewrite `https://www.google.com/url?q=`
+    const elements = baseEl.getElementsByTagName('a');
+    for (const el of elements) {
+      if (el.href.indexOf('https://www.google.com/url') !== 0) {
+        continue;
+      }
+      const url = new URL(el.href);
+      const newHref = url.searchParams.get('q');
+      if (newHref) {
+        el.href = newHref;
+      }
+    }
+  }
+  {
+    // Open Google Doc and Google Drive link inline, for other links open in new window.
+    const elements = baseEl.getElementsByTagName('a');
+    for (const el of elements) {
+      let m = el.href.match(/^https:\/\/docs\.google\.com\/[^/]+(\/u\/\d+)?\/d\/([^/]+)\/edit/);
+      if (!m) {
+        m = el.href.match(/^https:\/\/drive\.google\.com\/[^/]+(\/u\/\d+)?\/[^/]+\/([^/]+)/);
+      }
+      if (m) {
+        el.href = history.createHref({ pathname: `/view/${m[2]}` });
+        el.dataset['__gdoc_history'] = `/view/${m[2]}`;
+        continue;
+      }
+      if ((el.getAttribute('href') ?? '').indexOf('#') !== 0) {
+        el.target = '_blank';
+        el.classList.add('__gdoc_external_link');
+        continue;
       }
     }
   }
@@ -30,6 +77,7 @@ function prettify(baseEl: HTMLElement) {
 function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
   const [docContent, setDocContent] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const history = useHistory();
 
   useManagedRenderStack({
     depth: renderStackOffset,
@@ -53,7 +101,7 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
         const htmlDoc = parser.parseFromString(resp.body, 'text/html');
         const bodyEl = htmlDoc.querySelector('body');
         if (bodyEl) {
-          prettify(bodyEl);
+          prettify(history, bodyEl);
           const styleEls = htmlDoc.querySelectorAll('style');
           styleEls.forEach((el) => bodyEl.appendChild(el));
           setDocContent(bodyEl.innerHTML);
@@ -65,13 +113,33 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
       }
     }
     loadPreview();
+    // Ignore history change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [file.id]);
+
+  const handleDocContentClick = useCallback(
+    (ev: React.MouseEvent) => {
+      if (isModifiedEvent(ev)) {
+        return;
+      }
+      const h = (ev.target as HTMLElement).dataset?.['__gdoc_history'];
+      if (h) {
+        ev.preventDefault();
+        history.push(h);
+      }
+    },
+    [history]
+  );
 
   return (
     <div style={{ maxWidth: '50rem' }}>
       {isLoading && <InlineLoading description="Loading document content..." />}
       {!isLoading && (
-        <div style={{ maxWidth: '50rem' }} dangerouslySetInnerHTML={{ __html: docContent }}></div>
+        <div
+          style={{ maxWidth: '50rem' }}
+          dangerouslySetInnerHTML={{ __html: docContent }}
+          onClick={handleDocContentClick}
+        />
       )}
     </div>
   );
