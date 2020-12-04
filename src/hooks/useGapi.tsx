@@ -1,5 +1,6 @@
 import { useMount } from 'ahooks';
 import { useCallback, useState } from 'react';
+import config from '../config';
 
 export default function useGapi() {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -7,8 +8,8 @@ export default function useGapi() {
   const initClient = useCallback(async () => {
     try {
       await gapi.client.init({
-        apiKey: 'AIzaSyCr53G4OrNdOpjjejsM4wStjW_Uagudq8E',
-        clientId: '814839399439-cm9t983r5374hk28v5lt5ne75i6eit6c.apps.googleusercontent.com',
+        apiKey: config.REACT_APP_GAPI_KEY,
+        clientId: config.REACT_APP_GAPI_CLIENT_ID,
         discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
         scope: 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/documents',
       });

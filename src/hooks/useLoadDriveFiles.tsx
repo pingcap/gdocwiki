@@ -20,7 +20,7 @@ export default function useLoadDriveFiles() {
         const resp = await gapi.client.drive.files.list({
           pageToken,
           corpora: 'drive',
-          driveId: config.rootDriveId,
+          driveId: config.REACT_APP_ROOT_DRIVE_ID,
           includeItemsFromAllDrives: true,
           supportsAllDrives: true,
           pageSize: 500,
@@ -28,7 +28,7 @@ export default function useLoadDriveFiles() {
           fields:
             'nextPageToken, files(name, id, parents, mimeType, modifiedTime, createdTime, lastModifyingUser(displayName, photoLink), iconLink, webViewLink, shortcutDetails, capabilities/canAddChildren)',
         });
-        console.log(`files.list (page #${i + 1})`, config.rootDriveId, resp);
+        console.log(`files.list (page #${i + 1})`, config.REACT_APP_ROOT_DRIVE_ID, resp);
         dispatch(updateFiles(resp.result.files ?? []));
         if (resp.result.nextPageToken) {
           pageToken = resp.result.nextPageToken;

@@ -78,7 +78,7 @@ function App() {
             <HeaderUserAction />
           </HeaderGlobalBar>
           <Route exact path="/">
-            <Sider isExpanded={isExpanded} overrideId={config.rootId} />
+            <Sider isExpanded={isExpanded} overrideId={config.REACT_APP_ROOT_ID} />
           </Route>
           <Route exact path="/view/:id">
             <Sider isExpanded={isExpanded} />
@@ -89,7 +89,7 @@ function App() {
             <PageReloaderProvider>
               <Switch>
                 <Route exact path="/">
-                  <Page overrideId={config.rootId} />
+                  <Page overrideId={config.REACT_APP_ROOT_ID} />
                 </Route>
                 <Route exact path="/view/:id">
                   <Page />

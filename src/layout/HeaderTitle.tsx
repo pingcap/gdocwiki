@@ -8,7 +8,7 @@ function HeaderTitle() {
   const mapIdToFile = useSelector(selectMapIdToFile);
   return (
     <HeaderName href="#" prefix="Gdoc Wiki:">
-      {mapIdToFile?.[config.rootId]?.name ?? ''}
+      {mapIdToFile?.[config.REACT_APP_ROOT_ID]?.name ?? ''}
     </HeaderName>
   );
 }

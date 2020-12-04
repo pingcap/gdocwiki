@@ -134,7 +134,7 @@ function Sider({ isExpanded = true, overrideId }: { isExpanded?: boolean; overri
       )}
       {!loading && !error && (
         <TreeView label="Table of Content" selected={[id]} onSelect={handleSelect} active={id}>
-          {renderChildren(mapIdToChildren, config.rootId, expanded, handleToggle)}
+          {renderChildren(mapIdToChildren, config.REACT_APP_ROOT_ID, expanded, handleToggle)}
         </TreeView>
       )}
     </div>

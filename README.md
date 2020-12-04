@@ -12,13 +12,22 @@ A wiki based on Google Doc / Drive.
    yarn
    ```
 
-3. Start a local development server:
+3. Create `.env.local` file for configuration:
+
+   ```plain
+   REACT_APP_GAPI_KEY=(Google API Key, apply at https://console.developers.google.com/apis/credentials)
+   REACT_APP_GAPI_CLIENT_ID=(Google API OAuth Client ID, apply at https://console.developers.google.com/apis/credentials)
+   REACT_APP_ROOT_DRIVE_ID=(The root folder that you want this wiki to display)
+   REACT_APP_ROOT_ID=(The drive ID of the root folder, used to retrieve hierarchy efficiently)
+   ```
+
+4. Start a local development server:
 
    ```shell
    yarn start
    ```
 
-4. Navigate to http://localhost:3000
+5. Navigate to http://localhost:3000
 
 ## Roadmap
 
