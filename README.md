@@ -63,3 +63,12 @@ A wiki based on Google Doc / Drive.
   - [x] Spreadsheet
 - [x] Open Current Directory in Google Drive
 - [x] Update Title Dynamically
+- [ ] Prettify
+  - [x] Pretty font families
+  - [ ] Pretty monospace fonts
+  - [ ] Adjust incorrect margins and paddings
+- [ ] Search
+  - [ ] Full Text Search
+  - [ ] File Name Search
+- [ ] Helper Extension
+  - [ ] A Chrome Extension for Checking Doc In Tree

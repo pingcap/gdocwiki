@@ -7,6 +7,26 @@ export interface IDocPageProps {
   renderStackOffset?: number;
 }
 
+function prettify(baseEl: HTMLElement) {
+  // Prettify rule: Remove all font families, except for some monospace fonts.
+  const fontWhitelist = ['Source Code Pro', 'Courier New'];
+  const elements = baseEl.getElementsByTagName('*') as HTMLCollectionOf<HTMLElement>;
+  for (const el of elements) {
+    if (el.style) {
+      let hitWhitelist = false;
+      for (const f of fontWhitelist) {
+        if (el.style.fontFamily.indexOf(f) > -1) {
+          hitWhitelist = true;
+          break;
+        }
+      }
+      if (!hitWhitelist) {
+        el.style.fontFamily = '';
+      }
+    }
+  }
+}
+
 function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
   const [docContent, setDocContent] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -33,6 +53,7 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
         const htmlDoc = parser.parseFromString(resp.body, 'text/html');
         const bodyEl = htmlDoc.querySelector('body');
         if (bodyEl) {
+          prettify(bodyEl);
           const styleEls = htmlDoc.querySelectorAll('style');
           styleEls.forEach((el) => bodyEl.appendChild(el));
           setDocContent(bodyEl.innerHTML);
