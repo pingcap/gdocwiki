@@ -33,9 +33,9 @@ A wiki based on Google Doc / Drive.
 
 - [x] Sign In
   - [x] Homepage Sign In Notification
-  - [ ] Better Error Handling
+  - [x] Better Error Handling
 - [x] Sign Out
-  - [ ] Better UI for Sign Out
+  - [x] Better UI for Sign Out
 - [x] Sidebar
   - [x] Expand All & Collapse All
   - [ ] Manage Folder Children Display in Sidebar or Not
@@ -66,7 +66,7 @@ A wiki based on Google Doc / Drive.
 - [x] Update Title Dynamically
 - [ ] Prettify
   - [x] Pretty font families
-  - [ ] Pretty monospace fonts
+  - [x] Pretty monospace fonts
   - [ ] Adjust incorrect margins and paddings
 - [ ] Cache
   - [ ] Cache Preview when Doc is not mofieid

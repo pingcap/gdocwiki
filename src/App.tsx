@@ -13,8 +13,7 @@ import { PageReloaderProvider } from './context/PageReloader';
 import { RenderStackProvider } from './context/RenderStack';
 import useGapi from './hooks/useGapi';
 import useLoadDriveFiles from './hooks/useLoadDriveFiles';
-import { Content, HeaderUserAction, Sider } from './layout';
-import HeaderTitle from './layout/HeaderTitle';
+import { HeaderTitle, Content, HeaderUserAction, Sider, HeaderMenu } from './layout';
 import Page from './pages/Page';
 import { selectMapIdToFile } from './reduxSlices/files';
 import { collapseAll, expand } from './reduxSlices/sider-tree';
@@ -40,6 +39,9 @@ function App() {
     dispatch(expand(ids));
   }, [mapIdToFile, dispatch]);
   const handleTreeCollapse = useCallback(() => dispatch(collapseAll()), [dispatch]);
+
+  const [isMenuOpen, setMenuOpen] = useState(false);
+  const toggleMenu = useCallback(() => setMenuOpen((v) => !v), []);
 
   if (!gapiLoaded) {
     return <InlineLoading description="Loading Google API..." />;
@@ -75,7 +77,7 @@ function App() {
           )}
           <HeaderTitle />
           <HeaderGlobalBar>
-            <HeaderUserAction />
+            <HeaderUserAction toggleMenu={toggleMenu} />
           </HeaderGlobalBar>
           <Route exact path="/">
             <Sider isExpanded={isExpanded} overrideId={config.REACT_APP_ROOT_ID} />
@@ -84,6 +86,7 @@ function App() {
             <Sider isExpanded={isExpanded} />
           </Route>
         </Header>
+        <HeaderMenu open={isMenuOpen} />
         <Content isExpanded={isExpanded}>
           <RenderStackProvider>
             <PageReloaderProvider>
