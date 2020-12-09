@@ -35,7 +35,9 @@ function PreviewPage({ file, renderStackOffset = 0 }: IDocPageProps) {
     const baseStyle: CSSProperties = {};
     if (
       file.mimeType !== MimeTypes.GoogleSpreadsheet &&
-      file.mimeType !== MimeTypes.GooglePresentation
+      file.mimeType !== MimeTypes.GooglePresentation &&
+      file.mimeType !== MimeTypes.MSOpenExcel &&
+      file.mimeType !== MimeTypes.MSExcel
     ) {
       baseStyle.maxWidth = '50rem';
     }

@@ -26,6 +26,10 @@ function ContentPage({ file, shortCutFile, renderStackOffset = 0 }: IContentPage
     case MimeTypes.GoogleSpreadsheet:
     case MimeTypes.GooglePresentation:
     case MimeTypes.GoogleDrawing:
+    case MimeTypes.MSOpenWord:
+    case MimeTypes.MSOpenExcel:
+    case MimeTypes.MSWord:
+    case MimeTypes.MSExcel:
     case MimeTypes.PDF:
       return <PreviewPage file={file!} renderStackOffset={renderStackOffset} />;
     case MimeTypes.GoogleShortcut:
