@@ -29,10 +29,10 @@ You should set up a configuration for local development and building by creating
 A sample `.env.local` file could be:
 
 ```plain
-REACT_APP_GAPI_KEY=...
-REACT_APP_GAPI_CLIENT_ID=...
-REACT_APP_ROOT_ID=...
-REACT_APP_ROOT_DRIVE_ID=...
+REACT_APP_GAPI_KEY=xxxxxxx
+REACT_APP_GAPI_CLIENT_ID=xxxxxxx
+REACT_APP_ROOT_ID=xxxxxxx
+REACT_APP_ROOT_DRIVE_ID=xxxxxxx
 ```
 
 - `REACT_APP_GAPI_KEY`: The Google API Key.
@@ -64,53 +64,61 @@ REACT_APP_ROOT_DRIVE_ID=...
 
 ## Roadmap
 
-- [x] Sign In
-  - [x] Homepage Sign In Notification
-  - [x] Better Error Handling
-- [x] Sign Out
-  - [x] Better UI for Sign Out
+- [x] User
+  - [x] Sign in
+    - [x] Notify for sign in
+    - [x] Error handling for unprivilege errors
+  - [x] Sign out
+    - [x] A better UI for sign out
 - [x] Sidebar
-  - [x] Expand All & Collapse All
-  - [ ] Manage Folder Children Display in Sidebar or Not
-  - [x] Activate and Expand Sidebar Item after Reload
-  - [x] Load Multi-Page Tree Data
-- [x] Render Doc
-  - [x] Rewrite links in Doc to open in Wiki
-  - [x] Support #xxx in the Doc
-- [x] Render Spreadsheet
-- [x] Render Folder
-  - [x] Clickable Folder Item
-  - [ ] Sortable Folder Item
-  - [x] Render README in the Folder
-  - [x] Support > 1000 Items
-- [x] Render Shortcut
-  - [x] File
+  - [x] Expand all
+  - [x] Collapse all
+  - [ ] Configure specific folder children to be displayed in sidebar or not
+  - [x] Activate and expand sidebar item according to current page
+  - [x] Support >500 pages in the sidebar
+  - [x] Support external link in syntax `[xxx](https://yyy)`
+    - [ ] Open Google drive external links in wiki directly
+- [x] Content Preview
+  - [x] Google doc
+    - [x] Rewrite links to open in wiki directly
+    - [x] Support #xxx anchors in the Google doc
+    - [ ] Prettify
+      - [x] Pretty font families
+      - [x] Pretty monospace fonts
+      - [ ] Adjust incorrect margins and paddings
+  - [x] Google spreadsheet
+  - [x] Google presentation
+  - [x] PDF
+  - [x] MS Word / Excel files
+  - [x] Shortcut
+    - [x] File
+    - [x] Folder
   - [x] Folder
-- [ ] Render Drive Root
+    - [x] Click folder item to jump
+    - [ ] Sort folder items
+    - [x] Display `README` in the folder inline
+    - [x] Support > 1000 folder items
+  - [ ] Drive Root
 - [x] Breadcrumb Navigation
-- [x] Support external link in syntax `[xxx](https://yyy)`
-  - [ ] Open Google Drive External Links in Wiki
-- [x] Natural Sort
-- [x] Create File in Current Directory
-- [x] Open Current File in Google Doc
-  - [x] Doc
-  - [x] Spreadsheet
-- [x] Open Current Directory in Google Drive
-- [x] Update Title Dynamically
-- [ ] Prettify
-  - [x] Pretty font families
-  - [x] Pretty monospace fonts
-  - [ ] Adjust incorrect margins and paddings
-- [ ] More File Operations
+  - [x] Create file in current folder
+  - [x] Open current file in Google Doc / Google Drive
+    - [x] Google Doc
+    - [x] Google Spreadsheet
+  - [x] Open current folder in Google Drive
   - [ ] Rename
   - [ ] Trash
+  - [ ] Move in a file or folder
+- [x] Natural sort
+- [x] Update Title Dynamically
 - [ ] Cache
-  - [ ] Cache Preview when Doc is not mofieid
+  - [x] Utilize cache to load folder content
+  - [ ] Cache preview when file is not modified
+  - [ ] Update file and folder cache in background when accessing a folder or file
 - [ ] Search
-  - [ ] Full Text Search
-  - [ ] File Name Search
-- [ ] Helper Extension
-  - [ ] A Chrome Extension for Checking Doc In Tree
+  - [ ] Full text
+  - [ ] File name
+- [ ] Helpers
+  - [ ] A Chrome extension for checking whether the doc is in the tree
 
 ## Note
 
