@@ -17,6 +17,8 @@ import { HeaderTitle, Content, HeaderUserAction, Sider, HeaderMenu } from './lay
 import Page from './pages/Page';
 import { selectMapIdToFile } from './reduxSlices/files';
 import { collapseAll, expand } from './reduxSlices/sider-tree';
+import HeaderSearch from './layout/HeaderSearch';
+import { SearchResult } from './pages/Search';
 
 function DriveFilesLoader({ children }) {
   useLoadDriveFiles();
@@ -77,6 +79,7 @@ function App() {
           )}
           <HeaderTitle />
           <HeaderGlobalBar>
+            <HeaderSearch/>
             <HeaderUserAction toggleMenu={toggleMenu} />
           </HeaderGlobalBar>
           <Route exact path="/">
@@ -84,6 +87,9 @@ function App() {
           </Route>
           <Route exact path="/view/:id">
             <Sider isExpanded={isExpanded} />
+          </Route>
+          <Route path="/search/:keyword">
+            <Sider isExpanded={isExpanded} overrideId={config.REACT_APP_ROOT_ID} />
           </Route>
         </Header>
         <HeaderMenu open={isMenuOpen} />
@@ -96,6 +102,9 @@ function App() {
                 </Route>
                 <Route exact path="/view/:id">
                   <Page />
+                </Route>
+                <Route path="/search/:keyword">
+                  <SearchResult />
                 </Route>
               </Switch>
             </PageReloaderProvider>
