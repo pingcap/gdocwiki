@@ -5,6 +5,8 @@ import config from '../config';
 import { setLoading, clearFileList, updateFiles, setError } from '../reduxSlices/files';
 import { handleGapiError } from '../utils';
 
+const {fields} = config
+
 export default function useLoadDriveFiles() {
   const dispatch = useDispatch();
 
@@ -25,8 +27,7 @@ export default function useLoadDriveFiles() {
           supportsAllDrives: true,
           pageSize: 500,
           q: 'trashed = false',
-          fields:
-            'nextPageToken, files(name, id, parents, mimeType, modifiedTime, createdTime, lastModifyingUser(displayName, photoLink), iconLink, webViewLink, shortcutDetails, capabilities/canAddChildren)',
+          fields,
         });
         console.log(`files.list (page #${i + 1})`, config.REACT_APP_ROOT_DRIVE_ID, resp);
         dispatch(updateFiles(resp.result.files ?? []));

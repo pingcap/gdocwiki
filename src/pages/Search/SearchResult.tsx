@@ -32,8 +32,7 @@ export default function SearchResult() {
           supportsAllDrives: true,
           pageSize: 500,
           q: `trashed = false and (name contains '${keyword}' or fullText contains '${keyword}')`,
-          fields:
-            'nextPageToken, files(name, id, parents, mimeType, modifiedTime, createdTime, lastModifyingUser(displayName, photoLink), iconLink, webViewLink, shortcutDetails, capabilities/canAddChildren)',
+          fields,
         });
         console.log(`search result: files.list (page #${i + 1})`, config.REACT_APP_ROOT_DRIVE_ID, resp);
         const filesTmp = resp?.result?.files ?? []
