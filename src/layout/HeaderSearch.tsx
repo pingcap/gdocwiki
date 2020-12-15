@@ -3,7 +3,7 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { useDebounceFn } from 'ahooks';
 import { TextInput } from 'carbon-components-react';
 
-import './HeaderSearch.scss';
+import styles from './HeaderSearch.module.scss';
 
 function HeaderSearch({ }: { }) {
   const location = useLocation();
@@ -32,7 +32,7 @@ function HeaderSearch({ }: { }) {
   }
 
   return (
-    <div className="HeaderSearch">
+    <div className={styles.HeaderSearch}>
       <TextInput
         id="search-input"
         invalidText="A valid value is required"
