@@ -105,9 +105,11 @@ REACT_APP_ROOT_DRIVE_ID=xxxxxxx
     - [x] Google Doc
     - [x] Google Spreadsheet
   - [x] Open current folder in Google Drive
-  - [ ] Rename
-  - [ ] Trash
-  - [ ] Move in a file or folder
+  - [x] Rename
+  - [x] Trash
+  - [x] Move in a file
+    - [ ] Notification when the file cannot be moved out again
+  - [ ] Move in a folder
 - [x] Natural sort
 - [x] Update Title Dynamically
 - [ ] Cache

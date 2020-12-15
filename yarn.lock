@@ -1383,18 +1383,6 @@
   resolved "https://registry.yarnpkg.com/@carbon/icon-helpers/-/icon-helpers-10.10.0.tgz#be6591539cc32a39965aecce8f871aaed5a3a120"
   integrity sha512-R/M2OfXwVOBKw7k4QPBjdtNxksPY41FM/7wzWvpkjtj+sjz5e1SOK89p4/gR3nfcwLOGTkmhMbhHgM9hENBT4g==
 
-"@carbon/icon-helpers@^10.9.0":
-  version "10.9.0"
-  resolved "https://registry.yarnpkg.com/@carbon/icon-helpers/-/icon-helpers-10.9.0.tgz#5aee08e9d253d3bf6f996bc61f739660c62cbb21"
-  integrity sha512-JtmCXV7iIc+N5RqQQy+MGT8T+5KcF7+BUKADvHnJKZ8o+ncF5gI4hmrP450dQD76mikI4fqQ0dQflaosesdSPw==
-
-"@carbon/icons-react@^10.21.0":
-  version "10.21.0"
-  resolved "https://registry.yarnpkg.com/@carbon/icons-react/-/icons-react-10.21.0.tgz#7f943b6b9aff44913c209b8f02bcc2aa173b5bff"
-  integrity sha512-Oi3k+0crssTXe+8MIkkmNgEvigS+a6V09ruh1nFw0JjIc1fJ/J7waZMm/JQnFZ96w5XttkkQkB6yxMu1TF2Sug==
-  dependencies:
-    "@carbon/icon-helpers" "^10.9.0"
-
 "@carbon/icons-react@^10.22.0":
   version "10.22.0"
   resolved "https://registry.yarnpkg.com/@carbon/icons-react/-/icons-react-10.22.0.tgz#5b49a08c94036db2cc5d2642a65e2b5cf6cfb45e"
@@ -2021,9 +2009,9 @@
     "@babel/types" "^7.3.0"
 
 "@types/carbon-components-react@^7.24.0":
-  version "7.24.0"
-  resolved "https://registry.yarnpkg.com/@types/carbon-components-react/-/carbon-components-react-7.24.0.tgz#5a8f6aac5a068b6e361a88025af5e086512f350d"
-  integrity sha512-Vf39Sm/MeDwcmkTu0xA7tONyF3dGzA0pDbrsBA3hDlLFx5IY28JFWjWyU+8McNztffLndgQjkSmagVY/OmxUjQ==
+  version "7.24.1"
+  resolved "https://registry.yarnpkg.com/@types/carbon-components-react/-/carbon-components-react-7.24.1.tgz#34f29eb75186e797ab4318030e3464ed0e52b7bb"
+  integrity sha512-sugFhiqbMrJi13ocoHBrslZ49iFw3DQc/IzgThLgXa5blw01Ayc3bebcEbI7nHrgxFGqFqimNSw4y7Ols09QnQ==
   dependencies:
     "@types/react" "*"
     flatpickr "4.6.1"
@@ -3657,11 +3645,11 @@ capture-exit@^2.0.0:
     rsvp "^4.8.4"
 
 carbon-components-react@^7.24.0:
-  version "7.24.0"
-  resolved "https://registry.yarnpkg.com/carbon-components-react/-/carbon-components-react-7.24.0.tgz#e8aaccb8541076b7fcc21b8e6edb928236b3b25f"
-  integrity sha512-Oic0qA6IuioVYpV1/qhNGJk37SGEV3CNq9pkZabA/pDHKRmKosuS4s2BsIMEjp8PDU/FzmGiZwz7VhJsv+1DQw==
+  version "7.25.0"
+  resolved "https://registry.yarnpkg.com/carbon-components-react/-/carbon-components-react-7.25.0.tgz#60e9e4104ab00f630fe5717f956725b65687f0c6"
+  integrity sha512-n9t3RI2zNOw9ZwbQwhrd69u3UoHex1h757K5DOg+wFd8IY6vaqK6z6QqVmN370YSjX3nbzTYmi3OKnSRR30FzA==
   dependencies:
-    "@carbon/icons-react" "^10.21.0"
+    "@carbon/icons-react" "^10.22.0"
     classnames "2.2.6"
     downshift "5.2.1"
     flatpickr "4.6.1"
@@ -3677,9 +3665,9 @@ carbon-components-react@^7.24.0:
     window-or-global "^1.0.1"
 
 carbon-components@^10.24.0:
-  version "10.24.0"
-  resolved "https://registry.yarnpkg.com/carbon-components/-/carbon-components-10.24.0.tgz#6fe2a0423bcbb654e4a8db3af86d46210c2ddf31"
-  integrity sha512-ROfvSJmE2x2+vFUT/z2d8I3RMJKUA8vFTUKqithoXXgrrodRSCob07yi0Qq1c9dgEXR2VZNJrHY7TT/Uhr8OMQ==
+  version "10.25.0"
+  resolved "https://registry.yarnpkg.com/carbon-components/-/carbon-components-10.25.0.tgz#268441eb5f06be35f72790770bed9ba0cd52a0b1"
+  integrity sha512-0XzHaDxJ7aO23xZ7L/efAkSLuo3pKf7h94CAP0RsXPp2c9KL7uYdjtSZLmAqMkDQrOSORnkUju6zQhI+ZYcEIw==
   dependencies:
     flatpickr "4.6.1"
     lodash.debounce "^4.0.8"
@@ -10210,12 +10198,7 @@ regenerator-runtime@^0.11.0:
   resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.11.1.tgz#be05ad7f9bf7d22e056f9726cee5017fbf19e2e9"
   integrity sha512-MguG95oij0fC3QV3URf4V2SDYGJhJnJGqvIIgdECeODCT98wSWDAJ94SSuVpYQUoTcGUIL6L4yNB7j1DFFHSBg==
 
-regenerator-runtime@^0.13.4:
-  version "0.13.5"
-  resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.13.5.tgz#d878a1d094b4306d10b9096484b33ebd55e26697"
-  integrity sha512-ZS5w8CpKFinUzOwW3c83oPeVXoNsrLsaCoLtJvAClH135j/R77RuymhiSErhm2lKcwSCIpmvIWSbDkIfAqKQlA==
-
-regenerator-runtime@^0.13.7:
+regenerator-runtime@^0.13.4, regenerator-runtime@^0.13.7:
   version "0.13.7"
   resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.13.7.tgz#cac2dacc8a1ea675feaabaeb8ae833898ae46f55"
   integrity sha512-a54FxoJDIr27pgf7IgeQGxmqUNYrcV338lf/6gH456HZ/PhX+5BcwHXG9ajESmwe6WRO0tAzRUrRmNONWgkrew==

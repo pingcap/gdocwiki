@@ -50,10 +50,10 @@ export default function HeaderMenu({ open }: { open: boolean }) {
         </>
       )}
       <NavMenu.Divider>Resources</NavMenu.Divider>
-      <NavMenu.Link href="https://github.com/breeswish/gdocwiki" target="_blank">
+      <NavMenu.Link href="https://github.com/pingcap/gdocwiki" target="_blank">
         <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
           <LogoGithub16 />
-          <span>Contribute to Gdoc Wiki</span>
+          <span>GdocWiki @ GitHub</span>
         </Stack>
       </NavMenu.Link>
     </NavMenu>
