@@ -26,7 +26,7 @@ export default function useLoadDriveFiles() {
           pageSize: 500,
           q: 'trashed = false',
           fields:
-            'nextPageToken, files(name, id, parents, mimeType, modifiedTime, createdTime, lastModifyingUser(displayName, photoLink), iconLink, webViewLink, shortcutDetails, capabilities/canAddChildren)',
+            'nextPageToken, files(name, id, parents, mimeType, modifiedTime, createdTime, lastModifyingUser(displayName, photoLink), iconLink, webViewLink, shortcutDetails, capabilities(canAddChildren, canTrash, canRename))',
         });
         console.log(`files.list (page #${i + 1})`, config.REACT_APP_ROOT_DRIVE_ID, resp);
         dispatch(updateFiles(resp.result.files ?? []));

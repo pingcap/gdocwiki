@@ -1,0 +1,28 @@
+.modal {
+  &.hasFooter {
+    :global(.bx--modal-content) {
+      margin-bottom: 0;
+    }
+    .modalBody {
+      margin-bottom: 3rem;
+    }
+    .modalFooter {
+      margin-left: -1rem;
+      margin-right: -1rem;
+      display: flex;
+      justify-content: flex-end;
+      height: 4rem;
+      margin-top: auto;
+      :global {
+        .bx--btn,
+        .bx--inline-loading {
+          flex: 0 1 50%;
+          max-width: none;
+          height: 4rem;
+          margin: 0;
+          width: 100%;
+        }
+      }
+    }
+  }
+}
