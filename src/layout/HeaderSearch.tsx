@@ -17,9 +17,9 @@ function HeaderSearch({ }: { }) {
   const handleSearchThrottled = useDebounceFn(
     () => {
       if (!keyword || keyword === '') {
-        history.push('/');
+        history.replace('/');
       } else {
-        history.push(`${pathKey}${keyword}`);
+        history.replace(`${pathKey}${keyword}`);
       }
     },
     { wait: 1000 },
