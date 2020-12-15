@@ -9,13 +9,9 @@ import { mdLink, MimeTypes } from '../../utils';
 import { DriveIcon, ShortcutIcon, Table } from '../../components';
 import dayjs from 'dayjs';
 
-import './SearchResult.scss';
+const {fields} = config
 
-interface IPropsSearchResult {
-
-}
-
-export default function SearchResult(props: IPropsSearchResult) {
+export default function SearchResult() {
   const param: { keyword: string } = useParams();
   const { keyword } = param
 
