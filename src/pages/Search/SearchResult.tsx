@@ -11,6 +11,13 @@ import dayjs from 'dayjs';
 
 const {fields} = config
 
+function escapeKeyword(keyword: string): string {
+  return keyword.
+  replaceAll('\\', `\\\\`).
+  //replaceAll(`"`, '\\"').
+  replaceAll(`'`, "\\'")
+}
+
 export default function SearchResult() {
   const param: { keyword: string } = useParams();
   const { keyword } = param
@@ -19,7 +26,8 @@ export default function SearchResult() {
   const [files, setFiles] = useState<gapi.client.drive.File[]>([]);
 
   const handleSearch = useCallback(async (keyword) => {
-    console.log(`search keyword: '${keyword}'`);
+    const keywordEscaped = escapeKeyword(keyword)
+    console.log(`search keyword: '${keyword}', escaped: '${keywordEscaped}'`);
     const fileList: gapi.client.drive.File[] = []
     try {
       let pageToken = '';
@@ -31,7 +39,7 @@ export default function SearchResult() {
           includeItemsFromAllDrives: true,
           supportsAllDrives: true,
           pageSize: 500,
-          q: `trashed = false and (name contains '${keyword}' or fullText contains '${keyword}')`,
+          q: `trashed = false and (name contains '${keywordEscaped}' or fullText contains '${keywordEscaped}')`,
           fields,
         });
         console.log(`search result: files.list (page #${i + 1})`, config.REACT_APP_ROOT_DRIVE_ID, resp);
