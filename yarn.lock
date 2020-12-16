@@ -2087,6 +2087,11 @@
     "@types/minimatch" "*"
     "@types/node" "*"
 
+"@types/google.picker@^0.0.34":
+  version "0.0.34"
+  resolved "https://registry.yarnpkg.com/@types/google.picker/-/google.picker-0.0.34.tgz#e1d4c22f200f4e22885854174fe48197c52c2f6a"
+  integrity sha512-boAuaICKHnPlkuRYCFhCKSLGTKqk3zs37YiK0u1T2EBfLhsuomFwAFbBxwl0E8yAGWR1V1FsJIlCDAExfC1NJA==
+
 "@types/graceful-fs@^4.1.2":
   version "4.1.4"
   resolved "https://registry.yarnpkg.com/@types/graceful-fs/-/graceful-fs-4.1.4.tgz#4ff9f641a7c6d1a3508ff88bc3141b152772e753"

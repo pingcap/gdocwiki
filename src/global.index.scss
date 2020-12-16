@@ -17,3 +17,11 @@
   font-feature-settings: 'liga' 0;
   font-variant-ligatures: none;
 }
+
+.picker-dialog-bg {
+  z-index: 20000 !important;
+}
+
+.picker-dialog {
+  z-index: 20001 !important;
+}

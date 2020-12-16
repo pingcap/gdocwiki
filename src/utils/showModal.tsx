@@ -38,29 +38,28 @@ export function showModal<T = void>({
 
     let closed = false;
 
+    function ModalFC() {
+      return (
+        <Modal
+          open
+          size={size}
+          onRequestClose={onRequestClose}
+          passiveModal
+          className={cx(styles.modal, { [styles.hasFooter]: hasFooter })}
+          {...modalProps}
+        >
+          {renderBodyFooter && renderBodyFooter?.(close)}
+        </Modal>
+      );
+    }
+
+    ReactDOM.render(<ModalFC />, div);
+
     function destroy() {
       const unmountResult = ReactDOM.unmountComponentAtNode(div);
       if (unmountResult && div.parentNode) {
         div.parentNode.removeChild(div);
       }
-    }
-
-    function render(open?: boolean) {
-      setTimeout(() => {
-        ReactDOM.render(
-          <Modal
-            size={size}
-            open={open}
-            onRequestClose={onRequestClose}
-            passiveModal
-            className={cx(styles.modal, { [styles.hasFooter]: hasFooter })}
-            {...modalProps}
-          >
-            {renderBodyFooter && renderBodyFooter?.(close)}
-          </Modal>,
-          div
-        );
-      });
     }
 
     function onRequestClose() {
@@ -71,13 +70,10 @@ export function showModal<T = void>({
       if (closed) {
         return;
       }
-      render(false);
       destroy();
       resolve(closeResult);
       closed = true;
     }
-
-    render(true);
   });
 }
 

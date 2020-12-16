@@ -166,7 +166,17 @@ function FileAction() {
     const commands: ICommandBarItemProps[] = [];
 
     if (rOuter?.file) {
-      const fileKind = rOuter.file.mimeType === MimeTypes.GoogleFolder ? 'Folder' : 'File';
+      let fileKind;
+      switch (rOuter.file.mimeType) {
+        case MimeTypes.GoogleFolder:
+          fileKind = 'Folder';
+          break;
+        case MimeTypes.GoogleShortcut:
+          fileKind = 'Shortcut';
+          break;
+        default:
+          fileKind = 'File';
+      }
 
       if (rOuter.file.capabilities?.canRename) {
         commands.push({
