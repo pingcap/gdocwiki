@@ -1,5 +1,13 @@
-import { Button, ButtonKind, InlineLoading, Modal, ModalProps } from 'carbon-components-react';
+import {
+  Button,
+  ButtonKind,
+  Form,
+  InlineLoading,
+  Modal,
+  ModalProps,
+} from 'carbon-components-react';
 import cx from 'classnames';
+import { Formik, FormikErrors, FormikHelpers, FormikState, FormikValues } from 'formik';
 import React, { useCallback, useState } from 'react';
 import ReactDOM from 'react-dom';
 import styles from './showModal.module.scss';
@@ -30,29 +38,28 @@ export function showModal<T = void>({
 
     let closed = false;
 
+    function ModalFC() {
+      return (
+        <Modal
+          open
+          size={size}
+          onRequestClose={onRequestClose}
+          passiveModal
+          className={cx(styles.modal, { [styles.hasFooter]: hasFooter })}
+          {...modalProps}
+        >
+          {renderBodyFooter && renderBodyFooter?.(close)}
+        </Modal>
+      );
+    }
+
+    ReactDOM.render(<ModalFC />, div);
+
     function destroy() {
       const unmountResult = ReactDOM.unmountComponentAtNode(div);
       if (unmountResult && div.parentNode) {
         div.parentNode.removeChild(div);
       }
-    }
-
-    function render(open?: boolean) {
-      setTimeout(() => {
-        ReactDOM.render(
-          <Modal
-            size={size}
-            open={open}
-            onRequestClose={onRequestClose}
-            passiveModal
-            className={cx(styles.modal, { [styles.hasFooter]: hasFooter })}
-            {...modalProps}
-          >
-            {renderBodyFooter && renderBodyFooter?.(close)}
-          </Modal>,
-          div
-        );
-      });
     }
 
     function onRequestClose() {
@@ -63,13 +70,10 @@ export function showModal<T = void>({
       if (closed) {
         return;
       }
-      render(false);
       destroy();
       resolve(closeResult);
       closed = true;
     }
-
-    render(true);
   });
 }
 
@@ -101,7 +105,8 @@ export interface IFormModalFooterProps<T = void> {
   secondaryButtonKind?: ButtonKind;
   submittingText?: React.ReactNode;
   submittedText?: React.ReactNode;
-  submitFn?: () => Promise<T>;
+  submittedResult?: T;
+  submitFn?: () => Promise<T | false>;
   closeFn?: (closeResult?: T) => void;
 }
 
@@ -112,6 +117,7 @@ function ConfirmModalFooter<T>({
   secondaryButtonKind = 'secondary',
   submittingText = 'Submitting...',
   submittedText = 'Submitted',
+  submittedResult,
   submitFn,
   closeFn,
 }: IFormModalFooterProps<T>) {
@@ -121,13 +127,16 @@ function ConfirmModalFooter<T>({
   const handlePrimary = useCallback(async () => {
     if (!submitFn) {
       // If submit function is not provided, close modal immediately.
-      closeFn?.();
+      closeFn?.(submittedResult);
       return;
     }
 
     setIsSubmitting(true);
     try {
       const r = await submitFn();
+      if (r === false) {
+        return;
+      }
       setHasSubmitted(true);
       setTimeout(() => closeFn?.(r), 1000);
     } catch (e) {
@@ -135,7 +144,7 @@ function ConfirmModalFooter<T>({
     } finally {
       setIsSubmitting(false);
     }
-  }, [submitFn, closeFn]);
+  }, [submitFn, closeFn, submittedResult]);
 
   const handleSecondary = useCallback(() => {
     closeFn?.();
@@ -170,7 +179,7 @@ function ConfirmModalFooter<T>({
   );
 }
 
-export interface IShowConfirmProps<T = void> extends Omit<IShowModalArgs<T>, 'renderBodyFooter'> {
+export interface IShowConfirmArgs<T = true> extends Omit<IShowModalArgs<T>, 'renderBodyFooter'> {
   content?: React.ReactNode;
   yesButtonText?: React.ReactNode;
   yesButtonKind?: ButtonKind;
@@ -179,10 +188,11 @@ export interface IShowConfirmProps<T = void> extends Omit<IShowModalArgs<T>, 're
   defaultYes?: boolean;
   submittingText?: React.ReactNode;
   submittedText?: React.ReactNode;
-  submitFn?: () => Promise<T>;
+  submittedResult?: T;
+  submitFn?: () => Promise<T | false>;
 }
 
-export function showConfirm<T = boolean>({
+export function showConfirm<T = true>({
   content,
   yesButtonText = 'Yes',
   yesButtonKind,
@@ -191,11 +201,12 @@ export function showConfirm<T = boolean>({
   defaultYes,
   submittingText,
   submittedText,
+  submittedResult,
   submitFn,
 
   modalHeading = 'Confirm',
   ...restProps
-}: IShowConfirmProps<T>): Promise<T | undefined> {
+}: IShowConfirmArgs<T>): Promise<T | undefined> {
   const footerProps = {
     primaryButtonText: yesButtonText,
     primaryButtonKind: yesButtonKind,
@@ -203,6 +214,7 @@ export function showConfirm<T = boolean>({
     secondaryButtonKind: noButtonKind,
     submittingText,
     submittedText,
+    submittedResult,
     submitFn,
   };
 
@@ -220,5 +232,97 @@ export function showConfirm<T = boolean>({
     modalHeading,
     selectorPrimaryFocus: defaultFocus,
     ...restProps,
+  });
+}
+
+export interface IShowFormModalArgs<Values extends FormikValues = FormikValues, T = void>
+  extends IShowModalArgs<T> {
+  submittingText?: React.ReactNode;
+  submittedText?: React.ReactNode;
+  submitButtonText?: React.ReactNode;
+  submitButtonKind?: ButtonKind;
+  submitFn?: (values: Values, helpers: FormikHelpers<Values>) => Promise<T | false>;
+  validateFn?: (values: Values) => void | object | Promise<FormikErrors<Values>>;
+  renderForm?: (
+    state: FormikState<Values>,
+    hasSubmitted: boolean,
+    close: (v?: T) => void
+  ) => React.ReactNode;
+  initialValues: Values | (Values & undefined);
+}
+
+export function showFormModal<Values extends FormikValues = FormikValues, T = void>({
+  submittingText = 'Submitting...',
+  submittedText = 'Submitted!',
+  submitButtonText = 'Submit',
+  submitButtonKind = 'primary',
+  submitFn,
+  validateFn,
+  renderForm,
+  initialValues,
+  ...showModalArgs
+}: IShowFormModalArgs<Values, T>): Promise<T | undefined> {
+  function ModalForm({ closeFn }: { closeFn: (v?: T) => void }) {
+    const [hasSubmitted, setHasSubmitted] = useState(false);
+
+    const handleSubmit = useCallback(
+      async (values: Values, helpers: FormikHelpers<Values>) => {
+        try {
+          let r;
+          if (submitFn) {
+            r = await submitFn(values, helpers);
+          }
+          if (r === false) {
+            return;
+          }
+          setHasSubmitted(true);
+          setTimeout(() => closeFn(r), 1000);
+        } catch (e) {
+          console.log(e);
+        } finally {
+          helpers.setSubmitting(false);
+        }
+      },
+      [closeFn]
+    );
+
+    return (
+      <Formik initialValues={initialValues} validate={validateFn} onSubmit={handleSubmit}>
+        {(props) => (
+          <Form
+            onSubmit={props.handleSubmit}
+            onChange={props.handleChange}
+            onBlur={props.handleBlur}
+          >
+            <ModalBody>{renderForm?.(props, hasSubmitted, closeFn)}</ModalBody>
+            <ModalFooter>
+              <Button
+                kind="secondary"
+                onClick={() => closeFn?.()}
+                disabled={props.isSubmitting || hasSubmitted}
+              >
+                Cancel
+              </Button>
+              {props.isSubmitting || hasSubmitted ? (
+                <InlineLoading
+                  status={hasSubmitted ? 'finished' : 'active'}
+                  description={hasSubmitted ? submittedText : submittingText}
+                />
+              ) : (
+                <Button kind={submitButtonKind} type="submit" disabled={props.isSubmitting}>
+                  {submitButtonText}
+                </Button>
+              )}
+            </ModalFooter>
+          </Form>
+        )}
+      </Formik>
+    );
+  }
+
+  return showModal({
+    ...showModalArgs,
+    hasForm: true,
+    renderBodyFooter: (close) => <ModalForm closeFn={close} />,
   });
 }

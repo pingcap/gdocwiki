@@ -61,6 +61,7 @@
     "@types/gapi": "^0.0.39",
     "@types/gapi.auth2": "^0.0.52",
     "@types/gapi.client.drive": "^3.0.13",
+    "@types/google.picker": "^0.0.34",
     "@types/node": "^14.14.10",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",

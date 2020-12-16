@@ -1,4 +1,3 @@
-import { InlineNotification } from 'carbon-components-react';
 import dayjs from 'dayjs';
 import {
   CommandBar,
@@ -15,21 +14,13 @@ import config from '../config';
 import { usePageReloader } from '../context/PageReloader';
 import { useRender } from '../context/RenderStack';
 import useFileMeta from '../hooks/useFileMeta';
-import { removeFile, updateFile } from '../reduxSlices/files';
-import { handleGapiError, MimeTypes, showConfirm, showPrompt } from '../utils';
-import { showCreateFileModal } from './FileAction.CreateFileModal';
-import { showCreateLinkModal } from './FileAction.CreateLinkModal';
-import { showRenameFileModal } from './FileAction.RenameFileModal';
+import { MimeTypes } from '../utils';
+import { showCreateFile } from './FileAction.createFile';
+import { showCreateLink } from './FileAction.createLink';
 import styles from './FileAction.module.scss';
-
-function promptError(e) {
-  showPrompt({
-    title: 'Error',
-    content: <InlineNotification hideCloseButton title={handleGapiError(e).message} kind="error" />,
-  });
-  // Throw error out to keep form modal open
-  throw e;
-}
+import { showMoveFile } from './FileAction.moveFile';
+import { showRenameFile } from './FileAction.renameFile';
+import { showTrashFile } from './FileAction.trashFile';
 
 function FileAction() {
   const history = useHistory();
@@ -130,24 +121,7 @@ function FileAction() {
               imageProps: { src: DriveIcon.getIconSrc(mimeType), width: 16 },
             },
             onClick: () => {
-              showCreateFileModal(text, async (name) => {
-                try {
-                  const resp = await gapi.client.drive.files.create({
-                    supportsAllDrives: true,
-                    fields: '*',
-                    resource: {
-                      name,
-                      mimeType,
-                      parents: [outerFolder.file!.id!],
-                    },
-                  });
-                  dispatch(updateFile(resp.result));
-                  history.push(`/view/${outerFolder.file!.id!}`);
-                  reloadPage();
-                } catch (e) {
-                  promptError(e);
-                }
-              });
+              showCreateFile(text, mimeType, outerFolder.file!.id!, dispatch, history, reloadPage);
             },
           });
         });
@@ -166,24 +140,17 @@ function FileAction() {
                   iconName: 'link',
                 },
                 onClick: () => {
-                  showCreateLinkModal(async (name, link) => {
-                    try {
-                      const resp = await gapi.client.drive.files.create({
-                        supportsAllDrives: true,
-                        fields: '*',
-                        resource: {
-                          name: `[${name}](${link})`,
-                          mimeType: MimeTypes.GoogleDocument,
-                          parents: [outerFolder.file!.id!],
-                        },
-                      });
-                      dispatch(updateFile(resp.result));
-                      history.push(`/view/${outerFolder.file!.id!}`);
-                      reloadPage();
-                    } catch (e) {
-                      promptError(e);
-                    }
-                  });
+                  showCreateLink(outerFolder.file!.id!, dispatch, history, reloadPage);
+                },
+              },
+              {
+                key: 'move',
+                text: 'Import by Move',
+                iconProps: {
+                  iconName: 'StackedMove',
+                },
+                onClick: () => {
+                  showMoveFile(outerFolder.file!, dispatch, reloadPage);
                 },
               },
             ],
@@ -199,7 +166,17 @@ function FileAction() {
     const commands: ICommandBarItemProps[] = [];
 
     if (rOuter?.file) {
-      const fileKind = rOuter.file.mimeType === MimeTypes.GoogleFolder ? 'Folder' : 'File';
+      let fileKind;
+      switch (rOuter.file.mimeType) {
+        case MimeTypes.GoogleFolder:
+          fileKind = 'Folder';
+          break;
+        case MimeTypes.GoogleShortcut:
+          fileKind = 'Shortcut';
+          break;
+        default:
+          fileKind = 'File';
+      }
 
       if (rOuter.file.capabilities?.canRename) {
         commands.push({
@@ -207,22 +184,7 @@ function FileAction() {
           text: `Rename ${fileKind}`,
           iconProps: { iconName: 'Edit' },
           onClick: () => {
-            showRenameFileModal(fileKind, rOuter.file.name, async (name) => {
-              try {
-                const resp = await gapi.client.drive.files.update({
-                  supportsAllDrives: true,
-                  fileId: rOuter.file.id!,
-                  fields: '*',
-                  resource: {
-                    name,
-                  },
-                });
-                dispatch(updateFile(resp.result));
-                reloadPage();
-              } catch (e) {
-                promptError(e);
-              }
-            });
+            showRenameFile(fileKind, rOuter.file, dispatch, reloadPage);
           },
         });
       }
@@ -234,36 +196,7 @@ function FileAction() {
           text: `Trash ${fileKind}`,
           iconProps: { iconName: 'Trash' },
           onClick: () => {
-            showConfirm({
-              modalHeading: `Trash ${fileKind}`,
-              yesButtonKind: 'danger',
-              submittingText: 'Trashing...',
-              submittedText: `${fileKind} trashed!`,
-              content: (
-                <span>
-                  Are you sure want to move "<strong>{rOuter.file.name}</strong>" to trash?
-                </span>
-              ),
-              submitFn: async () => {
-                try {
-                  await gapi.client.drive.files.update({
-                    fileId: rOuter.file.id!,
-                    supportsAllDrives: true,
-                    resource: {
-                      trashed: true,
-                    },
-                  });
-                  dispatch(removeFile(rOuter.file.id!));
-                  if (rOuter.file.parents?.[0]) {
-                    history.push(`/view/${rOuter.file.parents[0]}`);
-                  } else {
-                    history.push(`/`);
-                  }
-                } catch (e) {
-                  promptError(e);
-                }
-              },
-            });
+            showTrashFile(fileKind, rOuter.file, dispatch, history);
           },
         });
       }
@@ -272,7 +205,7 @@ function FileAction() {
     return commands;
   }, [rOuter?.file, dispatch, reloadPage, history]);
 
-  if (commandBarItems.length === 0) {
+  if (commandBarItems.length === 0 && commandBarOverflowItems.length === 0) {
     return null;
   }
 

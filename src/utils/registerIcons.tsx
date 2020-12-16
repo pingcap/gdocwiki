@@ -6,6 +6,7 @@ import {
   Link16,
   OverflowMenuHorizontal16,
   TrashCan16,
+  WatsonHealthStackedMove16,
 } from '@carbon/icons-react';
 import googleDrive from '@iconify-icons/logos/google-drive';
 import fileEdit from '@iconify-icons/mdi/file-edit';
@@ -24,6 +25,7 @@ export default function registerIcons() {
       Link: <Link16 />,
       Edit: <Edit16 />,
       Trash: <TrashCan16 />,
+      StackedMove: <WatsonHealthStackedMove16 />,
       ColorGoogleDrive: <Icon icon={googleDrive} />,
       MdiFileEdit: <Icon icon={fileEdit} />,
       MdiFolderPlus: <Icon icon={folderPlus} />,

@@ -5,7 +5,8 @@ const config = {
   // Ued to list all files in a fast way.
   REACT_APP_ROOT_DRIVE_ID: process.env.REACT_APP_ROOT_DRIVE_ID ?? '',
 
-  fields: 'nextPageToken, files(name, id, parents, mimeType, modifiedTime, createdTime, lastModifyingUser(displayName, photoLink), iconLink, webViewLink, shortcutDetails, capabilities(canAddChildren, canTrash, canRename))',
+  DEFAULT_FILE_FIELDS:
+    'nextPageToken, files(name, id, parents, mimeType, modifiedTime, createdTime, lastModifyingUser(displayName, photoLink), iconLink, webViewLink, shortcutDetails, capabilities(canAddChildren, canTrash, canRename, canMoveChildrenOutOfTeamDrive))',
 };
 
 for (const envVar in config) {

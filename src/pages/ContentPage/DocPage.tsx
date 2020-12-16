@@ -3,6 +3,7 @@ import * as H from 'history';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useManagedRenderStack } from '../../context/RenderStack';
+import { parseDriveLink } from '../../utils';
 
 export interface IDocPageProps {
   file: gapi.client.drive.File;
@@ -56,13 +57,10 @@ function prettify<HistoryLocationState = H.LocationState>(
     // Open Google Doc and Google Drive link inline, for other links open in new window.
     const elements = baseEl.getElementsByTagName('a');
     for (const el of elements) {
-      let m = el.href.match(/^https:\/\/docs\.google\.com\/[^/]+(\/u\/\d+)?\/d\/([^/]+)\/edit/);
-      if (!m) {
-        m = el.href.match(/^https:\/\/drive\.google\.com\/[^/]+(\/u\/\d+)?\/[^/]+\/([^/]+)/);
-      }
-      if (m) {
-        el.href = history.createHref({ pathname: `/view/${m[2]}` });
-        el.dataset['__gdoc_history'] = `/view/${m[2]}`;
+      const id = parseDriveLink(el.href);
+      if (id) {
+        el.href = history.createHref({ pathname: `/view/${id}` });
+        el.dataset['__gdoc_history'] = `/view/${id}`;
         continue;
       }
       if ((el.getAttribute('href') ?? '').indexOf('#') !== 0) {

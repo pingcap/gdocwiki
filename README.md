@@ -105,15 +105,20 @@ REACT_APP_ROOT_DRIVE_ID=xxxxxxx
     - [x] Google Doc
     - [x] Google Spreadsheet
   - [x] Open current folder in Google Drive
-  - [ ] Rename
-  - [ ] Trash
-  - [ ] Move in a file or folder
+  - [x] Rename
+  - [x] Trash
+  - [x] Move in a file
+    - [ ] Notification when the file cannot be moved out again
+    - [x] Move using shortcut
+  - [x] Move in a folder (a shortcut will be always created for now?)
+  - [ ] Move to another tree location
 - [x] Natural sort
 - [x] Update Title Dynamically
 - [ ] Cache
   - [x] Utilize cache to load folder content
   - [ ] Cache preview when file is not modified
   - [ ] Update file and folder cache in background when accessing a folder or file
+  - [ ] Watch changes from cached entities
 - [ ] Search
   - [ ] Full text
   - [ ] File name
