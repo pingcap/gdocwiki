@@ -36,10 +36,20 @@ export const slice = createSlice({
         state.mapIdToFile[file.id ?? ''] = file;
       }
     },
+    removeFile: (state, { payload }: { payload: string }) => {
+      delete state.mapIdToFile[payload];
+    },
   },
 });
 
-export const { setLoading, setError, clearFileList, updateFile, updateFiles } = slice.actions;
+export const {
+  setLoading,
+  setError,
+  clearFileList,
+  updateFile,
+  updateFiles,
+  removeFile,
+} = slice.actions;
 
 export const selectLoading = (state: { files: FilesState }) => state.files.isLoading;
 export const selectError = (state: { files: FilesState }) => state.files.error;

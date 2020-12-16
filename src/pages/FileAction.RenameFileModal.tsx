@@ -3,19 +3,18 @@ import { Formik } from 'formik';
 import React, { useCallback, useState } from 'react';
 import { ModalBody, ModalFooter, showModal } from '../utils';
 
-export function showCreateLinkModal<T>(
-  submitFn?: (name: string, link: string) => Promise<T>
+export function showRenameFileModal<T>(
+  fileKind?: string,
+  currentName?: string,
+  submitFn?: (name: string) => Promise<T>
 ): Promise<T | undefined> {
   function ModalForm({ closeFn }: { closeFn: (v?: T) => void }) {
     const [hasSubmitted, setHasSubmitted] = useState(false);
 
-    const validate = useCallback(({ name, link }) => {
+    const validate = useCallback(({ name }) => {
       let errors = {};
       if (!name) {
         errors['name'] = 'Required';
-      }
-      if (!link) {
-        errors['link'] = 'Required';
       }
       return errors;
     }, []);
@@ -25,7 +24,7 @@ export function showCreateLinkModal<T>(
         try {
           let r;
           if (submitFn) {
-            r = await submitFn(values.name, values.link);
+            r = await submitFn(values.name);
           }
           setHasSubmitted(true);
           setTimeout(() => closeFn(r), 1000);
@@ -41,8 +40,7 @@ export function showCreateLinkModal<T>(
     return (
       <Formik
         initialValues={{
-          name: '',
-          link: '',
+          name: currentName,
         }}
         validate={validate}
         onSubmit={handleSubmit}
@@ -53,22 +51,16 @@ export function showCreateLinkModal<T>(
               <TextInput
                 id="name"
                 name="name"
-                labelText="Name"
+                labelText={
+                  <span>
+                    Rename "<strong>{currentName}</strong>" to
+                  </span>
+                }
                 value={values.name}
                 invalidText={errors.name}
                 invalid={Boolean(touched.name && errors.name)}
                 disabled={hasSubmitted}
               />
-              <TextInput
-                id="link"
-                name="link"
-                labelText="Link"
-                placeholder="https://example.com"
-                value={values.link}
-                invalidText={errors.link}
-                invalid={Boolean(touched.link && errors.link)}
-                disabled={hasSubmitted}
-              />{' '}
             </ModalBody>
             <ModalFooter>
               <Button
@@ -81,11 +73,11 @@ export function showCreateLinkModal<T>(
               {isSubmitting || hasSubmitted ? (
                 <InlineLoading
                   status={hasSubmitted ? 'finished' : 'active'}
-                  description={hasSubmitted ? `Link created!` : 'Creating...'}
+                  description={hasSubmitted ? `${fileKind} renamed!` : 'Renaming...'}
                 />
               ) : (
                 <Button kind="primary" type="submit" disabled={isSubmitting}>
-                  Create
+                  Rename
                 </Button>
               )}
             </ModalFooter>
@@ -96,7 +88,7 @@ export function showCreateLinkModal<T>(
   }
 
   return showModal({
-    modalHeading: `Create Link`,
+    modalHeading: `Rename ${fileKind}`,
     selectorPrimaryFocus: `#name`,
     hasForm: true,
     renderBodyFooter: (close) => <ModalForm closeFn={close} />,

@@ -11,14 +11,25 @@ import Avatar from 'react-avatar';
 import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { DriveIcon } from '../components';
+import config from '../config';
 import { usePageReloader } from '../context/PageReloader';
 import { useRender } from '../context/RenderStack';
 import useFileMeta from '../hooks/useFileMeta';
-import { updateFile } from '../reduxSlices/files';
-import { handleGapiError, MimeTypes, showModal } from '../utils';
+import { removeFile, updateFile } from '../reduxSlices/files';
+import { handleGapiError, MimeTypes, showConfirm, showPrompt } from '../utils';
 import { showCreateFileModal } from './FileAction.CreateFileModal';
 import { showCreateLinkModal } from './FileAction.CreateLinkModal';
+import { showRenameFileModal } from './FileAction.RenameFileModal';
 import styles from './FileAction.module.scss';
+
+function promptError(e) {
+  showPrompt({
+    title: 'Error',
+    content: <InlineNotification hideCloseButton title={handleGapiError(e).message} kind="error" />,
+  });
+  // Throw error out to keep form modal open
+  throw e;
+}
 
 function FileAction() {
   const history = useHistory();
@@ -102,8 +113,7 @@ function FileAction() {
       });
 
       // Add file command
-      if (outerFolder.file?.id) {
-        const addFileValid = folderValid && outerFolder.file?.capabilities?.canAddChildren;
+      if (outerFolder.file?.id && outerFolder.file?.capabilities?.canAddChildren) {
         const addFileMenuItems: IContextualMenuItem[] = [];
 
         const s: [string, string][] = [
@@ -135,18 +145,7 @@ function FileAction() {
                   history.push(`/view/${outerFolder.file!.id!}`);
                   reloadPage();
                 } catch (e) {
-                  showModal({
-                    title: 'Error',
-                    content: (
-                      <InlineNotification
-                        hideCloseButton
-                        title={handleGapiError(e).message}
-                        kind="error"
-                      />
-                    ),
-                  });
-                  // Throw error out to keep form modal open
-                  throw e;
+                  promptError(e);
                 }
               });
             },
@@ -156,7 +155,6 @@ function FileAction() {
         commands.push({
           key: 'create_file_in_folder',
           text: 'Create',
-          disabled: !addFileValid,
           iconProps: { iconName: 'MdiFolderPlus' },
           subMenuProps: {
             items: [
@@ -183,18 +181,7 @@ function FileAction() {
                       history.push(`/view/${outerFolder.file!.id!}`);
                       reloadPage();
                     } catch (e) {
-                      showModal({
-                        title: 'Error',
-                        content: (
-                          <InlineNotification
-                            hideCloseButton
-                            title={handleGapiError(e).message}
-                            kind="error"
-                          />
-                        ),
-                      });
-                      // Throw error out to keep form modal open
-                      throw e;
+                      promptError(e);
                     }
                   });
                 },
@@ -208,13 +195,90 @@ function FileAction() {
     return commands;
   }, [rInner?.file, outerFolder.file, history, dispatch, reloadPage]);
 
+  const commandBarOverflowItems = useMemo(() => {
+    const commands: ICommandBarItemProps[] = [];
+
+    if (rOuter?.file) {
+      const fileKind = rOuter.file.mimeType === MimeTypes.GoogleFolder ? 'Folder' : 'File';
+
+      if (rOuter.file.capabilities?.canRename) {
+        commands.push({
+          key: 'rename',
+          text: `Rename ${fileKind}`,
+          iconProps: { iconName: 'Edit' },
+          onClick: () => {
+            showRenameFileModal(fileKind, rOuter.file.name, async (name) => {
+              try {
+                const resp = await gapi.client.drive.files.update({
+                  supportsAllDrives: true,
+                  fileId: rOuter.file.id!,
+                  fields: '*',
+                  resource: {
+                    name,
+                  },
+                });
+                dispatch(updateFile(resp.result));
+                reloadPage();
+              } catch (e) {
+                promptError(e);
+              }
+            });
+          },
+        });
+      }
+
+      // Do not allow trash root folder..
+      if (rOuter?.file.id !== config.REACT_APP_ROOT_ID && rOuter.file.capabilities?.canTrash) {
+        commands.push({
+          key: 'trash',
+          text: `Trash ${fileKind}`,
+          iconProps: { iconName: 'Trash' },
+          onClick: () => {
+            showConfirm({
+              modalHeading: `Trash ${fileKind}`,
+              yesButtonKind: 'danger',
+              submittingText: 'Trashing...',
+              submittedText: `${fileKind} trashed!`,
+              content: (
+                <span>
+                  Are you sure want to move "<strong>{rOuter.file.name}</strong>" to trash?
+                </span>
+              ),
+              submitFn: async () => {
+                try {
+                  await gapi.client.drive.files.update({
+                    fileId: rOuter.file.id!,
+                    supportsAllDrives: true,
+                    resource: {
+                      trashed: true,
+                    },
+                  });
+                  dispatch(removeFile(rOuter.file.id!));
+                  if (rOuter.file.parents?.[0]) {
+                    history.push(`/view/${rOuter.file.parents[0]}`);
+                  } else {
+                    history.push(`/`);
+                  }
+                } catch (e) {
+                  promptError(e);
+                }
+              },
+            });
+          },
+        });
+      }
+    }
+
+    return commands;
+  }, [rOuter?.file, dispatch, reloadPage, history]);
+
   if (commandBarItems.length === 0) {
     return null;
   }
 
   return (
     <div style={{ marginBottom: 32 }}>
-      <CommandBar items={commandBarItems} />
+      <CommandBar items={commandBarItems} overflowItems={commandBarOverflowItems} />
     </div>
   );
 }

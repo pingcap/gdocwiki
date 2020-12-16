@@ -1,9 +1,11 @@
 import {
   ChevronDown16,
   ChevronRight16,
+  Edit16,
   Launch16,
   Link16,
   OverflowMenuHorizontal16,
+  TrashCan16,
 } from '@carbon/icons-react';
 import googleDrive from '@iconify-icons/logos/google-drive';
 import fileEdit from '@iconify-icons/mdi/file-edit';
@@ -20,6 +22,8 @@ export default function registerIcons() {
       ChevronDown: <ChevronDown16 />,
       Launch: <Launch16 />,
       Link: <Link16 />,
+      Edit: <Edit16 />,
+      Trash: <TrashCan16 />,
       ColorGoogleDrive: <Icon icon={googleDrive} />,
       MdiFileEdit: <Icon icon={fileEdit} />,
       MdiFolderPlus: <Icon icon={folderPlus} />,
