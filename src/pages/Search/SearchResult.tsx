@@ -13,9 +13,9 @@ const {fields} = config
 
 function escapeKeyword(keyword: string): string {
   return keyword.
-  replaceAll('\\', `\\\\`).
-  //replaceAll(`"`, '\\"').
-  replaceAll(`'`, "\\'")
+  replace(/\\/g, `\\\\`).
+  //replace(/"/g, '\\"').
+  replace(/'/g, "\\'")
 }
 
 export default function SearchResult() {
