@@ -5,7 +5,7 @@ import config from '../config';
 import { setLoading, clearFileList, updateFiles, setError } from '../reduxSlices/files';
 import { handleGapiError } from '../utils';
 
-const {fields} = config
+const { fields } = config;
 
 export default function useLoadDriveFiles() {
   const dispatch = useDispatch();
