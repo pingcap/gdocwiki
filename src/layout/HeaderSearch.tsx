@@ -5,11 +5,13 @@ import { TextInput } from 'carbon-components-react';
 
 import styles from './HeaderSearch.module.scss';
 
-function HeaderSearch({ }: { }) {
+function HeaderSearch({}: {}) {
   const location = useLocation();
   const { pathname } = location;
-  const pathKey = '/search/'
-  const initKeyword = pathname.includes(pathKey) ? pathname.substr(pathname.indexOf(pathKey) + pathKey.length) : '';
+  const pathKey = '/search/';
+  const initKeyword = pathname.includes(pathKey)
+    ? pathname.substr(pathname.indexOf(pathKey) + pathKey.length)
+    : '';
 
   const [keyword, setKeyword] = useState(initKeyword);
   const history = useHistory();
@@ -22,14 +24,14 @@ function HeaderSearch({ }: { }) {
         history.replace(`${pathKey}${keyword}`);
       }
     },
-    { wait: 1000 },
+    { wait: 1000 }
   );
 
   const onChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
     setKeyword(value);
     handleSearchThrottled.run();
-  }
+  };
 
   return (
     <div className={styles.HeaderSearch}>
@@ -43,7 +45,7 @@ function HeaderSearch({ }: { }) {
         defaultValue={initKeyword}
       />
     </div>
-  )
+  );
 }
 
 export default React.memo(HeaderSearch);

@@ -79,7 +79,7 @@ function App() {
           )}
           <HeaderTitle />
           <HeaderGlobalBar>
-            <HeaderSearch/>
+            <HeaderSearch />
             <HeaderUserAction toggleMenu={toggleMenu} />
           </HeaderGlobalBar>
           <Route exact path="/">
