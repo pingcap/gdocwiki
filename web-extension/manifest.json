@@ -1,0 +1,42 @@
+{
+    "browser_specific_settings": {},
+  
+    "browser_action": {
+      "default_title": "Whereami?"
+    },
+
+    "background": {
+        "scripts": ["background.ts"]
+    },
+  
+    "content_security_policy": "default-src 'self'",
+  
+    "content_scripts": [
+      {
+        "matches": [ 
+            "https://docs.google.com/document/d/*"
+        ],
+        "js": ["index.tsx"]
+      }
+    ],
+  
+    "description": "...",
+    
+    "manifest_version": 2,
+  
+    "name": "tidbwiki",
+  
+    "page_action": {
+      "default_title": "Whereami?"
+    },
+  
+    "permissions": [
+        "webNavigation",
+        "https://docs.google.com/document/d/*",
+        "storage",
+        "identity",
+        "notifications"
+    ],
+  
+    "version": "0.1"
+  }
