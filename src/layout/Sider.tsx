@@ -6,7 +6,7 @@ import { Stack } from 'office-ui-fabric-react';
 import React, { useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useHistory, useParams } from 'react-router-dom';
-import config from '../config';
+import { getConfig } from '../config';
 import {
   DriveFile,
   selectError,
@@ -134,7 +134,7 @@ function Sider({ isExpanded = true, overrideId }: { isExpanded?: boolean; overri
       )}
       {!loading && !error && (
         <TreeView label="Table of Content" selected={[id]} onSelect={handleSelect} active={id}>
-          {renderChildren(mapIdToChildren, config.REACT_APP_ROOT_ID, expanded, handleToggle)}
+          {renderChildren(mapIdToChildren, getConfig().REACT_APP_ROOT_ID, expanded, handleToggle)}
         </TreeView>
       )}
     </div>

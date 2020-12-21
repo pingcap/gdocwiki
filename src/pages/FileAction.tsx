@@ -10,7 +10,7 @@ import Avatar from 'react-avatar';
 import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { DriveIcon } from '../components';
-import config from '../config';
+import { getConfig } from '../config';
 import { usePageReloader } from '../context/PageReloader';
 import { useRender } from '../context/RenderStack';
 import useFileMeta from '../hooks/useFileMeta';
@@ -190,7 +190,7 @@ function FileAction() {
       }
 
       // Do not allow trash root folder..
-      if (rOuter?.file.id !== config.REACT_APP_ROOT_ID && rOuter.file.capabilities?.canTrash) {
+      if (rOuter?.file.id !== getConfig().REACT_APP_ROOT_ID && rOuter.file.capabilities?.canTrash) {
         commands.push({
           key: 'trash',
           text: `Trash ${fileKind}`,

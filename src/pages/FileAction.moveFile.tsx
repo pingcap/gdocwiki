@@ -5,7 +5,7 @@ import { useMount, useUnmount } from 'ahooks';
 import { Button, InlineLoading, InlineNotification, TextInput } from 'carbon-components-react';
 import { Stack } from 'office-ui-fabric-react';
 import React, { useRef, useState } from 'react';
-import config from '../config';
+import { getConfig } from '../config';
 import { DriveFile, updateFile } from '../reduxSlices/files';
 import {
   MimeTypes,
@@ -170,7 +170,7 @@ export function showMoveFile(
         .setOAuthToken(
           gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().access_token
         )
-        .setDeveloperKey(config.REACT_APP_GAPI_KEY)
+        .setDeveloperKey(getConfig().REACT_APP_GAPI_KEY)
         .setCallback(async (data) => {
           if (data.action === google.picker.Action.PICKED && (data?.docs?.length ?? 0) > 0) {
             showModal({

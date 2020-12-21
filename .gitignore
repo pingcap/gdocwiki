@@ -26,3 +26,6 @@ yarn-error.log*
 
 # editor
 .vscode/
+
+/public/config.json
+/public/config-*.json

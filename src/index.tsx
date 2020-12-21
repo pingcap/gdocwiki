@@ -4,20 +4,27 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import App from './App';
+import { overwriteConfig } from './config';
 import './global.carbon.scss';
 import './global.index.scss';
 import store from './store';
 import { registerIcons } from './utils';
 
-dayjs.extend(relativeTime);
+async function main() {
+  dayjs.extend(relativeTime);
 
-registerIcons();
+  await overwriteConfig();
 
-ReactDOM.render(
-  <React.StrictMode>
-    <Provider store={store}>
-      <App />
-    </Provider>
-  </React.StrictMode>,
-  document.getElementById('root')
-);
+  registerIcons();
+
+  ReactDOM.render(
+    <React.StrictMode>
+      <Provider store={store}>
+        <App />
+      </Provider>
+    </React.StrictMode>,
+    document.getElementById('root')
+  );
+}
+
+main().catch((e) => console.error(e));

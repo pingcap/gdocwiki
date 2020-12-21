@@ -31,10 +31,7 @@ jobs:
         run: yarn build
         env:
           CI: false
-          REACT_APP_GAPI_KEY: ${{ secrets.REACT_APP_GAPI_KEY }}
-          REACT_APP_GAPI_CLIENT_ID: ${{ secrets.REACT_APP_GAPI_CLIENT_ID }}
-          REACT_APP_ROOT_DRIVE_ID: ${{ secrets.REACT_APP_ROOT_DRIVE_ID }}
-          REACT_APP_ROOT_ID: ${{ secrets.REACT_APP_ROOT_ID }}
+          REACT_APP_USE_CONFIG_FILE: 1
       - name: Deploy
         env:
           DEPLOY_ACCESS_KEY_ID: ${{ secrets.DEPLOY_ACCESS_KEY_ID }}
@@ -43,5 +40,5 @@ jobs:
           wget -q http://gosspublic.alicdn.com/ossutil/1.6.10/ossutil64
           chmod +x ./ossutil64
           ./ossutil64 config -e oss-accelerate.aliyuncs.com -i $DEPLOY_ACCESS_KEY_ID -k $DEPLOY_ACCESS_SECRET
-          ./ossutil64 rm oss://docwiki-c407a99b/ -r -f
+          ./ossutil64 rm oss://docwiki-c407a99b/ --exclude "config-*.json" -r -f
           ./ossutil64 cp -r build oss://docwiki-c407a99b/

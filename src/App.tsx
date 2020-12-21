@@ -8,17 +8,17 @@ import {
 import React, { useCallback, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
-import config from './config';
+import { getConfig } from './config';
 import { PageReloaderProvider } from './context/PageReloader';
 import { RenderStackProvider } from './context/RenderStack';
 import useGapi from './hooks/useGapi';
 import useLoadDriveFiles from './hooks/useLoadDriveFiles';
 import { HeaderTitle, Content, HeaderUserAction, Sider, HeaderMenu } from './layout';
+import HeaderSearch from './layout/HeaderSearch';
 import Page from './pages/Page';
+import { SearchResult } from './pages/Search';
 import { selectMapIdToFile } from './reduxSlices/files';
 import { collapseAll, expand } from './reduxSlices/sider-tree';
-import HeaderSearch from './layout/HeaderSearch';
-import { SearchResult } from './pages/Search';
 
 function DriveFilesLoader({ children }) {
   useLoadDriveFiles();
@@ -79,17 +79,17 @@ function App() {
           )}
           <HeaderTitle />
           <HeaderGlobalBar>
-            <HeaderSearch/>
+            <HeaderSearch />
             <HeaderUserAction toggleMenu={toggleMenu} />
           </HeaderGlobalBar>
           <Route exact path="/">
-            <Sider isExpanded={isExpanded} overrideId={config.REACT_APP_ROOT_ID} />
+            <Sider isExpanded={isExpanded} overrideId={getConfig().REACT_APP_ROOT_ID} />
           </Route>
           <Route exact path="/view/:id">
             <Sider isExpanded={isExpanded} />
           </Route>
           <Route path="/search/:keyword">
-            <Sider isExpanded={isExpanded} overrideId={config.REACT_APP_ROOT_ID} />
+            <Sider isExpanded={isExpanded} overrideId={getConfig().REACT_APP_ROOT_ID} />
           </Route>
         </Header>
         <HeaderMenu open={isMenuOpen} />
@@ -98,7 +98,7 @@ function App() {
             <PageReloaderProvider>
               <Switch>
                 <Route exact path="/">
-                  <Page overrideId={config.REACT_APP_ROOT_ID} />
+                  <Page overrideId={getConfig().REACT_APP_ROOT_ID} />
                 </Route>
                 <Route exact path="/view/:id">
                   <Page />
