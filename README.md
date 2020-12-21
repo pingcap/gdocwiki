@@ -98,7 +98,7 @@ REACT_APP_ROOT_DRIVE_ID=xxxxxxx
     - [ ] Sort folder items
     - [x] Display `README` in the folder inline
     - [x] Support > 1000 folder items
-  - [ ] Drive Root
+  - [x] Drive Root
 - [x] Breadcrumb Navigation
   - [x] Create file in current folder
   - [x] Open current file in Google Doc / Google Drive
@@ -119,9 +119,9 @@ REACT_APP_ROOT_DRIVE_ID=xxxxxxx
   - [ ] Cache preview when file is not modified
   - [ ] Update file and folder cache in background when accessing a folder or file
   - [ ] Watch changes from cached entities
-- [ ] Search
-  - [ ] Full text
-  - [ ] File name
+- [x] Search
+  - [x] Full text
+  - [x] File name
 - [ ] Helpers
   - [ ] A Chrome extension for checking whether the doc is in the tree
 
