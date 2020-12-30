@@ -40,5 +40,5 @@ jobs:
           wget -q http://gosspublic.alicdn.com/ossutil/1.6.10/ossutil64
           chmod +x ./ossutil64
           ./ossutil64 config -e oss-accelerate.aliyuncs.com -i $DEPLOY_ACCESS_KEY_ID -k $DEPLOY_ACCESS_SECRET
-          ./ossutil64 rm oss://docwiki-c407a99b/ --exclude "config-*.json" -r -f
+          ./ossutil64 rm oss://docwiki-c407a99b/ --exclude "config-*.json" --exclude "redirection-*.html" -r -f
           ./ossutil64 cp -r build oss://docwiki-c407a99b/
