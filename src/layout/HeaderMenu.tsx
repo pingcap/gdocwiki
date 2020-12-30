@@ -1,4 +1,4 @@
-import { LogoGithub16, Logout16 } from '@carbon/icons-react';
+import { Logout16 } from '@carbon/icons-react';
 import googleIcon from '@iconify-icons/logos/google-icon';
 import { Icon } from '@iconify/react';
 import { Stack } from 'office-ui-fabric-react';
