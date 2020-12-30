@@ -24,7 +24,6 @@ export default function SearchResult() {
   const handleSearch = useCallback(
     async (keyword) => {
       const keywordEscaped = escapeKeyword(keyword);
-      console.log(`search keyword: '${keyword}', escaped: '${keywordEscaped}'`);
       const fileList: gapi.client.drive.File[] = [];
       try {
         let pageToken = '';
@@ -39,8 +38,9 @@ export default function SearchResult() {
             q: `trashed = false and (name contains '${keywordEscaped}' or fullText contains '${keywordEscaped}')`,
             fields: getConfig().DEFAULT_FILE_FIELDS,
           });
-          console.log(
-            `search result: files.list (page #${i + 1})`,
+          console.trace(
+            `SearchResult files.list (page #${i + 1})`,
+            keyword,
             getConfig().REACT_APP_ROOT_DRIVE_ID,
             resp
           );

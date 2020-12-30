@@ -7,7 +7,7 @@ import Avatar from 'react-avatar';
 import { NavMenu } from '../components';
 import { signIn, signOut } from '../utils';
 
-export default function HeaderMenu({ open }: { open: boolean }) {
+export default function HeaderMenu() {
   const isSignedIn = gapi.auth2.getAuthInstance().isSignedIn.get();
   const profile = useMemo(() => {
     if (isSignedIn) {
@@ -18,7 +18,7 @@ export default function HeaderMenu({ open }: { open: boolean }) {
   }, [isSignedIn]);
 
   return (
-    <NavMenu open={open}>
+    <NavMenu>
       <NavMenu.Divider>{isSignedIn ? profile!.getEmail() : 'Account'}</NavMenu.Divider>
       {!isSignedIn && (
         <NavMenu.Link href="javascript:;" onClick={signIn}>
@@ -49,12 +49,12 @@ export default function HeaderMenu({ open }: { open: boolean }) {
           </NavMenu.Link>
         </>
       )}
-      <NavMenu.Divider>Resources</NavMenu.Divider>
+      <NavMenu.Divider>About Wiki</NavMenu.Divider>
       <NavMenu.Link href="https://github.com/pingcap/gdocwiki" target="_blank">
-        <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
-          <LogoGithub16 />
-          <span>GdocWiki @ GitHub</span>
-        </Stack>
+        Powered by GdocWiki
+      </NavMenu.Link>
+      <NavMenu.Link href="https://github.com/pingcap/gdocwiki/graphs/contributors" target="_blank">
+        Made by @breeswish, @Hexilee
       </NavMenu.Link>
     </NavMenu>
   );

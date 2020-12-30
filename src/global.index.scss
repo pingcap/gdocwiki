@@ -25,3 +25,67 @@
 .picker-dialog {
   z-index: 20001 !important;
 }
+
+.rc-trigger-popup {
+  position: absolute;
+}
+
+.rc-trigger-popup-hidden {
+  display: none;
+}
+
+.slide-up-enter,
+.slide-up-appear {
+  animation-duration: 0.2s;
+  animation-fill-mode: both;
+  transform-origin: 0 0;
+  opacity: 0;
+  animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+  animation-play-state: paused;
+}
+
+.slide-up-leave {
+  animation-duration: 0.2s;
+  animation-fill-mode: both;
+  transform-origin: 0 0;
+  opacity: 1;
+  animation-timing-function: cubic-bezier(0.32, 0, 0.67, 0);
+  animation-play-state: paused;
+}
+
+@keyframes slideUpIn {
+  0% {
+    opacity: 0;
+    transform-origin: 0% 0%;
+    transform: scaleY(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform-origin: 0% 0%;
+    transform: scaleY(1);
+  }
+}
+
+@keyframes slideUpOut {
+  0% {
+    opacity: 1;
+    transform-origin: 0% 0%;
+    transform: scaleY(1);
+  }
+  100% {
+    opacity: 0;
+    transform-origin: 0% 0%;
+    transform: scaleY(0.8);
+  }
+}
+
+.slide-up-enter.slide-up-enter-active,
+.slide-up-appear.slide-up-appear-active {
+  animation-name: slideUpIn;
+  animation-play-state: running;
+}
+
+.slide-up-leave.slide-up-leave-active {
+  animation-name: slideUpOut;
+  animation-play-state: running;
+}

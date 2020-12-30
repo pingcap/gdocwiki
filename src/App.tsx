@@ -5,6 +5,7 @@ import {
   HeaderGlobalBar,
   InlineLoading,
 } from 'carbon-components-react';
+import Trigger from 'rc-trigger';
 import React, { useCallback, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
@@ -42,9 +43,6 @@ function App() {
   }, [mapIdToFile, dispatch]);
   const handleTreeCollapse = useCallback(() => dispatch(collapseAll()), [dispatch]);
 
-  const [isMenuOpen, setMenuOpen] = useState(false);
-  const toggleMenu = useCallback(() => setMenuOpen((v) => !v), []);
-
   if (!gapiLoaded) {
     return <InlineLoading description="Loading Google API..." />;
   }
@@ -80,7 +78,19 @@ function App() {
           <HeaderTitle />
           <HeaderGlobalBar>
             <HeaderSearch />
-            <HeaderUserAction toggleMenu={toggleMenu} />
+            <Trigger
+              zIndex={10000}
+              popupAlign={{
+                points: ['tr', 'br'],
+              }}
+              action="hover"
+              popup={<HeaderMenu />}
+              popupTransitionName="slide-up"
+            >
+              <div>
+                <HeaderUserAction />
+              </div>
+            </Trigger>
           </HeaderGlobalBar>
           <Route exact path="/">
             <Sider isExpanded={isExpanded} overrideId={getConfig().REACT_APP_ROOT_ID} />
@@ -92,7 +102,6 @@ function App() {
             <Sider isExpanded={isExpanded} overrideId={getConfig().REACT_APP_ROOT_ID} />
           </Route>
         </Header>
-        <HeaderMenu open={isMenuOpen} />
         <Content isExpanded={isExpanded}>
           <RenderStackProvider>
             <PageReloaderProvider>

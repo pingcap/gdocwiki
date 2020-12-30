@@ -27,7 +27,11 @@ export default function useLoadDriveFiles() {
           q: 'trashed = false',
           fields: getConfig().DEFAULT_FILE_FIELDS,
         });
-        console.log(`files.list (page #${i + 1})`, getConfig().REACT_APP_ROOT_DRIVE_ID, resp);
+        console.trace(
+          `useLoadDriveFiles files.list (page #${i + 1})`,
+          getConfig().REACT_APP_ROOT_DRIVE_ID,
+          resp
+        );
         dispatch(updateFiles(resp.result.files ?? []));
         if (resp.result.nextPageToken) {
           pageToken = resp.result.nextPageToken;
@@ -61,6 +65,8 @@ export default function useLoadDriveFiles() {
     // Only load tree data once when webpage is loaded. There is no need to reload
     // in other scenarios.
     loadTreeData();
-    loadDriveRoot();
+    if (getConfig().REACT_APP_ROOT_DRIVE_ID === getConfig().REACT_APP_ROOT_ID) {
+      loadDriveRoot();
+    }
   });
 }

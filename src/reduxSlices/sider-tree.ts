@@ -21,7 +21,7 @@ export const slice = createSlice({
   reducers: {
     activate: (state, { payload }: { payload: ActivatePayload }) => {
       state.active = payload.id;
-      console.log(`activate(${payload.id}), mapIdToFile(${payload.mapIdToFile})`);
+      console.trace(`Sidebar activate`, payload.id);
       const visitedNodes = new Set<string>(state.expanded);
       let activeNodes: string[] = payload.mapIdToFile[payload.id]?.parents ?? [];
       while (activeNodes.length !== 0) {

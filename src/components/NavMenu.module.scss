@@ -5,17 +5,12 @@
 
 .nav {
   color: $inverse-01;
-  z-index: 10000;
-  position: fixed;
-  right: 0;
-  top: 48px;
-  height: 100%;
   width: 16rem;
   background-color: $ui-05;
   border-left: 1px solid $inverse-02;
-  transform: translateX(16rem);
+  border-bottom: 1px solid $inverse-02;
+  box-shadow: -2px 2px 6px rgba(0, 0, 0, 0.2);
   overflow-y: hidden;
-  transition: all $duration--fast-02 carbon--motion('exit');
 }
 
 .nav li {
@@ -25,13 +20,6 @@
   &:last-of-type {
     margin-bottom: $spacing-05;
   }
-}
-
-.open {
-  transform: translateX(0);
-  transition: all $duration--moderate-01 carbon--motion('entrance');
-  border-bottom: 1px solid $inverse-02;
-  box-shadow: -2px 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 .divider {
@@ -44,6 +32,12 @@
 .divider span {
   @include carbon--type-style('caption-01');
   color: $carbon--gray-30;
+}
+
+.text {
+  padding: 6px 1rem;
+  @include carbon--type-style('heading-01');
+  color: $carbon--gray-10;
 }
 
 .link {

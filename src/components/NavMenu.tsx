@@ -2,33 +2,17 @@
 
 import { Locked16 } from '@carbon/icons-react';
 import { Overwrite, ReactAnchorAttr } from 'carbon-components-react/typings/shared';
-import cx from 'classnames';
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React from 'react';
 import styles from './NavMenu.module.scss';
 
 export interface INavMenuProps {
   children?: React.ReactNode;
-  open?: boolean;
 }
 
-export default function NavMenu({ open, children }: INavMenuProps) {
-  const listRef = useRef<HTMLUListElement>(null);
-  const [height, setHeight] = useState(0);
-
-  useLayoutEffect(() => {
-    if (!listRef.current) {
-      return;
-    }
-    if (open) {
-      setHeight(listRef.current.offsetHeight + 40);
-    } else {
-      setHeight(0);
-    }
-  }, [listRef, open]);
-
+export default function NavMenu({ children }: INavMenuProps) {
   return (
-    <nav className={cx(styles.nav, { [styles.open]: open })} style={{ height }}>
-      <ul ref={listRef}>{children}</ul>
+    <nav className={styles.nav}>
+      <ul>{children}</ul>
     </nav>
   );
 }
@@ -37,6 +21,12 @@ const Divider = (props: React.HTMLAttributes<HTMLSpanElement>) => (
   <li className={styles.divider}>
     <span {...props} />
   </li>
+);
+
+const Text = (props: React.HTMLAttributes<HTMLDivElement>) => (
+  <div className={styles.text}>
+    <div {...props} />
+  </div>
 );
 
 export interface ILinkPropsBase<P = ReactAnchorAttr> {
@@ -66,3 +56,4 @@ const Link = ({ disabled, children, isInternal, element = 'a', ...rest }: ILinkP
 
 NavMenu.Divider = Divider;
 NavMenu.Link = Link;
+NavMenu.Text = Text;

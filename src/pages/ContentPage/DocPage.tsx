@@ -93,7 +93,7 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
           fileId: file.id!,
           mimeType: 'text/html',
         });
-        console.log('files.export', file.id, resp);
+        console.trace('DocPage files.export', file.id, resp);
 
         const parser = new DOMParser();
         const htmlDoc = parser.parseFromString(resp.body, 'text/html');

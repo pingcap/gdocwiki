@@ -21,6 +21,7 @@
     "ky": "^0.25.1",
     "natural-compare-lite": "^1.4.0",
     "office-ui-fabric-react": "^7.153.2",
+    "rc-trigger": "^5.2.0",
     "react": "^17.0.1",
     "react-avatar": "^3.9.7",
     "react-dom": "^17.0.1",

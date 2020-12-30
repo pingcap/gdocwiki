@@ -1,8 +1,8 @@
 import naturalCompare from 'natural-compare-lite';
 import React, { useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { GapiErrorDisplay } from '../components';
-import { selectMapIdToChildren, updateFiles } from '../reduxSlices/files';
+import { updateFiles } from '../reduxSlices/files';
 
 export interface IFolderFilesMeta {
   loading: boolean;
@@ -13,7 +13,6 @@ export interface IFolderFilesMeta {
 export function useFolderFilesMeta(id?: string) {
   const dispatch = useDispatch();
   const [data, setData] = useState<IFolderFilesMeta>({ loading: true });
-  const mapIdToChildren = useSelector(selectMapIdToChildren);
   const reqRef = useRef(0);
 
   useEffect(() => {
@@ -38,7 +37,7 @@ export function useFolderFilesMeta(id?: string) {
             fields: '*',
             pageSize: 1000,
           });
-          console.log(`files.list (page #${i + 1})`, id, resp);
+          console.trace(`loadFolderFilesMetadata files.list (page #${i + 1})`, id, resp);
 
           if (reqRef.current !== checkpoint) {
             break;
@@ -71,16 +70,13 @@ export function useFolderFilesMeta(id?: string) {
       }
     }
 
-    if (mapIdToChildren?.[id] === undefined) {
-      reqRef.current++;
-      loadFolderFilesMetadata(reqRef.current);
-    } else {
-      setData({ loading: false, files: mapIdToChildren[id] });
-    }
-
-    // Ignore mapIdToChildren change
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+    // if (mapIdToChildren?.[id] === undefined) {
+    reqRef.current++;
+    loadFolderFilesMetadata(reqRef.current);
+    // } else {
+    //   setData({ loading: false, files: mapIdToChildren[id] });
+    // }
+  }, [id, dispatch]);
 
   return data;
 }

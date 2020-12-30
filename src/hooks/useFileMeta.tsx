@@ -30,13 +30,24 @@ export default function useFileMeta(id?: string) {
           fileId: id!,
           fields: '*',
         });
-        console.log('files.get', respFile);
+        console.trace('useFileMeta files.get', respFile);
 
-        if (reqRef.current === checkpoint) {
-          // If another request is performed, simply ignore this result.
-          // This may happen when id changes very frequently
-          setData({ loading: false, file: respFile.result });
+        if (reqRef.current !== checkpoint) {
+          return;
         }
+
+        if (respFile.result.driveId === id) {
+          const respDrive = await gapi.client.drive.drives.get({
+            driveId: id!,
+            fields: '*',
+          });
+          console.trace('useFileMeta drives.get', respDrive);
+          respFile.result.name = respDrive.result.name;
+        }
+
+        // If another request is performed, simply ignore this result.
+        // This may happen when id changes very frequently
+        setData({ loading: false, file: respFile.result });
       } catch (e) {
         if (reqRef.current === checkpoint) {
           console.log(e);

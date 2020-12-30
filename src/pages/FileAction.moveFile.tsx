@@ -55,7 +55,7 @@ function MoveFileModalBody({
             addParents: targetFolderId,
             resource: {},
           });
-          console.log('files.update', fileResponse);
+          console.trace('MoveFileModalBody files.update', fileResponse);
         } catch (firstError) {
           // If move is not possible, create shortcut instead.
           try {
@@ -74,7 +74,7 @@ function MoveFileModalBody({
                 parents: [targetFolderId],
               },
             });
-            console.log('files.create', fileResponse);
+            console.trace('MoveFileModalBody files.create', fileResponse);
           } catch (secondError) {
             // If shortcut creation failed, throw original error.
             throw firstError;
@@ -229,7 +229,7 @@ export function showMoveFile(
           fileId: id,
           fields: '*',
         });
-        console.log('files.get', respFile);
+        console.trace('MoveFileModalBody files.get', respFile);
 
         const file = respFile.result;
         const fileKind = file.mimeType === MimeTypes.GoogleFolder ? 'Folder' : 'File';
@@ -261,7 +261,7 @@ export function showMoveFile(
             addParents: parentFolder.id,
             resource: {},
           });
-          console.log('files.update', movedFile);
+          console.trace('MoveFileModalBody files.update', movedFile);
           dispatch(updateFile(movedFile.result));
         } catch (eFirst) {
           // If move failed, create shortcut.
@@ -278,7 +278,7 @@ export function showMoveFile(
                 parents: [parentFolder.id!],
               },
             });
-            console.log('files.create', newShortcut);
+            console.trace('MoveFileModalBody files.create', newShortcut);
             dispatch(updateFile(newShortcut.result));
           } catch (eSecond) {
             // If shortcut creation failed, display error for move file.

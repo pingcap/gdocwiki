@@ -3,7 +3,7 @@ import { HeaderGlobalAction } from 'carbon-components-react';
 import React, { useMemo } from 'react';
 import Avatar from 'react-avatar';
 
-function HeaderUserAction({ toggleMenu }: { toggleMenu: () => void }) {
+function HeaderUserAction() {
   // TODO: Respond to sign in state change
   const isSignedIn = gapi.auth2.getAuthInstance().isSignedIn.get();
   const profile = useMemo(() => {
@@ -16,13 +16,13 @@ function HeaderUserAction({ toggleMenu }: { toggleMenu: () => void }) {
 
   if (!isSignedIn) {
     return (
-      <HeaderGlobalAction aria-label="Sign In" onClick={toggleMenu}>
+      <HeaderGlobalAction aria-label="Sign In">
         <UserAvatar20 />
       </HeaderGlobalAction>
     );
   } else {
     return (
-      <HeaderGlobalAction aria-label="Sign Out" onClick={toggleMenu}>
+      <HeaderGlobalAction aria-label="Sign Out">
         <Avatar name={profile!.getName()} src={profile!.getImageUrl()} size="30" round />
       </HeaderGlobalAction>
     );
