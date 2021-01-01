@@ -1,5 +1,33 @@
 import ky from 'ky';
 
+type INavMenuItem = INavMenuLink | INavMenuGroup;
+export interface INavMenuLink {
+  type: 'link';
+  href?: string;
+  target?: string;
+  text?: string;
+}
+
+export interface INavMenuGroup {
+  type: 'group';
+  text?: string;
+  children?: INavMenuGroupChildren[];
+}
+
+export type INavMenuGroupChildren = INavMenuGroupChildrenLink | INavMenuGroupChildrenDivider;
+
+export interface INavMenuGroupChildrenLink {
+  type: 'link';
+  href?: string;
+  target?: string;
+  text?: string;
+}
+
+export interface INavMenuGroupChildrenDivider {
+  type: 'divider';
+  text?: string;
+}
+
 const config = {
   REACT_APP_USE_CONFIG_FILE: process.env.REACT_APP_USE_CONFIG_FILE === '1',
   // The G Suite domain to which users must belong to sign in
@@ -13,6 +41,8 @@ const config = {
 
   DEFAULT_FILE_FIELDS:
     'nextPageToken, files(name, id, parents, mimeType, modifiedTime, createdTime, lastModifyingUser(displayName, photoLink), iconLink, webViewLink, shortcutDetails, capabilities(canAddChildren, canTrash, canRename, canMoveChildrenOutOfTeamDrive))',
+
+  NavItems: [] as INavMenuItem[],
 };
 
 if (!config.REACT_APP_USE_CONFIG_FILE) {
@@ -31,7 +61,7 @@ if (!config.REACT_APP_USE_CONFIG_FILE) {
 export async function overwriteConfig() {
   try {
     const url = `${process.env.PUBLIC_URL}/config.json?_=${Date.now()}`;
-    const oc = (await ky(url).json()) as Record<string, string>;
+    const oc = (await ky(url).json()) as Record<string, any>;
     for (const key in oc) {
       if (oc[key]) {
         config[key] = oc[key];

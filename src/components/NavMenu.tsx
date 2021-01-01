@@ -5,13 +5,13 @@ import { Overwrite, ReactAnchorAttr } from 'carbon-components-react/typings/shar
 import React from 'react';
 import styles from './NavMenu.module.scss';
 
-export interface INavMenuProps {
+export interface INavMenuProps extends React.HTMLAttributes<HTMLElement> {
   children?: React.ReactNode;
 }
 
-export default function NavMenu({ children }: INavMenuProps) {
+export default function NavMenu({ children, ...restProps }: INavMenuProps) {
   return (
-    <nav className={styles.nav}>
+    <nav className={styles.nav} {...restProps}>
       <ul>{children}</ul>
     </nav>
   );

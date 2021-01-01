@@ -122,6 +122,8 @@ REACT_APP_ROOT_DRIVE_ID=xxxxxxx
 - [x] Search
   - [x] Full text
   - [x] File name
+- [ ] Mobile Support
+  - [ ] Responsive Sidebar
 - [ ] Helpers
   - [ ] A Chrome extension for checking whether the doc is in the tree
 

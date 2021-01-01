@@ -1,20 +1,24 @@
-import { Add20, Close20, Menu20, Subtract20 } from '@carbon/icons-react';
+import { Add20, ChevronDown20, Close20, Menu20, Subtract20 } from '@carbon/icons-react';
 import {
   Header,
   HeaderGlobalAction,
   HeaderGlobalBar,
+  HeaderMenuItem,
+  HeaderNavigation,
   InlineLoading,
 } from 'carbon-components-react';
+import { Stack } from 'office-ui-fabric-react';
 import Trigger from 'rc-trigger';
 import React, { useCallback, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { NavMenu } from './components';
 import { getConfig } from './config';
 import { PageReloaderProvider } from './context/PageReloader';
 import { RenderStackProvider } from './context/RenderStack';
 import useGapi from './hooks/useGapi';
 import useLoadDriveFiles from './hooks/useLoadDriveFiles';
-import { HeaderTitle, Content, HeaderUserAction, Sider, HeaderMenu } from './layout';
+import { HeaderTitle, Content, HeaderUserAction, Sider, HeaderUserMenu } from './layout';
 import HeaderSearch from './layout/HeaderSearch';
 import Page from './pages/Page';
 import { SearchResult } from './pages/Search';
@@ -76,15 +80,65 @@ function App() {
             </HeaderGlobalAction>
           )}
           <HeaderTitle />
+          {getConfig().NavItems.length > 0 && (
+            <HeaderNavigation>
+              {getConfig().NavItems.map((item) => {
+                switch (item.type) {
+                  case 'link':
+                    return (
+                      <HeaderMenuItem href={item.href} target={item.target}>
+                        {item.text ?? ''}
+                      </HeaderMenuItem>
+                    );
+                  case 'group':
+                    return (
+                      <Trigger
+                        popupAlign={{
+                          points: ['tl', 'bl'],
+                        }}
+                        action="hover"
+                        popup={
+                          <NavMenu>
+                            {item.children?.map((childItem) => {
+                              switch (childItem.type) {
+                                case 'divider':
+                                  return <NavMenu.Divider>{childItem.text ?? ''}</NavMenu.Divider>;
+                                case 'link':
+                                  return (
+                                    <NavMenu.Link href={childItem.href} target={childItem.target}>
+                                      {childItem.text ?? ''}
+                                    </NavMenu.Link>
+                                  );
+                                default:
+                                  return null;
+                              }
+                            })}
+                          </NavMenu>
+                        }
+                        popupTransitionName="slide-up"
+                      >
+                        <HeaderMenuItem href="javascript:;">
+                          <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
+                            <span>{item.text ?? ''}</span>
+                            <ChevronDown20 />
+                          </Stack>
+                        </HeaderMenuItem>
+                      </Trigger>
+                    );
+                  default:
+                    return null;
+                }
+              })}
+            </HeaderNavigation>
+          )}
           <HeaderGlobalBar>
             <HeaderSearch />
             <Trigger
-              zIndex={10000}
               popupAlign={{
                 points: ['tr', 'br'],
               }}
               action="hover"
-              popup={<HeaderMenu />}
+              popup={<HeaderUserMenu />}
               popupTransitionName="slide-up"
             >
               <div>
