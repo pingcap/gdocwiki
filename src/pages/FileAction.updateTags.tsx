@@ -23,7 +23,10 @@ export function showUpdateTags(
     submittingText: 'Updating tags...',
     submittedText: `Tags updated!`,
     submitFn: async ({ tags }) => {
-      const newTags = tags.split(',').map((r) => r.trim());
+      const newTags = tags
+        .split(',')
+        .map((r) => r.trim())
+        .filter((r) => r.length > 0);
       const tagsToAdd = difference(newTags, currentTags);
       const tagsToRemove = difference(currentTags, newTags);
       const properties = {};

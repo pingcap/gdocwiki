@@ -45,7 +45,10 @@ export function extractTags(file: DriveFile): string[] {
 
   for (const key in file.properties ?? {}) {
     if (key.startsWith(TAG_PROPERTY_PREFIX)) {
-      r.push(key.slice(TAG_PROPERTY_PREFIX.length));
+      const actualTag = key.slice(TAG_PROPERTY_PREFIX.length);
+      if (actualTag.length > 0) {
+        r.push(actualTag);
+      }
     }
   }
 
