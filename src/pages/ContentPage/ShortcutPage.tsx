@@ -2,10 +2,11 @@ import { InlineLoading } from 'carbon-components-react';
 import React from 'react';
 import { useManagedRenderStack } from '../../context/RenderStack';
 import useFileMeta from '../../hooks/useFileMeta';
+import { DriveFile } from '../../utils';
 import ContentPage from '.';
 
 export interface IShortcutPageProps {
-  file: gapi.client.drive.File;
+  file: DriveFile;
   renderStackOffset?: number;
 }
 

@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { DriveFile } from './files';
+import { DriveFile } from '../utils';
 
 export interface TreeState {
   active?: string;

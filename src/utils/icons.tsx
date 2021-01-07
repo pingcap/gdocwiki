@@ -1,10 +1,12 @@
 import {
+  Add16,
   ChevronDown16,
   ChevronRight16,
   Edit16,
   Launch16,
   Link16,
   OverflowMenuHorizontal16,
+  Tag16,
   TrashCan16,
   WatsonHealthStackedMove16,
 } from '@carbon/icons-react';
@@ -15,7 +17,7 @@ import { Icon } from '@iconify/react';
 import { registerIcons as register } from 'office-ui-fabric-react';
 import React from 'react';
 
-export default function registerIcons() {
+export function registerIcons() {
   register({
     icons: {
       More: <OverflowMenuHorizontal16 />,
@@ -25,6 +27,8 @@ export default function registerIcons() {
       Link: <Link16 />,
       Edit: <Edit16 />,
       Trash: <TrashCan16 />,
+      Tag: <Tag16 />,
+      Add: <Add16 />,
       StackedMove: <WatsonHealthStackedMove16 />,
       ColorGoogleDrive: <Icon icon={googleDrive} />,
       MdiFileEdit: <Icon icon={fileEdit} />,

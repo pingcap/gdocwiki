@@ -2,21 +2,29 @@ import { Breadcrumb, IBreadcrumbItem, Stack } from 'office-ui-fabric-react';
 import React, { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { DriveIcon, ShortcutIcon } from '../components';
+import { DriveIcon, ShortcutIcon, Tag } from '../components';
 import { selectMapIdToFile } from '../reduxSlices/files';
-import { MimeTypes } from '../utils';
+import { DriveFile, extractTags, MimeTypes } from '../utils';
 
-function LastBreadcrumbItem({ file }: { file: gapi.client.drive.File }) {
+function LastBreadcrumbItem({ file }: { file: DriveFile }) {
+  const tags = extractTags(file);
   return (
     <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
       <span>{file.name}</span>
       <DriveIcon file={file} />
       {file.mimeType === MimeTypes.GoogleShortcut && <ShortcutIcon />}
+      {tags.length > 0 && (
+        <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 4 }}>
+          {tags.map((tag) => (
+            <Tag text={tag} />
+          ))}
+        </Stack>
+      )}
     </Stack>
   );
 }
 
-function useFilePathBreadcrumb(file?: gapi.client.drive.File) {
+function useFilePathBreadcrumb(file?: DriveFile) {
   const mapIdToFile = useSelector(selectMapIdToFile);
   const history = useHistory();
 
@@ -79,7 +87,7 @@ function useFilePathBreadcrumb(file?: gapi.client.drive.File) {
   }, [file, mapIdToFile, history]);
 }
 
-function FileBreadcrumb({ file }: { file?: gapi.client.drive.File }) {
+function FileBreadcrumb({ file }: { file?: DriveFile }) {
   const paths = useFilePathBreadcrumb(file);
   if ((paths?.length ?? 0) > 0) {
     return <Breadcrumb items={paths!} />;

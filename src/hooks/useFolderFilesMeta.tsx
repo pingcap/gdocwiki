@@ -3,10 +3,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { GapiErrorDisplay } from '../components';
 import { updateFiles } from '../reduxSlices/files';
+import { DriveFile } from '../utils';
 
 export interface IFolderFilesMeta {
   loading: boolean;
-  files?: gapi.client.drive.File[];
+  files?: DriveFile[];
   error?: React.ReactNode;
 }
 
@@ -26,7 +27,7 @@ export function useFolderFilesMeta(id?: string) {
 
       try {
         let pageToken = '';
-        const files: Record<string, gapi.client.drive.File> = {};
+        const files: Record<string, DriveFile> = {};
 
         for (let i = 0; i < 10; i++) {
           const resp = await gapi.client.drive.files.list({

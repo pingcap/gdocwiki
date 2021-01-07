@@ -21,6 +21,7 @@ import styles from './FileAction.module.scss';
 import { showMoveFile } from './FileAction.moveFile';
 import { showRenameFile } from './FileAction.renameFile';
 import { showTrashFile } from './FileAction.trashFile';
+import { showUpdateTags } from './FileAction.updateTags';
 
 function FileAction() {
   const history = useHistory();
@@ -87,7 +88,6 @@ function FileAction() {
         });
       }
     }
-
     {
       // Open folder command
       const folderValid =
@@ -102,69 +102,66 @@ function FileAction() {
           window.open(outerFolder.file?.webViewLink, '_blank');
         },
       });
-
-      // Add file command
-      if (outerFolder.file?.id && outerFolder.file?.capabilities?.canAddChildren) {
-        const addFileMenuItems: IContextualMenuItem[] = [];
-
-        const s: [string, string][] = [
-          ['Page', MimeTypes.GoogleDocument],
-          ['Sheet', MimeTypes.GoogleSpreadsheet],
-          ['Slide', MimeTypes.GooglePresentation],
-          ['Folder', MimeTypes.GoogleFolder],
-        ];
-        s.forEach(([text, mimeType]) => {
-          addFileMenuItems.push({
-            key: text,
-            text: text,
-            iconProps: {
-              imageProps: { src: DriveIcon.getIconSrc(mimeType), width: 16 },
-            },
-            onClick: () => {
-              showCreateFile(text, mimeType, outerFolder.file!.id!, dispatch, history, reloadPage);
-            },
-          });
-        });
-
-        commands.push({
-          key: 'create_file_in_folder',
-          text: 'Create',
-          iconProps: { iconName: 'MdiFolderPlus' },
-          subMenuProps: {
-            items: [
-              ...addFileMenuItems,
-              {
-                key: 'link',
-                text: 'Link',
-                iconProps: {
-                  iconName: 'link',
-                },
-                onClick: () => {
-                  showCreateLink(outerFolder.file!.id!, dispatch, history, reloadPage);
-                },
-              },
-              {
-                key: 'move',
-                text: 'Import by Move',
-                iconProps: {
-                  iconName: 'StackedMove',
-                },
-                onClick: () => {
-                  showMoveFile(outerFolder.file!, dispatch, reloadPage);
-                },
-              },
-            ],
-          },
-        });
-      }
     }
-
     return commands;
-  }, [rInner?.file, outerFolder.file, history, dispatch, reloadPage]);
+  }, [rInner?.file, outerFolder.file]);
 
   const commandBarOverflowItems = useMemo(() => {
     const commands: ICommandBarItemProps[] = [];
+    if (outerFolder.file?.id && outerFolder.file?.capabilities?.canAddChildren) {
+      // Add file command
+      const addFileMenuItems: IContextualMenuItem[] = [];
 
+      const s: [string, string][] = [
+        ['Page', MimeTypes.GoogleDocument],
+        ['Sheet', MimeTypes.GoogleSpreadsheet],
+        ['Slide', MimeTypes.GooglePresentation],
+        ['Folder', MimeTypes.GoogleFolder],
+      ];
+      s.forEach(([text, mimeType]) => {
+        addFileMenuItems.push({
+          key: text,
+          text: text,
+          iconProps: {
+            imageProps: { src: DriveIcon.getIconSrc(mimeType), width: 16 },
+          },
+          onClick: () => {
+            showCreateFile(text, mimeType, outerFolder.file!.id!, dispatch, history, reloadPage);
+          },
+        });
+      });
+
+      commands.push({
+        key: 'create_file_in_folder',
+        text: 'Create',
+        iconProps: { iconName: 'Add' },
+        subMenuProps: {
+          items: [
+            ...addFileMenuItems,
+            {
+              key: 'link',
+              text: 'Link',
+              iconProps: {
+                iconName: 'link',
+              },
+              onClick: () => {
+                showCreateLink(outerFolder.file!.id!, dispatch, history, reloadPage);
+              },
+            },
+            {
+              key: 'move',
+              text: 'Import by Move',
+              iconProps: {
+                iconName: 'StackedMove',
+              },
+              onClick: () => {
+                showMoveFile(outerFolder.file!, dispatch, reloadPage);
+              },
+            },
+          ],
+        },
+      });
+    }
     if (rOuter?.file) {
       let fileKind;
       switch (rOuter.file.mimeType) {
@@ -177,8 +174,8 @@ function FileAction() {
         default:
           fileKind = 'File';
       }
-
       if (rOuter.file.capabilities?.canRename) {
+        // Rename
         commands.push({
           key: 'rename',
           text: `Rename ${fileKind}`,
@@ -188,9 +185,9 @@ function FileAction() {
           },
         });
       }
-
       // Do not allow trash root folder..
       if (rOuter?.file.id !== getConfig().REACT_APP_ROOT_ID && rOuter.file.capabilities?.canTrash) {
+        // Trash
         commands.push({
           key: 'trash',
           text: `Trash ${fileKind}`,
@@ -200,10 +197,21 @@ function FileAction() {
           },
         });
       }
+      if (rOuter.file.capabilities?.canEdit) {
+        // Tag
+        commands.push({
+          key: 'tag',
+          text: `Tags`,
+          iconProps: { iconName: 'Tag' },
+          onClick: () => {
+            showUpdateTags(rOuter.file, dispatch, reloadPage);
+          },
+        });
+      }
     }
 
     return commands;
-  }, [rOuter?.file, dispatch, reloadPage, history]);
+  }, [rOuter?.file, outerFolder.file, dispatch, reloadPage, history]);
 
   if (commandBarItems.length === 0 && commandBarOverflowItems.length === 0) {
     return null;

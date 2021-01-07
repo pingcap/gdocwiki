@@ -2,14 +2,14 @@ import { useEventListener } from 'ahooks';
 import { InlineLoading } from 'carbon-components-react';
 import React, { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
 import { useManagedRenderStack } from '../../context/RenderStack';
-import { MimeTypes } from '../../utils';
+import { DriveFile, MimeTypes } from '../../utils';
 
-export interface IDocPageProps {
-  file: gapi.client.drive.File;
+export interface IPreviewPageProps {
+  file: DriveFile;
   renderStackOffset?: number;
 }
 
-function PreviewPage({ file, renderStackOffset = 0 }: IDocPageProps) {
+function PreviewPage({ file, renderStackOffset = 0 }: IPreviewPageProps) {
   const [isLoading, setIsLoading] = useState(true);
   const ref = useRef<HTMLIFrameElement>(null);
 

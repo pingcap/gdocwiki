@@ -6,8 +6,9 @@ import { Button, InlineLoading, InlineNotification, TextInput } from 'carbon-com
 import { Stack } from 'office-ui-fabric-react';
 import React, { useRef, useState } from 'react';
 import { getConfig } from '../config';
-import { DriveFile, updateFile } from '../reduxSlices/files';
+import { updateFile } from '../reduxSlices/files';
 import {
+  DriveFile,
   MimeTypes,
   ModalBody,
   ModalFooter,

@@ -1,5 +1,6 @@
 import { EventEmitter2 } from 'eventemitter2';
 import React, { useContext, useEffect, useRef, useState } from 'react';
+import { DriveFile } from '../utils';
 
 // This context provides data about the actual rendered file.
 // It's data is filled by the deepest renderer.
@@ -7,7 +8,7 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 export interface IRenderStackItem {
   depth: number;
   id: string;
-  file: gapi.client.drive.File;
+  file: DriveFile;
 }
 
 function buildStackKey(depth: number, id: string) {
@@ -106,7 +107,7 @@ export function useRender(): IRenderState {
 export interface IManagedRenderStackProps {
   depth: number;
   id: string;
-  file?: gapi.client.drive.File;
+  file?: DriveFile;
 }
 
 // A hook automatically push or pop the render stack when file changes.

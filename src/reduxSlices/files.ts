@@ -1,7 +1,6 @@
 import { createSlice, createSelector } from '@reduxjs/toolkit';
 import naturalCompare from 'natural-compare-lite';
-
-export type DriveFile = gapi.client.drive.File;
+import { DriveFile } from '../utils';
 
 export interface FilesState {
   isLoading: boolean;

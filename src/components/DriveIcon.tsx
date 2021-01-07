@@ -1,6 +1,6 @@
-import { MimeTypes } from '../utils';
+import { DriveFile, MimeTypes } from '../utils';
 
-export default function DriveIcon({ file }: { file?: gapi.client.drive.File }) {
+export default function DriveIcon({ file }: { file?: DriveFile }) {
   if (!file) {
     return null;
   }

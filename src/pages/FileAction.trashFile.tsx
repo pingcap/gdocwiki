@@ -1,7 +1,7 @@
 import { Dispatch } from '@reduxjs/toolkit';
 import { History } from 'history';
-import { DriveFile, removeFile } from '../reduxSlices/files';
-import { showConfirm } from '../utils';
+import { removeFile } from '../reduxSlices/files';
+import { DriveFile, showConfirm } from '../utils';
 import { promptError } from './FileAction.utils';
 
 export function showTrashFile(

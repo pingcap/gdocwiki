@@ -4,3 +4,4 @@ export * from './Table';
 export { default as ShortcutIcon } from './ShortcutIcon';
 export { default as GapiErrorDisplay } from './GapiErrorDisplay';
 export { default as NavMenu } from './NavMenu';
+export { default as Tag } from './Tag';

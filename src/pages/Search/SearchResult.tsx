@@ -7,7 +7,7 @@ import { useHistory, useParams } from 'react-router-dom';
 import { DriveIcon, ShortcutIcon, Table } from '../../components';
 import { getConfig } from '../../config';
 import { setLoading } from '../../reduxSlices/files';
-import { mdLink, MimeTypes } from '../../utils';
+import { DriveFile, mdLink, MimeTypes } from '../../utils';
 import styles from './SearchResult.module.scss';
 
 function escapeKeyword(keyword: string): string {
@@ -19,12 +19,12 @@ export default function SearchResult() {
   const { keyword } = param;
 
   const dispatch = useDispatch();
-  const [files, setFiles] = useState<gapi.client.drive.File[]>([]);
+  const [files, setFiles] = useState<DriveFile[]>([]);
 
   const handleSearch = useCallback(
     async (keyword) => {
       const keywordEscaped = escapeKeyword(keyword);
-      const fileList: gapi.client.drive.File[] = [];
+      const fileList: DriveFile[] = [];
       try {
         let pageToken = '';
         for (let i = 0; i < 10; i++) {
@@ -73,7 +73,7 @@ export default function SearchResult() {
         name: '',
         minWidth: 16,
         maxWidth: 16,
-        onRender: (item: gapi.client.drive.File) => {
+        onRender: (item: DriveFile) => {
           const link = mdLink.parse(item.name);
           if (link) {
             return <Launch16 />;
@@ -87,7 +87,7 @@ export default function SearchResult() {
         name: 'Name',
         minWidth: 200,
         isRowHeader: true,
-        onRender: (item: gapi.client.drive.File) => {
+        onRender: (item: DriveFile) => {
           const link = mdLink.parse(item.name);
           if (link) {
             return link.title;
@@ -105,7 +105,7 @@ export default function SearchResult() {
         key: 'create',
         name: 'Created At',
         minWidth: 100,
-        onRender: (item: gapi.client.drive.File) => {
+        onRender: (item: DriveFile) => {
           return dayjs(item.createdTime).fromNow();
         },
       },
@@ -113,7 +113,7 @@ export default function SearchResult() {
         key: 'modify',
         name: 'Modified At',
         minWidth: 100,
-        onRender: (item: gapi.client.drive.File) => {
+        onRender: (item: DriveFile) => {
           return dayjs(item.modifiedTime).fromNow();
         },
       },
@@ -121,14 +121,14 @@ export default function SearchResult() {
     return r;
   }, []);
 
-  const getKey = useCallback((file: gapi.client.drive.File) => {
+  const getKey = useCallback((file: DriveFile) => {
     return file.id ?? '';
   }, []);
 
   const history = useHistory();
 
   const handleRowClick = useCallback(
-    (targetFile: gapi.client.drive.File) => {
+    (targetFile: DriveFile) => {
       const openInNewWindow = true;
       mdLink.handleFileLinkClick(history, targetFile, openInNewWindow);
     },

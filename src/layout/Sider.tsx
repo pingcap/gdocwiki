@@ -8,7 +8,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useHistory, useParams } from 'react-router-dom';
 import { getConfig } from '../config';
 import {
-  DriveFile,
   selectError,
   selectLoading,
   selectMapIdToChildren,
@@ -21,7 +20,7 @@ import {
   selectExpanded,
   selectActive,
 } from '../reduxSlices/sider-tree';
-import { mdLink, MimeTypes } from '../utils';
+import { DriveFile, mdLink, MimeTypes } from '../utils';
 import styles from './Sider.module.scss';
 
 function renderChildren(

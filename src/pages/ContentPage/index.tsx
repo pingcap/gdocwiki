@@ -1,13 +1,13 @@
 import React from 'react';
-import { MimeTypes } from '../../utils';
+import { DriveFile, MimeTypes } from '../../utils';
 import DocPage from './DocPage';
 import FolderPage from './FolderPage';
 import PreviewPage from './PreviewPage';
 import ShortcutPage from './ShortcutPage';
 
 export interface IContentPageProps {
-  file: gapi.client.drive.File;
-  shortCutFile?: gapi.client.drive.File;
+  file: DriveFile;
+  shortCutFile?: DriveFile;
   renderStackOffset?: number;
 }
 

@@ -1,8 +1,8 @@
 import { Dispatch } from '@reduxjs/toolkit';
 import { TextInput } from 'carbon-components-react';
 import React from 'react';
-import { DriveFile, updateFile } from '../reduxSlices/files';
-import { showFormModal } from '../utils';
+import { updateFile } from '../reduxSlices/files';
+import { DriveFile, showFormModal } from '../utils';
 import { promptError } from './FileAction.utils';
 
 export function showRenameFile(

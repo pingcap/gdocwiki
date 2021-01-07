@@ -2,10 +2,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { GapiErrorDisplay } from '../components';
 import { selectMapIdToFile } from '../reduxSlices/files';
+import { DriveFile } from '../utils';
 
 export interface IFileMeta {
   loading: boolean;
-  file?: gapi.client.drive.File;
+  file?: DriveFile;
   error?: React.ReactNode;
 }
 

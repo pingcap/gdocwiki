@@ -3,10 +3,10 @@ import * as H from 'history';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useManagedRenderStack } from '../../context/RenderStack';
-import { parseDriveLink } from '../../utils';
+import { DriveFile, parseDriveLink } from '../../utils';
 
 export interface IDocPageProps {
-  file: gapi.client.drive.File;
+  file: DriveFile;
   renderStackOffset?: number;
 }
 

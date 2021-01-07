@@ -9,12 +9,12 @@ import { DriveIcon, ShortcutIcon, Table } from '../../components';
 import { useManagedRenderStack } from '../../context/RenderStack';
 import { useFolderFilesMeta } from '../../hooks/useFolderFilesMeta';
 import { selectMapIdToFile } from '../../reduxSlices/files';
-import { mdLink, MimeTypes } from '../../utils';
+import { DriveFile, mdLink, MimeTypes } from '../../utils';
 import ContentPage from '.';
 
 export interface IFolderPageProps {
-  file: gapi.client.drive.File;
-  shortCutFile?: gapi.client.drive.File;
+  file: DriveFile;
+  shortCutFile?: DriveFile;
   renderStackOffset?: number;
 }
 
@@ -47,7 +47,7 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
         name: '',
         minWidth: 16,
         maxWidth: 16,
-        onRender: (item: gapi.client.drive.File) => {
+        onRender: (item: DriveFile) => {
           const link = mdLink.parse(item.name);
           if (link) {
             return <Launch16 />;
@@ -61,7 +61,7 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
         name: 'Name',
         minWidth: 200,
         isRowHeader: true,
-        onRender: (item: gapi.client.drive.File) => {
+        onRender: (item: DriveFile) => {
           const link = mdLink.parse(item.name);
           if (link) {
             return link.title;
@@ -79,7 +79,7 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
         key: 'create',
         name: 'Created At',
         minWidth: 100,
-        onRender: (item: gapi.client.drive.File) => {
+        onRender: (item: DriveFile) => {
           return dayjs(item.createdTime).fromNow();
         },
       },
@@ -87,7 +87,7 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
         key: 'modify',
         name: 'Modified At',
         minWidth: 100,
-        onRender: (item: gapi.client.drive.File) => {
+        onRender: (item: DriveFile) => {
           return dayjs(item.modifiedTime).fromNow();
         },
       },
@@ -95,12 +95,12 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
     return r;
   }, []);
 
-  const getKey = useCallback((file: gapi.client.drive.File) => {
+  const getKey = useCallback((file: DriveFile) => {
     return file.id ?? '';
   }, []);
 
   const handleRowClick = useCallback(
-    (targetFile: gapi.client.drive.File) => {
+    (targetFile: DriveFile) => {
       let openInNewWindow = false;
       // If current folder is not in the tree, open new window
       if (!mapIdToFile?.[file?.id ?? ''] && shortCutFile) {
@@ -125,7 +125,7 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
             onRowClicked={handleRowClick}
             getKey={getKey}
           />
-          <div style={{ marginTop: 16 }}>{files?.length ?? 0} files in the folder.</div>
+          {!files?.length && <div style={{ marginTop: 16 }}>Folder is empty.</div>}
         </>
       )}
     </div>
