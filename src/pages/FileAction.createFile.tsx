@@ -1,19 +1,11 @@
-import { Dispatch } from '@reduxjs/toolkit';
 import { TextInput } from 'carbon-components-react';
-import { History } from 'history';
 import React from 'react';
 import { updateFile } from '../reduxSlices/files';
-import { showFormModal } from '../utils';
+import { reloadPage } from '../reduxSlices/pageReload';
+import { history, showFormModal, store } from '../utils';
 import { promptError } from './FileAction.utils';
 
-export function showCreateFile(
-  fileTypeName: string,
-  mimeType: string,
-  parentFolderId: string,
-  dispatch: Dispatch<any>,
-  history: History,
-  reloadPage: () => void
-) {
+export function showCreateFile(fileTypeName: string, mimeType: string, parentFolderId: string) {
   showFormModal({
     modalHeading: `Create ${fileTypeName}`,
     selectorPrimaryFocus: `#name`,
@@ -34,23 +26,23 @@ export function showCreateFile(
             parents: [parentFolderId],
           },
         });
-        dispatch(updateFile(resp.result));
+        store.dispatch(updateFile(resp.result));
         history.push(`/view/${parentFolderId}`);
-        reloadPage();
+        store.dispatch(reloadPage());
       } catch (e) {
         promptError(e);
         return false;
       }
     },
-    renderForm: (state, hasSubmitted) => (
+    RenderForm: ({ formProps, hasSubmitted }) => (
       <>
         <TextInput
           id="name"
           name="name"
           labelText="Name"
-          value={state.values.name}
-          invalidText={state.errors.name}
-          invalid={Boolean(state.touched.name && state.errors.name)}
+          value={formProps.values.name}
+          invalidText={formProps.errors.name}
+          invalid={Boolean(formProps.touched.name && formProps.errors.name)}
           disabled={hasSubmitted}
         />
       </>

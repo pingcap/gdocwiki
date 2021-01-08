@@ -1,9 +1,8 @@
 import { InlineLoading } from 'carbon-components-react';
-import * as H from 'history';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useManagedRenderStack } from '../../context/RenderStack';
-import { DriveFile, parseDriveLink } from '../../utils';
+import { history, DriveFile, parseDriveLink } from '../../utils';
 
 export interface IDocPageProps {
   file: DriveFile;
@@ -14,10 +13,7 @@ function isModifiedEvent(event) {
   return !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);
 }
 
-function prettify<HistoryLocationState = H.LocationState>(
-  history: H.History<HistoryLocationState>,
-  baseEl: HTMLElement
-) {
+function prettify(baseEl: HTMLElement) {
   {
     // Remove all font families, except for some monospace fonts.
     const monoFF = ['source code', 'courier', 'mono'];
@@ -99,7 +95,7 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
         const htmlDoc = parser.parseFromString(resp.body, 'text/html');
         const bodyEl = htmlDoc.querySelector('body');
         if (bodyEl) {
-          prettify(history, bodyEl);
+          prettify(bodyEl);
           const styleEls = htmlDoc.querySelectorAll('style');
           styleEls.forEach((el) => bodyEl.appendChild(el));
           setDocContent(bodyEl.innerHTML);
@@ -111,8 +107,6 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
       }
     }
     loadPreview();
-    // Ignore history change
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [file.id]);
 
   const handleDocContentClick = useCallback(

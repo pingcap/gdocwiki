@@ -28,5 +28,3 @@ yarn-error.log*
 .vscode/
 
 /public/config.json
-/public/config-*.json
-/public/redirection-*.html

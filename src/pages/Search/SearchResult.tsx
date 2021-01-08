@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import { IColumn, Stack } from 'office-ui-fabric-react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { useHistory, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { DriveIcon, ShortcutIcon, Table } from '../../components';
 import { getConfig } from '../../config';
 import { setLoading } from '../../reduxSlices/files';
@@ -125,15 +125,10 @@ export default function SearchResult() {
     return file.id ?? '';
   }, []);
 
-  const history = useHistory();
-
-  const handleRowClick = useCallback(
-    (targetFile: DriveFile) => {
-      const openInNewWindow = true;
-      mdLink.handleFileLinkClick(history, targetFile, openInNewWindow);
-    },
-    [history]
-  );
+  const handleRowClick = useCallback((targetFile: DriveFile) => {
+    const openInNewWindow = true;
+    mdLink.handleFileLinkClick(targetFile, openInNewWindow);
+  }, []);
 
   return (
     <div className={styles.searchResultContainer}>

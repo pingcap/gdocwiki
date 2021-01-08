@@ -1,5 +1,3 @@
-import sortedUniq from 'lodash/sortedUniq';
-
 export type DriveFile = gapi.client.drive.File;
 
 export function handleGapiError(e: any): Error {
@@ -40,20 +38,21 @@ export const MimeTypes = {
 
 export const TAG_PROPERTY_PREFIX = 'tags/';
 
-export function extractTags(file: DriveFile): string[] {
-  const r: string[] = [];
-
+export function extractTagsIntoSet(file: DriveFile, target: Set<string>) {
   for (const key in file.properties ?? {}) {
     if (key.startsWith(TAG_PROPERTY_PREFIX)) {
       const actualTag = key.slice(TAG_PROPERTY_PREFIX.length);
       if (actualTag.length > 0) {
-        r.push(actualTag);
+        target.add(actualTag);
       }
     }
   }
+}
 
-  r.sort();
-  sortedUniq(r);
-
-  return r;
+export function extractTags(file: DriveFile): string[] {
+  const s = new Set<string>();
+  extractTagsIntoSet(file, s);
+  const tags = Array.from(s.keys());
+  tags.sort();
+  return tags;
 }

@@ -1,16 +1,12 @@
 import { TextInput } from 'carbon-components-react';
-import { History } from 'history';
-import React, { Dispatch } from 'react';
+import { Stack } from 'office-ui-fabric-react';
+import React from 'react';
 import { updateFile } from '../reduxSlices/files';
-import { MimeTypes, showFormModal } from '../utils';
+import { reloadPage } from '../reduxSlices/pageReload';
+import { history, MimeTypes, showFormModal, store } from '../utils';
 import { promptError } from './FileAction.utils';
 
-export function showCreateLink(
-  parentFolderId: string,
-  dispatch: Dispatch<any>,
-  history: History,
-  reloadPage: () => void
-) {
+export function showCreateLink(parentFolderId: string) {
   showFormModal({
     modalHeading: `Create Link`,
     selectorPrimaryFocus: `#name`,
@@ -32,23 +28,23 @@ export function showCreateLink(
             parents: [parentFolderId],
           },
         });
-        dispatch(updateFile(resp.result));
+        store.dispatch(updateFile(resp.result));
         history.push(`/view/${parentFolderId}`);
-        reloadPage();
+        store.dispatch(reloadPage());
       } catch (e) {
         promptError(e);
         return false;
       }
     },
-    renderForm: (state, hasSubmitted) => (
-      <>
+    RenderForm: ({ formProps, hasSubmitted }) => (
+      <Stack tokens={{ childrenGap: 24 }}>
         <TextInput
           id="name"
           name="name"
           labelText="Name"
-          value={state.values.name}
-          invalidText={state.errors.name}
-          invalid={Boolean(state.touched.name && state.errors.name)}
+          value={formProps.values.name}
+          invalidText={formProps.errors.name}
+          invalid={Boolean(formProps.touched.name && formProps.errors.name)}
           disabled={hasSubmitted}
         />
         <TextInput
@@ -56,12 +52,12 @@ export function showCreateLink(
           name="link"
           labelText="Link"
           placeholder="https://example.com"
-          value={state.values.link}
-          invalidText={state.errors.link}
-          invalid={Boolean(state.touched.link && state.errors.link)}
+          value={formProps.values.link}
+          invalidText={formProps.errors.link}
+          invalid={Boolean(formProps.touched.link && formProps.errors.link)}
           disabled={hasSubmitted}
         />
-      </>
+      </Stack>
     ),
     validateFn: ({ name, link }) => {
       let errors = {};

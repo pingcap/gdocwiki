@@ -38,6 +38,7 @@ const config = {
   REACT_APP_ROOT_ID: process.env.REACT_APP_ROOT_ID ?? '',
   // Ued to list all files in a fast way.
   REACT_APP_ROOT_DRIVE_ID: process.env.REACT_APP_ROOT_DRIVE_ID ?? '',
+  REACT_APP_NAME: process.env.REACT_APP_NAME ?? '',
 
   DEFAULT_FILE_FIELDS:
     'nextPageToken, files(properties, name, id, parents, mimeType, modifiedTime, createdTime, lastModifyingUser(displayName, photoLink), iconLink, webViewLink, shortcutDetails, capabilities)',

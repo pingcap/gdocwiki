@@ -6,3 +6,11 @@
   background: #ddd;
   vertical-align: middle;
 }
+
+.tag.isClickable {
+  cursor: pointer;
+
+  &:hover {
+    filter: brightness(95%);
+  }
+}

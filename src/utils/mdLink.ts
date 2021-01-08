@@ -1,4 +1,4 @@
-import * as H from 'history';
+import { history } from './history';
 import { DriveFile } from '.';
 
 export type MarkdownLink = {
@@ -20,11 +20,7 @@ function parse(link?: string): MarkdownLink | null {
   };
 }
 
-function handleFileLinkClick<HistoryLocationState = H.LocationState>(
-  history: H.History<HistoryLocationState>,
-  file: DriveFile,
-  alwaysOpenInNewWindow?: boolean
-) {
+function handleFileLinkClick(file: DriveFile, alwaysOpenInNewWindow?: boolean) {
   const link = mdLink.parse(file.name);
   if (link) {
     window.open(link.url, '_blank');

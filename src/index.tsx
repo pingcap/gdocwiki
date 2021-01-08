@@ -7,8 +7,7 @@ import App from './App';
 import { overwriteConfig } from './config';
 import './global.carbon.scss';
 import './global.index.scss';
-import store from './store';
-import { registerIcons } from './utils';
+import { registerIcons, store } from './utils';
 
 async function main() {
   dayjs.extend(relativeTime);

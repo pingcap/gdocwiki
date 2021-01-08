@@ -1,12 +1,13 @@
 import googleDrive from '@iconify-icons/logos/google-drive';
 import { Icon } from '@iconify/react';
-import { Dispatch } from '@reduxjs/toolkit';
 import { useMount, useUnmount } from 'ahooks';
 import { Button, InlineLoading, InlineNotification, TextInput } from 'carbon-components-react';
 import { Stack } from 'office-ui-fabric-react';
 import React, { useRef, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { getConfig } from '../config';
 import { updateFile } from '../reduxSlices/files';
+import { reloadPage } from '../reduxSlices/pageReload';
 import {
   DriveFile,
   MimeTypes,
@@ -16,6 +17,7 @@ import {
   showConfirm,
   showFormModal,
   showModal,
+  store,
 } from '../utils';
 import { promptError } from './FileAction.utils';
 
@@ -23,19 +25,12 @@ interface IMoveFileModalBodyProps {
   files: any[];
   targetFolderId: string;
   closeFn: () => void;
-  dispatch: Dispatch<any>;
-  reloadPage: () => void;
 }
 
-function MoveFileModalBody({
-  files,
-  targetFolderId,
-  closeFn,
-  dispatch,
-  reloadPage,
-}: IMoveFileModalBodyProps) {
+function MoveFileModalBody({ files, targetFolderId, closeFn }: IMoveFileModalBodyProps) {
   const [finished, setFinished] = useState(0);
   const isCancelled = useRef(false);
+  const dispatch = useDispatch();
 
   useMount(async () => {
     let succeeded = 0;
@@ -93,7 +88,7 @@ function MoveFileModalBody({
 
     // When everything is finished, reload current content to update the file list.
     if (succeeded > 0) {
-      reloadPage();
+      dispatch(reloadPage());
     }
 
     if (errors.length > 0) {
@@ -138,11 +133,7 @@ function MoveFileModalBody({
   );
 }
 
-export function showMoveFile(
-  parentFolder: DriveFile,
-  dispatch: Dispatch<any>,
-  reloadPage: () => void
-) {
+export function showMoveFile(parentFolder: DriveFile) {
   function showPickFile() {
     gapi.load('picker', () => {
       const myDocsView = new google.picker.DocsView()
@@ -178,13 +169,11 @@ export function showMoveFile(
               modalHeading: 'Moving Files In Progress',
               preventCloseOnClickOutside: true,
               danger: true,
-              renderBodyFooter: (close) => (
+              RenderBodyFooter: ({ close }) => (
                 <MoveFileModalBody
                   files={data.docs}
                   targetFolderId={parentFolder.id!}
                   closeFn={close}
-                  dispatch={dispatch}
-                  reloadPage={reloadPage}
                 />
               ),
             });
@@ -263,7 +252,7 @@ export function showMoveFile(
             resource: {},
           });
           console.trace('MoveFileModalBody files.update', movedFile);
-          dispatch(updateFile(movedFile.result));
+          store.dispatch(updateFile(movedFile.result));
         } catch (eFirst) {
           // If move failed, create shortcut.
           try {
@@ -280,20 +269,20 @@ export function showMoveFile(
               },
             });
             console.trace('MoveFileModalBody files.create', newShortcut);
-            dispatch(updateFile(newShortcut.result));
+            store.dispatch(updateFile(newShortcut.result));
           } catch (eSecond) {
             // If shortcut creation failed, display error for move file.
             throw eFirst;
           }
         }
 
-        reloadPage();
+        store.dispatch(reloadPage());
       } catch (e) {
         promptError(e);
         return false;
       }
     },
-    renderForm: (state, hasSubmitted, close) => (
+    RenderForm: ({ formProps, hasSubmitted, close }) => (
       <>
         {!parentFolder.capabilities?.canMoveChildrenOutOfTeamDrive && (
           <div style={{ marginBottom: '2rem' }}>
@@ -315,9 +304,9 @@ export function showMoveFile(
             name="url"
             labelText="Paste Google Doc / Drive URL"
             placeholder="Example: https://docs.google.com/document/d/xxxxxxx/edit"
-            value={state.values.url}
-            invalidText={state.errors.url}
-            invalid={Boolean(state.touched.url && state.errors.url)}
+            value={formProps.values.url}
+            invalidText={formProps.errors.url}
+            invalid={Boolean(formProps.touched.url && formProps.errors.url)}
             disabled={hasSubmitted}
           />
         </div>

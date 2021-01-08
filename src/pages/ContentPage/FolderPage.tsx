@@ -4,7 +4,6 @@ import dayjs from 'dayjs';
 import { Stack, IColumn } from 'office-ui-fabric-react';
 import React, { useCallback, useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router';
 import { DriveIcon, ShortcutIcon, Table } from '../../components';
 import { useManagedRenderStack } from '../../context/RenderStack';
 import { useFolderFilesMeta } from '../../hooks/useFolderFilesMeta';
@@ -19,7 +18,6 @@ export interface IFolderPageProps {
 }
 
 function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPageProps) {
-  const history = useHistory();
   const mapIdToFile = useSelector(selectMapIdToFile);
 
   useManagedRenderStack({
@@ -107,9 +105,9 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
         openInNewWindow = true;
       }
 
-      mdLink.handleFileLinkClick(history, targetFile, openInNewWindow);
+      mdLink.handleFileLinkClick(targetFile, openInNewWindow);
     },
-    [history, mapIdToFile, file, shortCutFile]
+    [mapIdToFile, file, shortCutFile]
   );
 
   return (

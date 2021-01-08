@@ -7,11 +7,8 @@ import {
 } from 'office-ui-fabric-react';
 import React, { useMemo } from 'react';
 import Avatar from 'react-avatar';
-import { useDispatch } from 'react-redux';
-import { useHistory } from 'react-router-dom';
 import { DriveIcon } from '../components';
 import { getConfig } from '../config';
-import { usePageReloader } from '../context/PageReloader';
 import { useRender } from '../context/RenderStack';
 import useFileMeta from '../hooks/useFileMeta';
 import { MimeTypes } from '../utils';
@@ -24,10 +21,6 @@ import { showTrashFile } from './FileAction.trashFile';
 import { showUpdateTags } from './FileAction.updateTags';
 
 function FileAction() {
-  const history = useHistory();
-  const dispatch = useDispatch();
-  const reloadPage = usePageReloader();
-
   // Support we have a folder, containing a shortcut to a README document,
   // the rInner is README and the rOuter is the folder.
   const { inMost: rInner, outMost: rOuter } = useRender();
@@ -126,7 +119,7 @@ function FileAction() {
             imageProps: { src: DriveIcon.getIconSrc(mimeType), width: 16 },
           },
           onClick: () => {
-            showCreateFile(text, mimeType, outerFolder.file!.id!, dispatch, history, reloadPage);
+            showCreateFile(text, mimeType, outerFolder.file!.id!);
           },
         });
       });
@@ -145,7 +138,7 @@ function FileAction() {
                 iconName: 'link',
               },
               onClick: () => {
-                showCreateLink(outerFolder.file!.id!, dispatch, history, reloadPage);
+                showCreateLink(outerFolder.file!.id!);
               },
             },
             {
@@ -155,7 +148,7 @@ function FileAction() {
                 iconName: 'StackedMove',
               },
               onClick: () => {
-                showMoveFile(outerFolder.file!, dispatch, reloadPage);
+                showMoveFile(outerFolder.file!);
               },
             },
           ],
@@ -181,7 +174,7 @@ function FileAction() {
           text: `Rename ${fileKind}`,
           iconProps: { iconName: 'Edit' },
           onClick: () => {
-            showRenameFile(fileKind, rOuter.file, dispatch, reloadPage);
+            showRenameFile(fileKind, rOuter.file);
           },
         });
       }
@@ -193,7 +186,7 @@ function FileAction() {
           text: `Trash ${fileKind}`,
           iconProps: { iconName: 'Trash' },
           onClick: () => {
-            showTrashFile(fileKind, rOuter.file, dispatch, history);
+            showTrashFile(fileKind, rOuter.file);
           },
         });
       }
@@ -204,14 +197,14 @@ function FileAction() {
           text: `Tags`,
           iconProps: { iconName: 'Tag' },
           onClick: () => {
-            showUpdateTags(rOuter.file, dispatch, reloadPage);
+            showUpdateTags(rOuter.file);
           },
         });
       }
     }
 
     return commands;
-  }, [rOuter?.file, outerFolder.file, dispatch, reloadPage, history]);
+  }, [rOuter?.file, outerFolder.file]);
 
   if (commandBarItems.length === 0 && commandBarOverflowItems.length === 0) {
     return null;

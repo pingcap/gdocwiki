@@ -1,15 +1,8 @@
-import { Dispatch } from '@reduxjs/toolkit';
-import { History } from 'history';
 import { removeFile } from '../reduxSlices/files';
-import { DriveFile, showConfirm } from '../utils';
+import { history, DriveFile, showConfirm, store } from '../utils';
 import { promptError } from './FileAction.utils';
 
-export function showTrashFile(
-  fileTypeName: string,
-  currentFile: DriveFile,
-  dispatch: Dispatch<any>,
-  history: History
-) {
+export function showTrashFile(fileTypeName: string, currentFile: DriveFile) {
   showConfirm({
     modalHeading: `Trash ${fileTypeName}`,
     yesButtonKind: 'danger',
@@ -29,7 +22,7 @@ export function showTrashFile(
             trashed: true,
           },
         });
-        dispatch(removeFile(currentFile.id!));
+        store.dispatch(removeFile(currentFile.id!));
         if (currentFile.parents?.[0]) {
           history.push(`/view/${currentFile.parents[0]}`);
         } else {

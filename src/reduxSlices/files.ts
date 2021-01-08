@@ -1,6 +1,6 @@
 import { createSlice, createSelector } from '@reduxjs/toolkit';
 import naturalCompare from 'natural-compare-lite';
-import { DriveFile } from '../utils';
+import { DriveFile, extractTagsIntoSet } from '../utils';
 
 export interface FilesState {
   isLoading: boolean;
@@ -53,6 +53,16 @@ export const {
 export const selectLoading = (state: { files: FilesState }) => state.files.isLoading;
 export const selectError = (state: { files: FilesState }) => state.files.error;
 export const selectMapIdToFile = (state: { files: FilesState }) => state.files.mapIdToFile;
+export const selectAllTags = (state: { files: FilesState }) => {
+  const tags = new Set<string>();
+  for (const id in state.files.mapIdToFile) {
+    const file = state.files.mapIdToFile[id];
+    extractTagsIntoSet(file, tags);
+  }
+  const r = Array.from(tags.keys());
+  r.sort();
+  return r;
+};
 
 // A map to lookup all childrens for a file id.
 export const selectMapIdToChildren: (state: any) => Record<string, DriveFile[]> = createSelector(

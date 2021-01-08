@@ -11,10 +11,9 @@ import { Stack } from 'office-ui-fabric-react';
 import Trigger from 'rc-trigger';
 import React, { useCallback, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { Router, Switch, Route } from 'react-router-dom';
 import { NavMenu } from './components';
 import { getConfig } from './config';
-import { PageReloaderProvider } from './context/PageReloader';
 import { RenderStackProvider } from './context/RenderStack';
 import useGapi from './hooks/useGapi';
 import useLoadDriveFiles from './hooks/useLoadDriveFiles';
@@ -23,7 +22,8 @@ import HeaderSearch from './layout/HeaderSearch';
 import Page from './pages/Page';
 import { SearchResult } from './pages/Search';
 import { selectMapIdToFile } from './reduxSlices/files';
-import { collapseAll, expand } from './reduxSlices/sider-tree';
+import { collapseAll, expand } from './reduxSlices/siderTree';
+import { history } from './utils';
 
 function DriveFilesLoader({ children }) {
   useLoadDriveFiles();
@@ -52,7 +52,7 @@ function App() {
   }
 
   return (
-    <Router>
+    <Router history={history}>
       <DriveFilesLoader>
         <Header>
           {!isExpanded && (
@@ -96,6 +96,7 @@ function App() {
                         popupAlign={{
                           points: ['tl', 'bl'],
                         }}
+                        zIndex={10000}
                         action="hover"
                         popup={
                           <NavMenu>
@@ -137,6 +138,7 @@ function App() {
               popupAlign={{
                 points: ['tr', 'br'],
               }}
+              zIndex={10000}
               action="hover"
               popup={<HeaderUserMenu />}
               popupTransitionName="slide-up"
@@ -158,19 +160,17 @@ function App() {
         </Header>
         <Content isExpanded={isExpanded}>
           <RenderStackProvider>
-            <PageReloaderProvider>
-              <Switch>
-                <Route exact path="/">
-                  <Page overrideId={getConfig().REACT_APP_ROOT_ID} />
-                </Route>
-                <Route exact path="/view/:id">
-                  <Page />
-                </Route>
-                <Route path="/search/:keyword">
-                  <SearchResult />
-                </Route>
-              </Switch>
-            </PageReloaderProvider>
+            <Switch>
+              <Route exact path="/">
+                <Page overrideId={getConfig().REACT_APP_ROOT_ID} />
+              </Route>
+              <Route exact path="/view/:id">
+                <Page />
+              </Route>
+              <Route path="/search/:keyword">
+                <SearchResult />
+              </Route>
+            </Switch>
           </RenderStackProvider>
         </Content>
       </DriveFilesLoader>

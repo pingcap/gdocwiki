@@ -1,3 +1,4 @@
+import cx from 'classnames';
 import isArray from 'lodash/isArray';
 import openColor from 'open-color/open-color.json';
 import { useMemo } from 'react';
@@ -17,6 +18,7 @@ for (const colorName in openColor) {
 
 export interface ITagProps {
   text: string;
+  onClick?: () => void;
 }
 
 function stringToColor(s: string): [string, string] {
@@ -25,15 +27,16 @@ function stringToColor(s: string): [string, string] {
   return [tagColors[pos], foreColors[pos]];
 }
 
-export default function Tag({ text }: ITagProps) {
+export default function Tag({ text, onClick }: ITagProps) {
   const bgAndFore = useMemo(() => stringToColor(text), [text]);
   return (
     <span
-      className={styles.tag}
+      className={cx([styles.tag], { [styles.isClickable]: !!onClick })}
       style={{
         backgroundColor: bgAndFore[0],
         color: bgAndFore[1],
       }}
+      onClick={onClick}
     >
       {text}
     </span>

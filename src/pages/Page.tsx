@@ -1,10 +1,13 @@
 import { InlineLoading } from 'carbon-components-react';
 import { Stack } from 'office-ui-fabric-react';
 import React, { useEffect, useMemo } from 'react';
+import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { Tag } from '../components';
-import { usePageReloadToken } from '../context/PageReloader';
+import { getConfig } from '../config';
 import useFileMeta from '../hooks/useFileMeta';
+import { selectMapIdToFile } from '../reduxSlices/files';
+import { selectPageReloadToken } from '../reduxSlices/pageReload';
 import { extractTags } from '../utils';
 import ContentPage from './ContentPage';
 import FileAction from './FileAction';
@@ -12,7 +15,7 @@ import FileBreadcrumb from './FileBreadcrumb';
 import styles from './Page.module.scss';
 
 function PageReloader({ overrideId }: { overrideId?: string }) {
-  const token = usePageReloadToken();
+  const token = useSelector(selectPageReloadToken);
   return <Page overrideId={overrideId} key={token} />;
 }
 
@@ -21,11 +24,25 @@ function Page({ overrideId }: { overrideId?: string }) {
   const id = overrideId ?? paramId;
   const { file, loading, error } = useFileMeta(id);
 
+  const mapIdToFile = useSelector(selectMapIdToFile);
+
   useEffect(() => {
-    if (file?.name) {
-      document.title = `${file.name} - Gdoc Wiki`;
+    let suffix = 'Gdoc Wiki';
+    if (getConfig().REACT_APP_NAME) {
+      suffix = `${getConfig().REACT_APP_NAME} Wiki`;
+    } else {
+      const s = mapIdToFile?.[getConfig().REACT_APP_ROOT_ID]?.name;
+      if (s) {
+        suffix = `${s} Wiki`;
+      }
     }
-  }, [file]);
+
+    if (!file || file?.id === getConfig().REACT_APP_ROOT_ID) {
+      document.title = suffix;
+    } else {
+      document.title = `${file.name} - ${suffix}`;
+    }
+  }, [file, mapIdToFile]);
 
   const tags = useMemo(() => {
     if (!file) {
@@ -47,7 +64,7 @@ function Page({ overrideId }: { overrideId?: string }) {
             style={{ paddingLeft: 8, paddingTop: 8 }}
           >
             {tags.map((tag) => (
-              <Tag text={tag} />
+              <Tag key={tag} text={tag} />
             ))}
           </Stack>
         )}

@@ -5,7 +5,7 @@ import cx from 'classnames';
 import { Stack } from 'office-ui-fabric-react';
 import React, { useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useHistory, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { getConfig } from '../config';
 import {
   selectError,
@@ -13,13 +13,7 @@ import {
   selectMapIdToChildren,
   selectMapIdToFile,
 } from '../reduxSlices/files';
-import {
-  activate,
-  expand,
-  collapse,
-  selectExpanded,
-  selectActive,
-} from '../reduxSlices/sider-tree';
+import { activate, expand, collapse, selectExpanded, selectActive } from '../reduxSlices/siderTree';
 import { DriveFile, mdLink, MimeTypes } from '../utils';
 import styles from './Sider.module.scss';
 
@@ -92,16 +86,12 @@ function Sider({ isExpanded = true, overrideId }: { isExpanded?: boolean; overri
   const active = useSelector(selectActive);
   const expanded = useSelector(selectExpanded);
 
-  const history = useHistory();
   const paramId = useParams<any>().id as string;
   const id = overrideId ?? paramId;
 
-  const handleSelect = useCallback(
-    (_ev, payload) => {
-      mdLink.handleFileLinkClick(history, payload.value);
-    },
-    [history]
-  );
+  const handleSelect = useCallback((_ev, payload) => {
+    mdLink.handleFileLinkClick(payload.value);
+  }, []);
 
   const handleToggle = useCallback(
     (_, node: TreeNodeProps) => {

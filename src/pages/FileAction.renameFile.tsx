@@ -1,16 +1,11 @@
-import { Dispatch } from '@reduxjs/toolkit';
 import { TextInput } from 'carbon-components-react';
 import React from 'react';
 import { updateFile } from '../reduxSlices/files';
-import { DriveFile, showFormModal } from '../utils';
+import { reloadPage } from '../reduxSlices/pageReload';
+import { DriveFile, showFormModal, store } from '../utils';
 import { promptError } from './FileAction.utils';
 
-export function showRenameFile(
-  fileTypeName: string,
-  currentFile: DriveFile,
-  dispatch: Dispatch<any>,
-  reloadPage: () => void
-) {
+export function showRenameFile(fileTypeName: string, currentFile: DriveFile) {
   showFormModal({
     modalHeading: `Rename ${fileTypeName}`,
     selectorPrimaryFocus: `#name`,
@@ -30,14 +25,14 @@ export function showRenameFile(
             name,
           },
         });
-        dispatch(updateFile(resp.result));
-        reloadPage();
+        store.dispatch(updateFile(resp.result));
+        store.dispatch(reloadPage());
       } catch (e) {
         promptError(e);
         return false;
       }
     },
-    renderForm: (state, hasSubmitted) => (
+    RenderForm: ({ formProps, hasSubmitted }) => (
       <>
         <TextInput
           id="name"
@@ -47,9 +42,9 @@ export function showRenameFile(
               Rename "<strong>{currentFile.name}</strong>" to
             </span>
           }
-          value={state.values.name}
-          invalidText={state.errors.name}
-          invalid={Boolean(state.touched.name && state.errors.name)}
+          value={formProps.values.name}
+          invalidText={formProps.errors.name}
+          invalid={Boolean(formProps.touched.name && formProps.errors.name)}
           disabled={hasSubmitted}
         />
       </>
