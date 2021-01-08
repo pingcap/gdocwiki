@@ -2,24 +2,16 @@ import { Breadcrumb, IBreadcrumbItem, Stack } from 'office-ui-fabric-react';
 import React, { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { DriveIcon, ShortcutIcon, Tag } from '../components';
+import { DriveIcon, ShortcutIcon } from '../components';
 import { selectMapIdToFile } from '../reduxSlices/files';
-import { DriveFile, extractTags, MimeTypes } from '../utils';
+import { DriveFile, MimeTypes } from '../utils';
 
 function LastBreadcrumbItem({ file }: { file: DriveFile }) {
-  const tags = extractTags(file);
   return (
     <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
       <span>{file.name}</span>
       <DriveIcon file={file} />
       {file.mimeType === MimeTypes.GoogleShortcut && <ShortcutIcon />}
-      {tags.length > 0 && (
-        <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 4 }}>
-          {tags.map((tag) => (
-            <Tag text={tag} />
-          ))}
-        </Stack>
-      )}
     </Stack>
   );
 }

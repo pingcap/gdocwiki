@@ -63,6 +63,7 @@ export function showUpdateTags(
               Set tags for "<strong>{currentFile.name}</strong>"
             </span>
           }
+          placeholder="Example: Tag1, Tag2"
           value={state.values.tags}
           disabled={hasSubmitted}
         />

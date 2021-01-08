@@ -217,11 +217,7 @@ function FileAction() {
     return null;
   }
 
-  return (
-    <div style={{ marginBottom: 32 }}>
-      <CommandBar items={commandBarItems} overflowItems={commandBarOverflowItems} />
-    </div>
-  );
+  return <CommandBar items={commandBarItems} overflowItems={commandBarOverflowItems} />;
 }
 
 export default React.memo(FileAction);
