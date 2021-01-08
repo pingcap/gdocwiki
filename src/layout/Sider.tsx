@@ -3,9 +3,8 @@ import { InlineLoading, SkeletonText } from 'carbon-components-react';
 import TreeView, { TreeNode, TreeNodeProps } from 'carbon-components-react/lib/components/TreeView';
 import cx from 'classnames';
 import { Stack } from 'office-ui-fabric-react';
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useParams } from 'react-router-dom';
 import { getConfig } from '../config';
 import {
   selectError,
@@ -13,7 +12,13 @@ import {
   selectMapIdToChildren,
   selectMapIdToFile,
 } from '../reduxSlices/files';
-import { activate, expand, collapse, selectExpanded, selectActive } from '../reduxSlices/siderTree';
+import {
+  activate,
+  expand,
+  collapse,
+  selectExpanded,
+  selectActiveId,
+} from '../reduxSlices/siderTree';
 import { DriveFile, mdLink, MimeTypes } from '../utils';
 import styles from './Sider.module.scss';
 
@@ -75,19 +80,16 @@ function renderChildren(
   });
 }
 
-function Sider({ isExpanded = true, overrideId }: { isExpanded?: boolean; overrideId?: string }) {
+function Sider({ isExpanded = true }: { isExpanded?: boolean }) {
   const dispatch = useDispatch();
 
   const loading = useSelector(selectLoading);
   const error = useSelector(selectError);
   const mapIdToFile = useSelector(selectMapIdToFile);
   const mapIdToChildren = useSelector(selectMapIdToChildren);
-
-  const active = useSelector(selectActive);
   const expanded = useSelector(selectExpanded);
 
-  const paramId = useParams<any>().id as string;
-  const id = overrideId ?? paramId;
+  const id = useSelector(selectActiveId) ?? getConfig().REACT_APP_ROOT_ID;
 
   const handleSelect = useCallback((_ev, payload) => {
     mdLink.handleFileLinkClick(payload.value);
@@ -104,10 +106,11 @@ function Sider({ isExpanded = true, overrideId }: { isExpanded?: boolean; overri
     [dispatch]
   );
 
-  // active file
-  if ((active ?? '') !== id && mapIdToFile[id] !== undefined) {
-    dispatch(activate({ id: id, mapIdToFile: mapIdToFile }));
-  }
+  useEffect(() => {
+    if (mapIdToFile[id]) {
+      dispatch(activate({ id: id, mapIdToFile: mapIdToFile }));
+    }
+  }, [id, mapIdToFile, dispatch]);
 
   return (
     <div className={cx(styles.sider, { [styles.isExpanded]: isExpanded })}>

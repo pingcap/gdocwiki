@@ -96,6 +96,7 @@ function App() {
                         popupAlign={{
                           points: ['tl', 'bl'],
                         }}
+                        mouseLeaveDelay={0.3}
                         zIndex={10000}
                         action="hover"
                         popup={
@@ -138,6 +139,7 @@ function App() {
               popupAlign={{
                 points: ['tr', 'br'],
               }}
+              mouseLeaveDelay={0.2}
               zIndex={10000}
               action="hover"
               popup={<HeaderUserMenu />}
@@ -148,15 +150,7 @@ function App() {
               </div>
             </Trigger>
           </HeaderGlobalBar>
-          <Route exact path="/">
-            <Sider isExpanded={isExpanded} overrideId={getConfig().REACT_APP_ROOT_ID} />
-          </Route>
-          <Route exact path="/view/:id">
-            <Sider isExpanded={isExpanded} />
-          </Route>
-          <Route path="/search/:keyword">
-            <Sider isExpanded={isExpanded} overrideId={getConfig().REACT_APP_ROOT_ID} />
-          </Route>
+          <Sider isExpanded={isExpanded} />
         </Header>
         <Content isExpanded={isExpanded}>
           <RenderStackProvider>

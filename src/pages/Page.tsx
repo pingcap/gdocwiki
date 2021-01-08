@@ -1,13 +1,14 @@
 import { InlineLoading } from 'carbon-components-react';
 import { Stack } from 'office-ui-fabric-react';
 import React, { useEffect, useMemo } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { Tag } from '../components';
 import { getConfig } from '../config';
 import useFileMeta from '../hooks/useFileMeta';
 import { selectMapIdToFile } from '../reduxSlices/files';
 import { selectPageReloadToken } from '../reduxSlices/pageReload';
+import { updateActiveId } from '../reduxSlices/siderTree';
 import { extractTags } from '../utils';
 import ContentPage from './ContentPage';
 import FileAction from './FileAction';
@@ -20,8 +21,15 @@ function PageReloader({ overrideId }: { overrideId?: string }) {
 }
 
 function Page({ overrideId }: { overrideId?: string }) {
+  const dispatch = useDispatch();
   const { id: paramId } = useParams<any>();
   const id = overrideId ?? paramId;
+
+  useEffect(() => {
+    // Update the ActiveId when it is changed.
+    dispatch(updateActiveId(id));
+  }, [id, dispatch]);
+
   const { file, loading, error } = useFileMeta(id);
 
   const mapIdToFile = useSelector(selectMapIdToFile);

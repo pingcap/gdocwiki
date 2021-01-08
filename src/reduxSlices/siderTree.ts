@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 import { DriveFile } from '../utils';
 
 export interface TreeState {
-  active?: string;
+  activeId?: string;
   expanded: Array<string>;
 }
 
@@ -19,8 +19,11 @@ export const slice = createSlice({
   name: 'tree',
   initialState,
   reducers: {
+    updateActiveId: (state, { payload }: { payload: string }) => {
+      state.activeId = payload;
+    },
+
     activate: (state, { payload }: { payload: ActivatePayload }) => {
-      state.active = payload.id;
       console.trace(`Sidebar activate`, payload.id);
       const visitedNodes = new Set<string>(state.expanded);
       let activeNodes: string[] = payload.mapIdToFile[payload.id]?.parents ?? [];
@@ -58,12 +61,11 @@ export const slice = createSlice({
   },
 });
 
-export const { activate, expand, collapse, collapseAll } = slice.actions;
+export const { updateActiveId, activate, expand, collapse, collapseAll } = slice.actions;
 
-export const selectActive: (state: { tree: TreeState }) => string | undefined = (state) =>
-  state.tree.active;
+export const selectExpanded = (state: { tree: TreeState }) =>
+  new Set(state.tree.expanded) as ReadonlySet<string>;
 
-export const selectExpanded: (state: { tree: TreeState }) => ReadonlySet<string> = (state) =>
-  new Set(state.tree.expanded);
+export const selectActiveId = (state: { tree: TreeState }) => state.tree.activeId;
 
 export default slice.reducer;
