@@ -7,23 +7,25 @@ import {
 } from 'office-ui-fabric-react';
 import React, { useMemo } from 'react';
 import Avatar from 'react-avatar';
+import { useHistory } from 'react-router-dom';
 import { DriveIcon } from '../components';
 import { getConfig } from '../config';
 import { useRender } from '../context/RenderStack';
 import useFileMeta from '../hooks/useFileMeta';
-import { MimeTypes } from '../utils';
+import { MimeTypes, shouldShowFolderChildrenSettings, shouldShowTagSettings } from '../utils';
 import { showCreateFile } from './FileAction.createFile';
 import { showCreateLink } from './FileAction.createLink';
 import styles from './FileAction.module.scss';
 import { showMoveFile } from './FileAction.moveFile';
 import { showRenameFile } from './FileAction.renameFile';
 import { showTrashFile } from './FileAction.trashFile';
-import { showUpdateTags } from './FileAction.updateTags';
 
 function FileAction() {
   // Support we have a folder, containing a shortcut to a README document,
   // the rInner is README and the rOuter is the folder.
   const { inMost: rInner, outMost: rOuter } = useRender();
+
+  const history = useHistory();
 
   const outerFolderId =
     rOuter?.file.mimeType === MimeTypes.GoogleFolder ? rOuter?.file.id : rOuter?.file.parents?.[0];
@@ -190,21 +192,20 @@ function FileAction() {
           },
         });
       }
-      if (rOuter.file.capabilities?.canEdit) {
-        // Tag
+      if (shouldShowTagSettings(rOuter.file) || shouldShowFolderChildrenSettings(rInner?.file)) {
         commands.push({
-          key: 'tag',
-          text: `Tags`,
-          iconProps: { iconName: 'Tag' },
+          key: 'settings',
+          text: `Settings`,
+          iconProps: { iconName: 'Settings' },
           onClick: () => {
-            showUpdateTags(rOuter.file);
+            history.push(`/view/${rOuter.file.id}/settings/${rInner?.file.id}`);
           },
         });
       }
     }
 
     return commands;
-  }, [rOuter?.file, outerFolder.file]);
+  }, [rInner?.file, rOuter?.file, outerFolder.file, history]);
 
   if (commandBarItems.length === 0 && commandBarOverflowItems.length === 0) {
     return null;

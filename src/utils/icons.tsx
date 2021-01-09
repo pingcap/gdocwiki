@@ -6,7 +6,7 @@ import {
   Launch16,
   Link16,
   OverflowMenuHorizontal16,
-  Tag16,
+  Settings16,
   TrashCan16,
   WatsonHealthStackedMove16,
 } from '@carbon/icons-react';
@@ -27,7 +27,7 @@ export function registerIcons() {
       Link: <Link16 />,
       Edit: <Edit16 />,
       Trash: <TrashCan16 />,
-      Tag: <Tag16 />,
+      Settings: <Settings16 />,
       Add: <Add16 />,
       StackedMove: <WatsonHealthStackedMove16 />,
       ColorGoogleDrive: <Icon icon={googleDrive} />,

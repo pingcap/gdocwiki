@@ -1,37 +1,22 @@
 import { InlineLoading } from 'carbon-components-react';
 import { Stack } from 'office-ui-fabric-react';
 import React, { useEffect, useMemo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { Tag } from '../components';
 import { getConfig } from '../config';
 import useFileMeta from '../hooks/useFileMeta';
+import useUpdateSiderFromPath from '../hooks/useUpdateSiderFromPath';
 import { selectMapIdToFile } from '../reduxSlices/files';
 import { selectPageReloadToken } from '../reduxSlices/pageReload';
-import { updateActiveId } from '../reduxSlices/siderTree';
 import { extractTags } from '../utils';
 import ContentPage from './ContentPage';
 import FileAction from './FileAction';
 import FileBreadcrumb from './FileBreadcrumb';
-import styles from './Page.module.scss';
+import RightContainer from './RightContainer';
 
-function PageReloader({ overrideId }: { overrideId?: string }) {
-  const token = useSelector(selectPageReloadToken);
-  return <Page overrideId={overrideId} key={token} />;
-}
-
-function Page({ overrideId }: { overrideId?: string }) {
-  const dispatch = useDispatch();
-  const { id: paramId } = useParams<any>();
-  const id = overrideId ?? paramId;
-
-  useEffect(() => {
-    // Update the ActiveId when it is changed.
-    dispatch(updateActiveId(id));
-  }, [id, dispatch]);
-
+function Page() {
+  const id = useUpdateSiderFromPath('id');
   const { file, loading, error } = useFileMeta(id);
-
   const mapIdToFile = useSelector(selectMapIdToFile);
 
   useEffect(() => {
@@ -60,7 +45,7 @@ function Page({ overrideId }: { overrideId?: string }) {
   }, [file]);
 
   return (
-    <div className={styles.contentContainer}>
+    <RightContainer>
       <div style={{ marginBottom: 32 }}>
         <FileBreadcrumb file={file} />
         <FileAction />
@@ -80,8 +65,13 @@ function Page({ overrideId }: { overrideId?: string }) {
       {loading && <InlineLoading description="Loading file metadata..." />}
       {!loading && !!error && error}
       {!loading && !!file && <ContentPage file={file} />}
-    </div>
+    </RightContainer>
   );
 }
 
-export default React.memo(PageReloader);
+function Reloader() {
+  const token = useSelector(selectPageReloadToken);
+  return <Page key={token} />;
+}
+
+export default React.memo(Reloader);

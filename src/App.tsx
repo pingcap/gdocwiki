@@ -21,6 +21,7 @@ import { HeaderTitle, Content, HeaderUserAction, Sider, HeaderUserMenu } from '.
 import HeaderSearch from './layout/HeaderSearch';
 import Page from './pages/Page';
 import { SearchResult } from './pages/Search';
+import Settings from './pages/Settings';
 import { selectMapIdToFile } from './reduxSlices/files';
 import { collapseAll, expand } from './reduxSlices/siderTree';
 import { history } from './utils';
@@ -156,10 +157,13 @@ function App() {
           <RenderStackProvider>
             <Switch>
               <Route exact path="/">
-                <Page overrideId={getConfig().REACT_APP_ROOT_ID} />
+                <Page />
               </Route>
               <Route exact path="/view/:id">
                 <Page />
+              </Route>
+              <Route exact path="/view/:outerId/settings/:innerId">
+                <Settings />
               </Route>
               <Route path="/search/:keyword">
                 <SearchResult />

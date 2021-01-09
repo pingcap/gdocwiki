@@ -56,3 +56,11 @@ export function extractTags(file: DriveFile): string[] {
   tags.sort();
   return tags;
 }
+
+export function shouldShowTagSettings(file?: DriveFile): boolean {
+  return !!file?.capabilities?.canEdit;
+}
+
+export function shouldShowFolderChildrenSettings(file?: DriveFile): boolean {
+  return !!(file?.capabilities?.canEdit && file?.mimeType === MimeTypes.GoogleFolder);
+}

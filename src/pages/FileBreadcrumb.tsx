@@ -52,7 +52,6 @@ function useFilePathBreadcrumb(file?: DriveFile) {
       let onClick: any = () => history.push(`/view/${currentItem.id}`);
       if (iterateId === file.id) {
         text = (<LastBreadcrumbItem file={currentItem} />) as any;
-        onClick = null;
       }
       paths.push({
         text,
@@ -79,10 +78,22 @@ function useFilePathBreadcrumb(file?: DriveFile) {
   }, [file, mapIdToFile, history]);
 }
 
-function FileBreadcrumb({ file }: { file?: DriveFile }) {
+export interface IFileBreadcrumbProps {
+  file?: DriveFile;
+  extraItems?: IBreadcrumbItem[];
+}
+
+function FileBreadcrumb({ file, extraItems }: IFileBreadcrumbProps) {
   const paths = useFilePathBreadcrumb(file);
-  if ((paths?.length ?? 0) > 0) {
-    return <Breadcrumb items={paths!} />;
+  const items = useMemo(() => {
+    const r = [...(paths ?? []), ...(extraItems ?? [])];
+    if (r.length > 0) {
+      delete r[r.length - 1].onClick;
+    }
+    return r;
+  }, [paths, extraItems]);
+  if ((items.length ?? 0) > 0) {
+    return <Breadcrumb items={items} />;
   } else {
     return null;
   }
