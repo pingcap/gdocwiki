@@ -21,7 +21,7 @@ interface IFolderChildrenProps {
 function FileName({ file }: { file: DriveFile }) {
   const link = mdLink.parse(file.name);
   if (link) {
-    return <>{link.title}</>;
+    return <span>{link.title}</span>;
   } else {
     return (
       <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>

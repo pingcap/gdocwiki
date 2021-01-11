@@ -74,6 +74,7 @@ REACT_APP_ROOT_DRIVE_ID=xxxxxxx
   - [x] Expand all
   - [x] Collapse all
   - [x] Configure specific folder children to be displayed in sidebar or not
+    - [ ] Activate nearest displayed parent
   - [x] Activate and expand sidebar item according to current page
   - [x] Support >500 pages in the sidebar
   - [x] Support external link in syntax `[xxx](https://yyy)`
