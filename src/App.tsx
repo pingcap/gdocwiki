@@ -20,7 +20,7 @@ import useLoadDriveFiles from './hooks/useLoadDriveFiles';
 import { HeaderTitle, Content, HeaderUserAction, Sider, HeaderUserMenu } from './layout';
 import HeaderSearch from './layout/HeaderSearch';
 import Page from './pages/Page';
-import { SearchResult } from './pages/Search';
+import { SearchResult, SearchTag } from './pages/Search';
 import Settings from './pages/Settings';
 import { selectMapIdToFile } from './reduxSlices/files';
 import { collapseAll, expand } from './reduxSlices/siderTree';
@@ -165,8 +165,11 @@ function App() {
               <Route exact path="/view/:id/settings">
                 <Settings />
               </Route>
-              <Route path="/search/:keyword">
+              <Route path="/search/keyword/:keyword">
                 <SearchResult />
+              </Route>
+              <Route path="/search/tag/:tag">
+                <SearchTag />
               </Route>
             </Switch>
           </RenderStackProvider>

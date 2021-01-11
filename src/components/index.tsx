@@ -1,5 +1,8 @@
 export { default as DriveIcon } from './DriveIcon';
+export { default as DriveFileName } from './DriveFileName';
+export { default as FileListTable } from './FileListTable';
 export { default as Table } from './Table';
+export { default as Typography } from './Typography';
 export * from './Table';
 export { default as ShortcutIcon } from './ShortcutIcon';
 export { default as GapiErrorDisplay } from './GapiErrorDisplay';

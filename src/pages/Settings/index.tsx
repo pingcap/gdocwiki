@@ -1,8 +1,7 @@
 import { InlineLoading } from 'carbon-components-react';
-import { Stack, Text } from 'office-ui-fabric-react';
+import { Stack } from 'office-ui-fabric-react';
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
 import useFileMeta from '../../hooks/useFileMeta';
 import useUpdateSiderFromPath from '../../hooks/useUpdateSiderFromPath';
 import { selectPageReloadToken } from '../../reduxSlices/pageReload';
@@ -11,14 +10,6 @@ import FileBreadcrumb from '../FileBreadcrumb';
 import RightContainer from '../RightContainer';
 import SettingsChildrenDisplay from './Settings.childrenDisplay';
 import SettingsTag from './Settings.tags';
-
-export function SettingsTitle({ children }) {
-  return (
-    <div style={{ marginBottom: 24 }}>
-      <Text variant="large">{children}</Text>
-    </div>
-  );
-}
 
 function Settings() {
   const id = useUpdateSiderFromPath('id');

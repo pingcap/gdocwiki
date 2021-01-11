@@ -1,12 +1,13 @@
 import { InlineLoading } from 'carbon-components-react';
 import { Stack } from 'office-ui-fabric-react';
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useSelector } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 import { Tag } from '../components';
 import { getConfig } from '../config';
 import useFileMeta from '../hooks/useFileMeta';
+import useTitle from '../hooks/useTitle';
 import useUpdateSiderFromPath from '../hooks/useUpdateSiderFromPath';
-import { selectMapIdToFile } from '../reduxSlices/files';
 import { selectPageReloadToken } from '../reduxSlices/pageReload';
 import { extractTags } from '../utils';
 import ContentPage from './ContentPage';
@@ -17,25 +18,18 @@ import RightContainer from './RightContainer';
 function Page() {
   const id = useUpdateSiderFromPath('id');
   const { file, loading, error } = useFileMeta(id);
-  const mapIdToFile = useSelector(selectMapIdToFile);
+  const history = useHistory();
 
-  useEffect(() => {
-    let suffix = 'Gdoc Wiki';
-    if (getConfig().REACT_APP_NAME) {
-      suffix = `${getConfig().REACT_APP_NAME} Wiki`;
-    } else {
-      const s = mapIdToFile?.[getConfig().REACT_APP_ROOT_ID]?.name;
-      if (s) {
-        suffix = `${s} Wiki`;
+  useTitle(
+    (file) => {
+      if (file && file?.id !== getConfig().REACT_APP_ROOT_ID) {
+        return file.name;
+      } else {
+        return undefined;
       }
-    }
-
-    if (!file || file?.id === getConfig().REACT_APP_ROOT_ID) {
-      document.title = suffix;
-    } else {
-      document.title = `${file.name} - ${suffix}`;
-    }
-  }, [file, mapIdToFile]);
+    },
+    [file]
+  );
 
   const tags = useMemo(() => {
     if (!file) {
@@ -57,7 +51,11 @@ function Page() {
             style={{ paddingLeft: 8, paddingTop: 8 }}
           >
             {tags.map((tag) => (
-              <Tag key={tag} text={tag} />
+              <Tag
+                key={tag}
+                text={tag}
+                onClick={() => history.push(`/search/tag/${encodeURIComponent(tag)}`)}
+              />
             ))}
           </Stack>
         )}

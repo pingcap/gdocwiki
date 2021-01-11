@@ -7,7 +7,7 @@ import styles from './HeaderSearch.module.scss';
 function HeaderSearch() {
   const location = useLocation();
   const { pathname } = location;
-  const pathKey = '/search/';
+  const pathKey = '/search/keyword/';
   const initKeyword = pathname.includes(pathKey)
     ? pathname.substr(pathname.indexOf(pathKey) + pathKey.length)
     : '';

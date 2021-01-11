@@ -1,9 +1,16 @@
-import { DriveFile, MimeTypes } from '../utils';
+import { Launch16 } from '@carbon/icons-react';
+import React from 'react';
+import { DriveFile, mdLink, MimeTypes } from '../utils';
 
 export default function DriveIcon({ file }: { file?: DriveFile }) {
   if (!file) {
     return null;
   }
+  const link = mdLink.parse(file.name);
+  if (link) {
+    return <Launch16 />;
+  }
+
   let src = file.iconLink ?? '';
   if (file.mimeType === MimeTypes.GoogleShortcut && file.shortcutDetails?.targetMimeType) {
     src = DriveIcon.getIconSrc(file.shortcutDetails?.targetMimeType);

@@ -13,6 +13,7 @@ import isEqual from 'lodash/isEqual';
 import { Stack } from 'office-ui-fabric-react';
 import React, { useCallback, useState } from 'react';
 import { useDispatch } from 'react-redux';
+import { Typography } from '../../components';
 import { updateFile } from '../../reduxSlices/files';
 import { reloadPage } from '../../reduxSlices/pageReload';
 import {
@@ -25,7 +26,6 @@ import styles from './Settings.childrenDisplay.module.scss';
 import { ReactComponent as HideSvg } from './childrenDisplay_hide.svg';
 import { ReactComponent as ListSvg } from './childrenDisplay_list.svg';
 import { ReactComponent as TableSvg } from './childrenDisplay_table.svg';
-import { SettingsTitle } from '.';
 
 export default function SettingsChildrenDisplay({ file }: { file: DriveFile }) {
   const initialValues = parseFolderChildrenDisplaySettings(file);
@@ -63,7 +63,7 @@ export default function SettingsChildrenDisplay({ file }: { file: DriveFile }) {
 
   return (
     <div>
-      <SettingsTitle>Folder Children Display</SettingsTitle>
+      <Typography.Title>Folder Children Display</Typography.Title>
       <Formik initialValues={initialValues} onSubmit={handleSubmit}>
         {(props) => (
           <Form

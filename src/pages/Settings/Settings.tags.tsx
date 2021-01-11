@@ -11,12 +11,11 @@ import difference from 'lodash/difference';
 import { Stack } from 'office-ui-fabric-react';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Tag } from '../../components';
+import { Tag, Typography } from '../../components';
 import { selectAllTags, updateFile } from '../../reduxSlices/files';
 import { reloadPage } from '../../reduxSlices/pageReload';
 import { DriveFile, extractTags, TAG_PROPERTY_PREFIX } from '../../utils';
 import { promptError } from '../FileAction.utils';
-import { SettingsTitle } from '.';
 
 function parseTags(tagInput: string): string[] {
   return tagInput
@@ -82,7 +81,7 @@ export default function SettingsTag({ file }: { file: DriveFile }) {
 
   return (
     <div>
-      <SettingsTitle>Tags</SettingsTitle>
+      <Typography.Title>Tags</Typography.Title>
       <Formik initialValues={initialValues} onSubmit={handleSubmit}>
         {(props) => (
           <Form

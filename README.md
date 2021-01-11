@@ -124,6 +124,8 @@ REACT_APP_ROOT_DRIVE_ID=xxxxxxx
 - [x] Search
   - [x] Full text
   - [x] File name
+  - [x] Tag
+    - [ ] A page listing all tags
 - [ ] Mobile Support
   - [ ] Responsive Sidebar
 - [ ] Helpers
