@@ -198,7 +198,7 @@ function FileAction() {
           text: `Settings`,
           iconProps: { iconName: 'Settings' },
           onClick: () => {
-            history.push(`/view/${rOuter.file.id}/settings/${rInner?.file.id}`);
+            history.push(`/view/${rOuter.file.id}/settings`);
           },
         });
       }
