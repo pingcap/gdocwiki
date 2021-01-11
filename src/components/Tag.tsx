@@ -1,7 +1,9 @@
 import cx from 'classnames';
 import isArray from 'lodash/isArray';
 import openColor from 'open-color/open-color.json';
+import React from 'react';
 import { useMemo } from 'react';
+import { useHistory } from 'react-router-dom';
 import seedrandom from 'seedrandom';
 import styles from './Tag.module.scss';
 
@@ -42,3 +44,12 @@ export default function Tag({ text, onClick }: ITagProps) {
     </span>
   );
 }
+
+function LinkTag({ text }: ITagProps) {
+  const history = useHistory();
+  return (
+    <Tag text={text} onClick={() => history.push(`/search/tag/${encodeURIComponent(text)}`)} />
+  );
+}
+
+Tag.Link = React.memo(LinkTag);

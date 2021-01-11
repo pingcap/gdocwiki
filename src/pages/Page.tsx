@@ -2,7 +2,6 @@ import { InlineLoading } from 'carbon-components-react';
 import { Stack } from 'office-ui-fabric-react';
 import React, { useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
 import { Tag } from '../components';
 import { getConfig } from '../config';
 import useFileMeta from '../hooks/useFileMeta';
@@ -18,7 +17,6 @@ import RightContainer from './RightContainer';
 function Page() {
   const id = useUpdateSiderFromPath('id');
   const { file, loading, error } = useFileMeta(id);
-  const history = useHistory();
 
   useTitle(
     (file) => {
@@ -51,11 +49,7 @@ function Page() {
             style={{ paddingLeft: 8, paddingTop: 8 }}
           >
             {tags.map((tag) => (
-              <Tag
-                key={tag}
-                text={tag}
-                onClick={() => history.push(`/search/tag/${encodeURIComponent(tag)}`)}
-              />
+              <Tag.Link key={tag} text={tag} />
             ))}
           </Stack>
         )}

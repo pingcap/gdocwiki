@@ -11,7 +11,7 @@ import { Stack } from 'office-ui-fabric-react';
 import Trigger from 'rc-trigger';
 import React, { useCallback, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Router, Switch, Route } from 'react-router-dom';
+import { Router, Switch, Route, Link, LinkProps } from 'react-router-dom';
 import { NavMenu } from './components';
 import { getConfig } from './config';
 import { RenderStackProvider } from './context/RenderStack';
@@ -21,6 +21,7 @@ import { HeaderTitle, Content, HeaderUserAction, Sider, HeaderUserMenu } from '.
 import HeaderSearch from './layout/HeaderSearch';
 import Page from './pages/Page';
 import { SearchResult, SearchTag } from './pages/Search';
+import SearchAllTags from './pages/Search/AllTags';
 import Settings from './pages/Settings';
 import { selectMapIdToFile } from './reduxSlices/files';
 import { collapseAll, expand } from './reduxSlices/siderTree';
@@ -83,6 +84,9 @@ function App() {
           <HeaderTitle />
           {getConfig().NavItems.length > 0 && (
             <HeaderNavigation>
+              <HeaderMenuItem<LinkProps> element={Link} to="/search/tag">
+                All Tags
+              </HeaderMenuItem>
               {getConfig().NavItems.map((item) => {
                 switch (item.type) {
                   case 'link':
@@ -165,10 +169,13 @@ function App() {
               <Route exact path="/view/:id/settings">
                 <Settings />
               </Route>
-              <Route path="/search/keyword/:keyword">
+              <Route exact path="/search/keyword/:keyword">
                 <SearchResult />
               </Route>
-              <Route path="/search/tag/:tag">
+              <Route exact path="/search/tag">
+                <SearchAllTags />
+              </Route>
+              <Route exact path="/search/tag/:tag">
                 <SearchTag />
               </Route>
             </Switch>
