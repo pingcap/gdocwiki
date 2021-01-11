@@ -1,4 +1,4 @@
-import { Launch16 } from '@carbon/icons-react';
+import { CollapseAll16, Launch16 } from '@carbon/icons-react';
 import { InlineLoading, SkeletonText } from 'carbon-components-react';
 import TreeView, { TreeNode, TreeNodeProps } from 'carbon-components-react/lib/components/TreeView';
 import cx from 'classnames';
@@ -19,10 +19,11 @@ import {
   selectExpanded,
   selectActiveId,
 } from '../reduxSlices/siderTree';
-import { DriveFile, mdLink, MimeTypes } from '../utils';
+import { DriveFile, mdLink, MimeTypes, parseFolderChildrenDisplaySettings } from '../utils';
 import styles from './Sider.module.scss';
 
 function renderChildren(
+  mapIdToFile: Record<string, DriveFile>,
   mapIdToChildren: Record<string, DriveFile[]>,
   parentId?: string,
   expanded?: ReadonlySet<string>,
@@ -37,11 +38,25 @@ function renderChildren(
   if (!parentId) {
     return null;
   }
-  const files = mapIdToChildren[parentId];
+
+  let files = mapIdToChildren[parentId];
   if (!mapIdToChildren[parentId]) {
     return null;
   }
+  if (mapIdToFile[parentId]) {
+    const childrenDisplaySettings = parseFolderChildrenDisplaySettings(mapIdToFile[parentId]);
+    if (!childrenDisplaySettings.displayInSidebar) {
+      files = [];
+    }
+  }
+
   return files.map((file) => {
+    let isChildrenHidden = false;
+    const childrenDisplaySettings = parseFolderChildrenDisplaySettings(file);
+    if (!childrenDisplaySettings.displayInSidebar && file.mimeType === MimeTypes.GoogleFolder) {
+      isChildrenHidden = true;
+    }
+
     // Try to parse as a Markdown link
     let label: React.ReactNode = file.name;
     const link = mdLink.parse(file.name);
@@ -57,9 +72,22 @@ function renderChildren(
           <Launch16 />
         </Stack>
       );
+    } else if (isChildrenHidden) {
+      label = (
+        <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
+          <span>{file.name}</span>
+          <CollapseAll16 />
+        </Stack>
+      );
     }
 
-    const childrenNode = renderChildren(mapIdToChildren, file.id, expanded, handleToggle);
+    const childrenNode = renderChildren(
+      mapIdToFile,
+      mapIdToChildren,
+      file.id,
+      expanded,
+      handleToggle
+    );
 
     const nodeProps: TreeNodeProps = {
       isExpanded: expanded?.has(file.id ?? ''),
@@ -67,8 +95,7 @@ function renderChildren(
       label,
       value: file as any,
     };
-    if (file.mimeType === MimeTypes.GoogleFolder || (childrenNode?.length ?? 0) > 0) {
-      // Display a triangle icon at all the time for empty folders.
+    if ((childrenNode?.length ?? 0) > 0) {
       return (
         <TreeNode key={file.id} id={file.id} {...nodeProps}>
           {childrenNode}
@@ -126,7 +153,13 @@ function Sider({ isExpanded = true }: { isExpanded?: boolean }) {
       )}
       {!loading && !error && (
         <TreeView label="Table of Content" selected={[id]} onSelect={handleSelect} active={id}>
-          {renderChildren(mapIdToChildren, getConfig().REACT_APP_ROOT_ID, expanded, handleToggle)}
+          {renderChildren(
+            mapIdToFile,
+            mapIdToChildren,
+            getConfig().REACT_APP_ROOT_ID,
+            expanded,
+            handleToggle
+          )}
         </TreeView>
       )}
     </div>

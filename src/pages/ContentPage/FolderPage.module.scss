@@ -1,0 +1,30 @@
+.content {
+  p {
+    font-size: 1em;
+  }
+
+  ul,
+  ol {
+    margin-bottom: 1.2em;
+  }
+
+  ul {
+    margin-left: 1.3em;
+    list-style: disc;
+  }
+
+  ol {
+    list-style: decimal;
+    margin-left: 1.9em;
+  }
+
+  li ul,
+  li ol {
+    margin-bottom: 0.8em;
+    margin-left: 2em;
+  }
+
+  li ul {
+    list-style: circle;
+  }
+}

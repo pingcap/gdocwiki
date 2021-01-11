@@ -50,10 +50,14 @@ export default function HeaderUserMenu() {
         </>
       )}
       <NavMenu.Divider>About Wiki</NavMenu.Divider>
-      <NavMenu.Link href="https://github.com/pingcap/gdocwiki" target="_blank">
+      <NavMenu.Link href="https://github.com/pingcap/gdocwiki" target="_blank" rel="noreferrer">
         Powered by GdocWiki
       </NavMenu.Link>
-      <NavMenu.Link href="https://github.com/pingcap/gdocwiki/graphs/contributors" target="_blank">
+      <NavMenu.Link
+        href="https://github.com/pingcap/gdocwiki/graphs/contributors"
+        target="_blank"
+        rel="noreferrer"
+      >
         Made by @breeswish, @Hexilee
       </NavMenu.Link>
     </NavMenu>

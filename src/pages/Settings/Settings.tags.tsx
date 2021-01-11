@@ -11,12 +11,12 @@ import difference from 'lodash/difference';
 import { Stack } from 'office-ui-fabric-react';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Tag } from '../components';
-import { selectAllTags, updateFile } from '../reduxSlices/files';
-import { reloadPage } from '../reduxSlices/pageReload';
-import { DriveFile, extractTags, TAG_PROPERTY_PREFIX } from '../utils';
-import { promptError } from './FileAction.utils';
-import { SettingsTitle } from './Settings';
+import { Tag } from '../../components';
+import { selectAllTags, updateFile } from '../../reduxSlices/files';
+import { reloadPage } from '../../reduxSlices/pageReload';
+import { DriveFile, extractTags, TAG_PROPERTY_PREFIX } from '../../utils';
+import { promptError } from '../FileAction.utils';
+import { SettingsTitle } from '.';
 
 function parseTags(tagInput: string): string[] {
   return tagInput

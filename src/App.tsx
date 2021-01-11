@@ -162,7 +162,7 @@ function App() {
               <Route exact path="/view/:id">
                 <Page />
               </Route>
-              <Route exact path="/view/:outerId/settings/:innerId">
+              <Route exact path="/view/:id/settings">
                 <Settings />
               </Route>
               <Route path="/search/:keyword">

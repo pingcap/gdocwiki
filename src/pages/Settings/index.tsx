@@ -2,12 +2,14 @@ import { InlineLoading } from 'carbon-components-react';
 import { Stack, Text } from 'office-ui-fabric-react';
 import React from 'react';
 import { useSelector } from 'react-redux';
-import useFileMeta from '../hooks/useFileMeta';
-import useUpdateSiderFromPath from '../hooks/useUpdateSiderFromPath';
-import { selectPageReloadToken } from '../reduxSlices/pageReload';
-import { shouldShowTagSettings } from '../utils';
-import FileBreadcrumb from './FileBreadcrumb';
-import RightContainer from './RightContainer';
+import { useParams } from 'react-router-dom';
+import useFileMeta from '../../hooks/useFileMeta';
+import useUpdateSiderFromPath from '../../hooks/useUpdateSiderFromPath';
+import { selectPageReloadToken } from '../../reduxSlices/pageReload';
+import { shouldShowFolderChildrenSettings, shouldShowTagSettings } from '../../utils';
+import FileBreadcrumb from '../FileBreadcrumb';
+import RightContainer from '../RightContainer';
+import SettingsChildrenDisplay from './Settings.childrenDisplay';
 import SettingsTag from './Settings.tags';
 
 export function SettingsTitle({ children }) {
@@ -19,14 +21,14 @@ export function SettingsTitle({ children }) {
 }
 
 function Settings() {
-  const outerId = useUpdateSiderFromPath('outerId');
-  const { file: outerFile, loading, error } = useFileMeta(outerId);
+  const id = useUpdateSiderFromPath('id');
+  const { file, loading, error } = useFileMeta(id);
 
   return (
     <RightContainer>
       <div style={{ marginBottom: 32 }}>
         <FileBreadcrumb
-          file={outerFile}
+          file={file}
           extraItems={[
             {
               key: 'settings',
@@ -36,10 +38,11 @@ function Settings() {
         />
       </div>
       {loading && <InlineLoading description="Loading..." />}
-      {!loading && !!error && error}
+      {error}
       <div style={{ maxWidth: '30rem' }}>
         <Stack tokens={{ childrenGap: 50 }}>
-          {shouldShowTagSettings(outerFile) && <SettingsTag file={outerFile!} />}
+          {shouldShowTagSettings(file) && <SettingsTag file={file!} />}
+          {shouldShowFolderChildrenSettings(file) && <SettingsChildrenDisplay file={file!} />}
         </Stack>
       </div>
     </RightContainer>

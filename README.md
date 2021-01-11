@@ -73,7 +73,7 @@ REACT_APP_ROOT_DRIVE_ID=xxxxxxx
 - [x] Sidebar
   - [x] Expand all
   - [x] Collapse all
-  - [ ] Configure specific folder children to be displayed in sidebar or not
+  - [x] Configure specific folder children to be displayed in sidebar or not
   - [x] Activate and expand sidebar item according to current page
   - [x] Support >500 pages in the sidebar
   - [x] Support external link in syntax `[xxx](https://yyy)`
@@ -119,6 +119,7 @@ REACT_APP_ROOT_DRIVE_ID=xxxxxxx
   - [ ] Cache preview when file is not modified
   - [ ] Update file and folder cache in background when accessing a folder or file
   - [ ] Watch changes from cached entities
+  - [ ] Improve first screen load performance
 - [x] Search
   - [x] Full text
   - [x] File name

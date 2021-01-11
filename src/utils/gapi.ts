@@ -64,3 +64,28 @@ export function shouldShowTagSettings(file?: DriveFile): boolean {
 export function shouldShowFolderChildrenSettings(file?: DriveFile): boolean {
   return !!(file?.capabilities?.canEdit && file?.mimeType === MimeTypes.GoogleFolder);
 }
+
+export type FolderChildrenDisplayMode = 'list' | 'table' | 'hide';
+
+export interface FolderChildrenDisplaySettings {
+  displayInSidebar?: boolean;
+  displayInContent?: FolderChildrenDisplayMode;
+}
+
+export const FOLDER_CHILDREN_SETTINGS_PROPERTY = 'folderChildrenSettings';
+
+export function parseFolderChildrenDisplaySettings(file: DriveFile): FolderChildrenDisplaySettings {
+  const def: FolderChildrenDisplaySettings = {
+    displayInSidebar: true,
+    displayInContent: 'list',
+  };
+  let parsed = {};
+  const value = file.appProperties?.[FOLDER_CHILDREN_SETTINGS_PROPERTY] ?? '';
+  if (value) {
+    parsed = JSON.parse(value);
+  }
+  return {
+    ...def,
+    ...parsed,
+  };
+}
