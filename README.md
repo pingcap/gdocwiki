@@ -99,6 +99,8 @@ REACT_APP_ROOT_DRIVE_ID=xxxxxxx
     - [ ] Sort folder items
     - [x] Display `README` in the folder inline
     - [x] Support > 1000 folder items
+    - [x] Display as list
+      - [ ] Display multi-level children as list
   - [x] Drive Root
 - [x] Breadcrumb Navigation
   - [x] Create file in current folder
@@ -115,6 +117,11 @@ REACT_APP_ROOT_DRIVE_ID=xxxxxxx
   - [ ] Move to another tree location
 - [x] Natural sort
 - [x] Update Title Dynamically
+- [x] Tag
+  - [x] View doc tags
+  - [x] List all tags
+  - [x] Set tags
+  - [ ] Rename a tag
 - [ ] Cache
   - [x] Utilize cache to load folder content
   - [ ] Cache preview when file is not modified
@@ -124,8 +131,7 @@ REACT_APP_ROOT_DRIVE_ID=xxxxxxx
 - [x] Search
   - [x] Full text
   - [x] File name
-  - [x] Tag
-    - [ ] A page listing all tags
+  - [x] Search Tag
 - [ ] Mobile Support
   - [ ] Responsive Sidebar
 - [ ] Helpers
