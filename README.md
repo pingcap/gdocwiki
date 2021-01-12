@@ -109,7 +109,9 @@ REACT_APP_ROOT_DRIVE_ID=xxxxxxx
     - [x] Google Spreadsheet
   - [x] Open current folder in Google Drive
   - [x] Rename
+    - [ ] Rename a link
   - [x] Trash
+    - [ ] Trash a link
   - [x] Move in a file
     - [ ] Notification when the file cannot be moved out again
     - [x] Move using shortcut
