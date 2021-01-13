@@ -24,7 +24,7 @@ export default function useLoadDriveFiles() {
           includeItemsFromAllDrives: true,
           supportsAllDrives: true,
           pageSize: 500,
-          q: 'trashed = false',
+          q: `trashed = false and (mimeType = '${MimeTypes.GoogleFolder}')`,
           fields: getConfig().DEFAULT_FILE_FIELDS,
         });
         console.trace(

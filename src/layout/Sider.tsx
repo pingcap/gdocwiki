@@ -50,61 +50,66 @@ function renderChildren(
     }
   }
 
-  return files.map((file) => {
-    let isChildrenHidden = false;
-    const childrenDisplaySettings = parseFolderChildrenDisplaySettings(file);
-    if (!childrenDisplaySettings.displayInSidebar && file.mimeType === MimeTypes.GoogleFolder) {
-      isChildrenHidden = true;
-    }
+  return files
+    .filter((file) => {
+      // Only list folders in sidebar.
+      return file.mimeType === MimeTypes.GoogleFolder;
+    })
+    .map((file) => {
+      let isChildrenHidden = false;
+      const childrenDisplaySettings = parseFolderChildrenDisplaySettings(file);
+      if (!childrenDisplaySettings.displayInSidebar && file.mimeType === MimeTypes.GoogleFolder) {
+        isChildrenHidden = true;
+      }
 
-    // Try to parse as a Markdown link
-    let label: React.ReactNode = file.name;
-    const link = mdLink.parse(file.name);
-    if (link) {
-      label = (
-        <Stack
-          verticalAlign="center"
-          horizontal
-          tokens={{ childrenGap: 8 }}
-          style={{ cursor: 'pointer' }}
-        >
-          <span>{link.title}</span>
-          <Launch16 />
-        </Stack>
-      );
-    } else if (isChildrenHidden) {
-      label = (
-        <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
-          <span>{file.name}</span>
-          <CollapseAll16 />
-        </Stack>
-      );
-    }
+      // Try to parse as a Markdown link
+      let label: React.ReactNode = file.name;
+      const link = mdLink.parse(file.name);
+      if (link) {
+        label = (
+          <Stack
+            verticalAlign="center"
+            horizontal
+            tokens={{ childrenGap: 8 }}
+            style={{ cursor: 'pointer' }}
+          >
+            <span>{link.title}</span>
+            <Launch16 />
+          </Stack>
+        );
+      } else if (isChildrenHidden) {
+        label = (
+          <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
+            <span>{file.name}</span>
+            <CollapseAll16 />
+          </Stack>
+        );
+      }
 
-    const childrenNode = renderChildren(
-      mapIdToFile,
-      mapIdToChildren,
-      file.id,
-      expanded,
-      handleToggle
-    );
-
-    const nodeProps: TreeNodeProps = {
-      isExpanded: expanded?.has(file.id ?? ''),
-      onToggle: handleToggle,
-      label,
-      value: file as any,
-    };
-    if ((childrenNode?.length ?? 0) > 0) {
-      return (
-        <TreeNode key={file.id} id={file.id} {...nodeProps}>
-          {childrenNode}
-        </TreeNode>
+      const childrenNode = renderChildren(
+        mapIdToFile,
+        mapIdToChildren,
+        file.id,
+        expanded,
+        handleToggle
       );
-    } else {
-      return <TreeNode key={file.id} id={file.id} {...nodeProps} />;
-    }
-  });
+
+      const nodeProps: TreeNodeProps = {
+        isExpanded: expanded?.has(file.id ?? ''),
+        onToggle: handleToggle,
+        label,
+        value: file as any,
+      };
+      if ((childrenNode?.length ?? 0) > 0) {
+        return (
+          <TreeNode key={file.id} id={file.id} {...nodeProps}>
+            {childrenNode}
+          </TreeNode>
+        );
+      } else {
+        return <TreeNode key={file.id} id={file.id} {...nodeProps} />;
+      }
+    });
 }
 
 function Sider({ isExpanded = true }: { isExpanded?: boolean }) {
