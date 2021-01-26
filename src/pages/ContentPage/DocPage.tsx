@@ -124,11 +124,11 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
   );
 
   return (
-    <div>
+    <div style={{ maxWidth: '50rem' }}>
       {isLoading && <InlineLoading description="Loading document content..." />}
       {!isLoading && (
         <div
-          style={{ maxWidth: '50rem', margin: 'auto' }}
+          style={{ maxWidth: '50rem' }}
           dangerouslySetInnerHTML={{ __html: docContent }}
           onClick={handleDocContentClick}
         />
