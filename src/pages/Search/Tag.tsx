@@ -15,12 +15,9 @@ export default function SearchTag() {
     return `trashed = false and properties has { key='${key}' and value='' }`;
   });
 
-  useTitle(
-    (tag) => {
-      return `Tag: ${tag}`;
-    },
-    [result.value]
-  );
+  useTitle((tag) => {
+    return `Tag: ${tag}`;
+  }, result.value);
 
   return (
     <RightContainer>

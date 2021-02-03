@@ -11,12 +11,9 @@ export default function SearchResult() {
     return `trashed = false and (name contains '${key}' or fullText contains '${key}')`;
   });
 
-  useTitle(
-    (searchKeyword) => {
-      return `Search: ${searchKeyword}`;
-    },
-    [result.value]
-  );
+  useTitle((searchKeyword) => {
+    return `Search: ${searchKeyword}`;
+  }, result.value);
 
   return (
     <RightContainer>

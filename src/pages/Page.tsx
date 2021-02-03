@@ -18,16 +18,13 @@ function Page() {
   const id = useUpdateSiderFromPath('id');
   const { file, loading, error } = useFileMeta(id);
 
-  useTitle(
-    (file) => {
-      if (file && file?.id !== getConfig().REACT_APP_ROOT_ID) {
-        return file.name;
-      } else {
-        return undefined;
-      }
-    },
-    [file]
-  );
+  useTitle((file) => {
+    if (file && file?.id !== getConfig().REACT_APP_ROOT_ID) {
+      return file.name;
+    } else {
+      return undefined;
+    }
+  }, file);
 
   const tags = useMemo(() => {
     if (!file) {

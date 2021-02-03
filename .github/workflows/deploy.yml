@@ -42,5 +42,4 @@ jobs:
           ./ossutil64 config -e oss-accelerate.aliyuncs.com -i $DEPLOY_ACCESS_KEY_ID -k $DEPLOY_ACCESS_SECRET
           ./ossutil64 rm oss://docwiki-c407a99b/index.html -f
           ./ossutil64 rm oss://docwiki-c407a99b/favicon.ico -f
-          ./ossutil64 rm oss://docwiki-c407a99b/static/ -r -f
           ./ossutil64 cp -r build oss://docwiki-c407a99b/

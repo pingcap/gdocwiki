@@ -2,7 +2,6 @@ import {
   Add16,
   ChevronDown16,
   ChevronRight16,
-  CollapseAll16,
   Edit16,
   Launch16,
   Link16,
