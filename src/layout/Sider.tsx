@@ -18,6 +18,7 @@ import {
   collapse,
   selectActiveId,
   selectExpanded,
+  selectSelected,
 } from '../reduxSlices/siderTree';
 import { DriveFile, mdLink, MimeTypes, parseFolderChildrenDisplaySettings } from '../utils';
 import styles from './Sider.module.scss';
@@ -120,6 +121,7 @@ function Sider({ isExpanded = true }: { isExpanded?: boolean }) {
   const mapIdToFile = useSelector(selectMapIdToFile);
   const mapIdToChildren = useSelector(selectMapIdToChildren);
   const expanded = useSelector(selectExpanded);
+  const selected = useSelector(selectSelected);
 
   const id = useSelector(selectActiveId) ?? getConfig().REACT_APP_ROOT_ID;
 
@@ -157,7 +159,7 @@ function Sider({ isExpanded = true }: { isExpanded?: boolean }) {
         </div>
       )}
       {!loading && !error && (
-        <TreeView label="Table of Content" selected={[id]} onSelect={handleSelect} active={id}>
+        <TreeView label="Table of Content" selected={selected} onSelect={handleSelect} active={id}>
           {renderChildren(
             mapIdToFile,
             mapIdToChildren,

@@ -4,10 +4,12 @@ import { DriveFile } from '../utils';
 export interface TreeState {
   activeId?: string;
   expanded: Array<string>;
+  selected: Array<string>;
 }
 
 const initialState: TreeState = {
   expanded: [],
+  selected: [],
 };
 
 interface ActivatePayload {
@@ -25,15 +27,15 @@ export const slice = createSlice({
 
     activate: (state, { payload }: { payload: ActivatePayload }) => {
       console.log(`Sidebar activate`, payload.id);
-      const expandedNodes = new Set<string>();
+      const newExpandNodes = new Set<string>();
 
       let currentNodeId = payload.id;
       while (true) {
-        if (expandedNodes.has(currentNodeId)) {
+        if (newExpandNodes.has(currentNodeId)) {
           // Duplicate
           break;
         }
-        expandedNodes.add(currentNodeId);
+        newExpandNodes.add(currentNodeId);
         // Try to expand parent
         const currentNode = payload.mapIdToFile[currentNodeId];
         if (!currentNode) {
@@ -46,11 +48,12 @@ export const slice = createSlice({
         currentNodeId = parents[0];
       }
 
-      for (const id of state.expanded) {
-        expandedNodes.add(id);
-      }
+      state.selected = [...newExpandNodes];
 
-      state.expanded = [...expandedNodes];
+      for (const id of state.expanded) {
+        newExpandNodes.add(id);
+      }
+      state.expanded = [...newExpandNodes];
     },
 
     expand: (state, { payload }: { payload: Array<string> }) => {
@@ -78,5 +81,7 @@ export const selectExpanded = (state: { tree: TreeState }) =>
   new Set(state.tree.expanded) as ReadonlySet<string>;
 
 export const selectActiveId = (state: { tree: TreeState }) => state.tree.activeId;
+
+export const selectSelected = (state: { tree: TreeState }) => [...state.tree.selected];
 
 export default slice.reducer;
