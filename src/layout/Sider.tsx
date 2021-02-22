@@ -16,8 +16,8 @@ import {
   activate,
   expand,
   collapse,
-  selectExpanded,
   selectActiveId,
+  selectExpanded,
 } from '../reduxSlices/siderTree';
 import { DriveFile, mdLink, MimeTypes, parseFolderChildrenDisplaySettings } from '../utils';
 import styles from './Sider.module.scss';

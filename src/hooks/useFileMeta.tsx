@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { GapiErrorDisplay } from '../components';
-import { selectMapIdToFile } from '../reduxSlices/files';
+import { selectMapIdToFile, updateFile } from '../reduxSlices/files';
 import { DriveFile } from '../utils';
 
 export interface IFileMeta {
@@ -11,6 +11,7 @@ export interface IFileMeta {
 }
 
 export default function useFileMeta(id?: string) {
+  const dispatch = useDispatch();
   const [data, setData] = useState<IFileMeta>({ loading: true });
   const mapIdToFile = useSelector(selectMapIdToFile);
 
@@ -31,8 +32,10 @@ export default function useFileMeta(id?: string) {
           fileId: id!,
           fields: '*',
         });
-        console.trace('useFileMeta files.get', respFile);
+        console.log('useFileMeta files.get', respFile);
 
+        // If another request is performed, simply ignore this result.
+        // This may happen when id changes very frequently
         if (reqRef.current !== checkpoint) {
           return;
         }
@@ -42,12 +45,12 @@ export default function useFileMeta(id?: string) {
             driveId: id!,
             fields: '*',
           });
-          console.trace('useFileMeta drives.get', respDrive);
+          console.log('useFileMeta drives.get', respDrive);
           respFile.result.name = respDrive.result.name;
+        } else {
+          dispatch(updateFile(respFile.result));
         }
 
-        // If another request is performed, simply ignore this result.
-        // This may happen when id changes very frequently
         setData({ loading: false, file: respFile.result });
       } catch (e) {
         if (reqRef.current === checkpoint) {

@@ -51,7 +51,7 @@ function MoveFileModalBody({ files, targetFolderId, closeFn }: IMoveFileModalBod
             addParents: targetFolderId,
             resource: {},
           });
-          console.trace('MoveFileModalBody files.update', fileResponse);
+          console.log('MoveFileModalBody files.update', fileResponse);
         } catch (firstError) {
           // If move is not possible, create shortcut instead.
           try {
@@ -70,7 +70,7 @@ function MoveFileModalBody({ files, targetFolderId, closeFn }: IMoveFileModalBod
                 parents: [targetFolderId],
               },
             });
-            console.trace('MoveFileModalBody files.create', fileResponse);
+            console.log('MoveFileModalBody files.create', fileResponse);
           } catch (secondError) {
             // If shortcut creation failed, throw original error.
             throw firstError;
@@ -219,7 +219,7 @@ export function showMoveFile(parentFolder: DriveFile) {
           fileId: id,
           fields: '*',
         });
-        console.trace('MoveFileModalBody files.get', respFile);
+        console.log('MoveFileModalBody files.get', respFile);
 
         const file = respFile.result;
         const fileKind = file.mimeType === MimeTypes.GoogleFolder ? 'Folder' : 'File';
@@ -251,7 +251,7 @@ export function showMoveFile(parentFolder: DriveFile) {
             addParents: parentFolder.id,
             resource: {},
           });
-          console.trace('MoveFileModalBody files.update', movedFile);
+          console.log('MoveFileModalBody files.update', movedFile);
           store.dispatch(updateFile(movedFile.result));
         } catch (eFirst) {
           // If move failed, create shortcut.
@@ -268,7 +268,7 @@ export function showMoveFile(parentFolder: DriveFile) {
                 parents: [parentFolder.id!],
               },
             });
-            console.trace('MoveFileModalBody files.create', newShortcut);
+            console.log('MoveFileModalBody files.create', newShortcut);
             store.dispatch(updateFile(newShortcut.result));
           } catch (eSecond) {
             // If shortcut creation failed, display error for move file.

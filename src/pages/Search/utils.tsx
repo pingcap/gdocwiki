@@ -34,7 +34,7 @@ export function useSearch(fieldName: string, queryBuilder: (value: string) => st
             q: queryBuilderMemo(fieldValue),
             fields: getConfig().DEFAULT_FILE_FIELDS,
           });
-          console.trace(
+          console.log(
             `SearchByQuery files.list (page #${i + 1})`,
             fieldValue,
             getConfig().REACT_APP_ROOT_DRIVE_ID,

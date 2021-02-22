@@ -19,27 +19,38 @@ export const slice = createSlice({
   name: 'tree',
   initialState,
   reducers: {
-    updateActiveId: (state, { payload }: { payload: string }) => {
+    setActiveId: (state, { payload }: { payload: string }) => {
       state.activeId = payload;
     },
 
     activate: (state, { payload }: { payload: ActivatePayload }) => {
-      console.trace(`Sidebar activate`, payload.id);
-      const visitedNodes = new Set<string>(state.expanded);
-      let activeNodes: string[] = payload.mapIdToFile[payload.id]?.parents ?? [];
-      while (activeNodes.length !== 0) {
-        let newNodes: string[] = [];
-        for (let id of activeNodes) {
-          const parents = payload.mapIdToFile[id]?.parents;
-          if (!visitedNodes.has(id) && parents !== undefined) {
-            visitedNodes.add(id);
-            newNodes = [...newNodes, ...parents];
-          }
+      console.log(`Sidebar activate`, payload.id);
+      const expandedNodes = new Set<string>();
+
+      let currentNodeId = payload.id;
+      while (true) {
+        if (expandedNodes.has(currentNodeId)) {
+          // Duplicate
+          break;
         }
-        activeNodes = newNodes;
+        expandedNodes.add(currentNodeId);
+        // Try to expand parent
+        const currentNode = payload.mapIdToFile[currentNodeId];
+        if (!currentNode) {
+          break;
+        }
+        const parents = currentNode.parents ?? [];
+        if (parents.length === 0) {
+          break;
+        }
+        currentNodeId = parents[0];
       }
 
-      state.expanded = [...visitedNodes];
+      for (const id of state.expanded) {
+        expandedNodes.add(id);
+      }
+
+      state.expanded = [...expandedNodes];
     },
 
     expand: (state, { payload }: { payload: Array<string> }) => {
@@ -61,7 +72,7 @@ export const slice = createSlice({
   },
 });
 
-export const { updateActiveId, activate, expand, collapse, collapseAll } = slice.actions;
+export const { setActiveId, activate, expand, collapse, collapseAll } = slice.actions;
 
 export const selectExpanded = (state: { tree: TreeState }) =>
   new Set(state.tree.expanded) as ReadonlySet<string>;

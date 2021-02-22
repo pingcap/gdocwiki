@@ -27,7 +27,7 @@ export default function useLoadDriveFiles() {
           q: `trashed = false and (mimeType = '${MimeTypes.GoogleFolder}')`,
           fields: getConfig().DEFAULT_FILE_FIELDS,
         });
-        console.trace(
+        console.log(
           `useLoadDriveFiles files.list (page #${i + 1})`,
           getConfig().REACT_APP_ROOT_DRIVE_ID,
           resp

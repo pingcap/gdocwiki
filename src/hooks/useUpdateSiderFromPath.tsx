@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { getConfig } from '../config';
-import { updateActiveId } from '../reduxSlices/siderTree';
+import { setActiveId } from '../reduxSlices/siderTree';
 
 export default function useUpdateSiderFromPath(field: string) {
   const dispatch = useDispatch();
@@ -11,7 +11,8 @@ export default function useUpdateSiderFromPath(field: string) {
 
   useEffect(() => {
     // Update the ActiveId when it is changed.
-    dispatch(updateActiveId(id));
+    // Note: We will react with the ActiveId to expand nodes in Sider later.
+    dispatch(setActiveId(id));
   }, [id, dispatch]);
 
   return id;
