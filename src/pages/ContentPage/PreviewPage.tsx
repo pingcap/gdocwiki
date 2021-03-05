@@ -2,7 +2,7 @@ import { useEventListener } from 'ahooks';
 import { InlineLoading } from 'carbon-components-react';
 import React, { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
 import { useManagedRenderStack } from '../../context/RenderStack';
-import { DriveFile, MimeTypes } from '../../utils';
+import { DriveFile, HalfViewPreviewMimeTypes } from '../../utils';
 
 export interface IPreviewPageProps {
   file: DriveFile;
@@ -33,12 +33,7 @@ function PreviewPage({ file, renderStackOffset = 0 }: IPreviewPageProps) {
 
   const contentStyle = useMemo(() => {
     const baseStyle: CSSProperties = {};
-    if (
-      file.mimeType !== MimeTypes.GoogleSpreadsheet &&
-      file.mimeType !== MimeTypes.GooglePresentation &&
-      file.mimeType !== MimeTypes.MSOpenExcel &&
-      file.mimeType !== MimeTypes.MSExcel
-    ) {
+    if (HalfViewPreviewMimeTypes.indexOf(file.mimeType ?? '') > -1) {
       baseStyle.maxWidth = '50rem';
     }
     return baseStyle;
@@ -52,6 +47,7 @@ function PreviewPage({ file, renderStackOffset = 0 }: IPreviewPageProps) {
         <div>
           {isLoading && <InlineLoading description="Loading preview..." />}
           <iframe
+            title="Preview"
             width="100%"
             src={file.webViewLink.replace(/\/(edit|view)\?usp=drivesdk/, '/preview')}
             ref={ref}

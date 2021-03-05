@@ -31,10 +31,29 @@ export const MimeTypes = {
   GoogleDrawing: 'application/vnd.google-apps.drawing',
   MSOpenExcel: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   MSOpenWord: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  MSOpenPPT: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
   MSExcel: 'application/vnd.ms-excel',
   MSWord: 'application/msword',
   PDF: 'application/pdf',
+  VideoMP4: 'video/mp4',
+  VideoMKV: 'video/x-matroska',
 };
+
+export const PreviewableMimeTypes = [
+  MimeTypes.GoogleSpreadsheet,
+  MimeTypes.GooglePresentation,
+  MimeTypes.GoogleDrawing,
+  MimeTypes.MSOpenWord,
+  MimeTypes.MSOpenExcel,
+  MimeTypes.MSOpenPPT,
+  MimeTypes.MSWord,
+  MimeTypes.MSExcel,
+  MimeTypes.PDF,
+  MimeTypes.VideoMP4,
+  MimeTypes.VideoMKV,
+];
+
+export const HalfViewPreviewMimeTypes = [MimeTypes.MSOpenWord, MimeTypes.MSWord, MimeTypes.PDF];
 
 export const TAG_PROPERTY_PREFIX = 'tags/';
 

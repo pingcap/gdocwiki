@@ -1,5 +1,5 @@
 import React from 'react';
-import { DriveFile, MimeTypes } from '../../utils';
+import { DriveFile, MimeTypes, PreviewableMimeTypes } from '../../utils';
 import DocPage from './DocPage';
 import FolderPage from './FolderPage';
 import PreviewPage from './PreviewPage';
@@ -12,6 +12,10 @@ export interface IContentPageProps {
 }
 
 function ContentPage({ file, shortCutFile, renderStackOffset = 0 }: IContentPageProps) {
+  if (PreviewableMimeTypes.indexOf(file?.mimeType ?? '') > -1) {
+    return <PreviewPage file={file!} renderStackOffset={renderStackOffset} />;
+  }
+
   switch (file?.mimeType ?? '') {
     case MimeTypes.GoogleDocument:
       return <DocPage file={file!} renderStackOffset={renderStackOffset} />;
@@ -23,15 +27,6 @@ function ContentPage({ file, shortCutFile, renderStackOffset = 0 }: IContentPage
           renderStackOffset={renderStackOffset}
         />
       );
-    case MimeTypes.GoogleSpreadsheet:
-    case MimeTypes.GooglePresentation:
-    case MimeTypes.GoogleDrawing:
-    case MimeTypes.MSOpenWord:
-    case MimeTypes.MSOpenExcel:
-    case MimeTypes.MSWord:
-    case MimeTypes.MSExcel:
-    case MimeTypes.PDF:
-      return <PreviewPage file={file!} renderStackOffset={renderStackOffset} />;
     case MimeTypes.GoogleShortcut:
       if (!shortCutFile) {
         return <ShortcutPage file={file!} renderStackOffset={renderStackOffset} />;
@@ -39,7 +34,14 @@ function ContentPage({ file, shortCutFile, renderStackOffset = 0 }: IContentPage
       break;
   }
 
-  return <div>Unsupported file: {file.mimeType}</div>;
+  return (
+    <div>
+      This file cannot be previewed.{' '}
+      <a href={file.webViewLink} target="_blank" rel="noreferrer">
+        View in Google Drive
+      </a>
+    </div>
+  );
 }
 
 export default React.memo(ContentPage);
