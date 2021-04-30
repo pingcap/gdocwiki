@@ -10,9 +10,9 @@ module.exports = override(
       }
     }
     // Add prefix to css modules.
-    use[1].options.modules = {
-      localIdentName: '__gdocwiki__[local]--[hash:base64:5]',
-    };
+    if (use[1].options.modules) {
+      use[1].options.modules.localIdentName = '__gdocwiki__[local]--[hash:base64:5]';
+    }
   }),
   (config) => {
     config.entry['contentScript.oauth2'] = path.resolve('./src/contentScript.oauth2');
