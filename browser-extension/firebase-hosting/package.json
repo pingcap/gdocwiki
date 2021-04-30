@@ -1,0 +1,12 @@
+{
+  "name": "firebase-hosting",
+  "version": "0.0.1",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "firebase-tools": "^9.9.0"
+  },
+  "scripts": {
+    "deploy": "firebase deploy"
+  }
+}

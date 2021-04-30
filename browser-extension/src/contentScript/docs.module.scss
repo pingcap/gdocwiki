@@ -1,0 +1,75 @@
+@import "open-color/open-color.scss";
+
+.container {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  vertical-align: top;
+  height: 22px;
+}
+
+.tag {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  font-size: 1rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 2px;
+  margin-right: 0.5rem;
+}
+
+.danger {
+  &,
+  &:link,
+  &:active,
+  &:visited {
+    background: $oc-red-7;
+    color: #fff;
+    text-decoration: none;
+  }
+  &.clickable:hover {
+    background: $oc-red-5;
+    color: #fff;
+    text-decoration: none;
+  }
+}
+
+.warning {
+  &,
+  &:link,
+  &:active,
+  &:visited {
+    background: $oc-orange-7;
+    color: #fff;
+    text-decoration: none;
+  }
+  &.clickable:hover {
+    background: $oc-orange-5;
+    color: #fff;
+    text-decoration: none;
+  }
+}
+
+.wikiTree {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.wikiTreeItem {
+  & {
+    font-size: 1rem;
+  }
+  &,
+  &:link,
+  &:active,
+  &:visited {
+    color: $oc-gray-7;
+    background: transparent;
+    text-decoration: none;
+  }
+  &:hover {
+    color: $oc-blue-7;
+    text-decoration: underline;
+  }
+}

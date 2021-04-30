@@ -1,0 +1,30 @@
+{
+  "manifest_version": 2,
+  "minimum_chrome_version": "80",
+  "version": "0.0.1",
+  "name": "GdocWiki Integration",
+  "description": "Integrate GdocWiki into Google Docs™.",
+  "background": {
+    "scripts": ["background.bundle.js"],
+    "persistent": false
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://docs.google.com/*", "https://drive.google.com/*"],
+      "js": ["contentScript.bundle.js"]
+    },
+    {
+      "matches": ["https://gdocwiki-oauth.web.app/*"],
+      "js": ["contentScript.oauth2.bundle.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": ["options.html"],
+  "icons": {
+    "128": "img/icon-128.png"
+  },
+  "options_page": "options.html",
+  "permissions": ["storage"],
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAgZVVT1h0/cKeTOfBUoq7P4mBWY1i3zxBJIXASq4j1CEfU8XPXhLqGsCx/8Y2XChB+JDe3HMRB5pJ0PsLKa+mQtEsxi80cj6/foYK4AyJqcry9pDY7I/6AgSH21odNdd0/WLSjo3kBeK8vuqkrXc7WJUWCw1ifj3j0+dI1Dgo1oFTDY+XItqYceiquMGVZxuA6pa0iAUo9pNCRKvOha11KEPysUOmeJfc2oNw1HCM8gbPzhe+RKGEn7tF4vMnzg98fQwpDRWLvDstjRB1sOEh9kqMzCBhjvPsxvDCqRgY9Uwa4sBjT1e9XXkU4HVzzubvPzkpYC94hFgNTK44wWNrdQIDAQAB",
+  "content_security_policy": "script-src 'self' https://apis.google.com; object-src 'self'"
+}
