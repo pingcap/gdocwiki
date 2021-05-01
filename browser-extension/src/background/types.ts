@@ -1,5 +1,5 @@
 export type MessageOAuth2Finish = {
-  event: "oauth2Finish";
+  event: 'oauth2Finish';
   url: string;
 };
 

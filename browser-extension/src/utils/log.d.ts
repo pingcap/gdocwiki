@@ -1,1 +1,1 @@
-declare module "logplease";
+declare module 'logplease';

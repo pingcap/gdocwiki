@@ -1,6 +1,6 @@
-import AuthenticateOptions from "./Options.Authenticate";
-import { H2 } from "./Heading";
-import styles from "./Options.module.scss";
+import AuthenticateOptions from './Options.Authenticate';
+import { H2 } from './Heading';
+import styles from './Options.module.scss';
 
 function Options() {
   return (
@@ -10,12 +10,8 @@ function Options() {
       <H2>About</H2>
       <p>GdocWiki is a wiki based on Google Doc / Drive.</p>
       <p>
-        GitHub:{" "}
-        <a
-          href="https://github.com/pingcap/gdocwiki"
-          target="_blank"
-          rel="noreferrer"
-        >
+        GitHub:{' '}
+        <a href="https://github.com/pingcap/gdocwiki" target="_blank" rel="noreferrer">
           pingcap/gdocwiki
         </a>
       </p>

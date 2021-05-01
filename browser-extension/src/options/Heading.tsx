@@ -1,6 +1,6 @@
-import React from "react";
+import React from 'react';
 
-import styles from "./Heading.module.scss";
+import styles from './Heading.module.scss';
 
 export function H1(props: React.HTMLAttributes<HTMLHeadingElement>) {
   // eslint-disable-next-line jsx-a11y/heading-has-content

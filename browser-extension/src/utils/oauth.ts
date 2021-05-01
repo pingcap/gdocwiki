@@ -1,9 +1,9 @@
-import ClientOAuth2, { Data, Token } from "client-oauth2";
-import { GapiClient, GapiUserInfo } from "./gapi";
-import { log } from "./log";
-import { mustGetManifestInfo } from "./manifest";
-import { popupChromeWindow } from "./popup";
-import { chromeStorage } from "./storage";
+import ClientOAuth2, { Data, Token } from 'client-oauth2';
+import { GapiClient, GapiUserInfo } from './gapi';
+import { log } from './log';
+import { mustGetManifestInfo } from './manifest';
+import { popupChromeWindow } from './popup';
+import { chromeStorage } from './storage';
 
 export type StoredToken = {
   accessToken: string;
@@ -13,20 +13,20 @@ export type StoredToken = {
   profile: GapiUserInfo;
 };
 
-export const StoreKeyOAuthToken = "oauthToken";
+export const StoreKeyOAuthToken = 'oauthToken';
 
 export async function getOAuthClient() {
   const { data } = await mustGetManifestInfo();
   const client = new ClientOAuth2({
     clientId: data.gapiClientID,
     clientSecret: data.gapiClientSecret,
-    accessTokenUri: "https://accounts.google.com/o/oauth2/token",
-    authorizationUri: "https://accounts.google.com/o/oauth2/v2/auth",
-    redirectUri: "https://gdocwiki-oauth.web.app/redirect",
+    accessTokenUri: 'https://accounts.google.com/o/oauth2/token',
+    authorizationUri: 'https://accounts.google.com/o/oauth2/v2/auth',
+    redirectUri: 'https://gdocwiki-oauth.web.app/redirect',
     scopes: [
-      "https://www.googleapis.com/auth/userinfo.profile",
-      "https://www.googleapis.com/auth/drive",
-      "https://www.googleapis.com/auth/documents",
+      'https://www.googleapis.com/auth/userinfo.profile',
+      'https://www.googleapis.com/auth/drive',
+      'https://www.googleapis.com/auth/documents',
     ],
   });
   return client;
@@ -37,10 +37,10 @@ async function getAuthUrl() {
   const client = await getOAuthClient();
   return client.code.getUri({
     query: {
-      access_type: "offline",
+      access_type: 'offline',
       hd: data.gapiHostedDomain,
-      prompt: "consent",
-      include_granted_scopes: "true",
+      prompt: 'consent',
+      include_granted_scopes: 'true',
     },
   });
 }
@@ -48,30 +48,28 @@ async function getAuthUrl() {
 export async function requestOAuth() {
   await clearStoredToken();
   const url = await getAuthUrl();
-  log.info("OAuthAuth URL", url);
+  log.info('OAuthAuth URL', url);
   await popupChromeWindow(url, 600, 800);
   try {
-    log.info("OAuth finished, loading user profile...");
+    log.info('OAuth finished, loading user profile...');
     return await getStoredToken();
   } catch (e) {
-    throw new Error("Authentication is canelled or failed");
+    throw new Error('Authentication is canelled or failed');
   }
 }
 
-export async function storeTokenFromOAuthRedirection(
-  redirectUrl: string
-): Promise<Token> {
-  log.info("Redirection URL", redirectUrl);
+export async function storeTokenFromOAuthRedirection(redirectUrl: string): Promise<Token> {
+  log.info('Redirection URL', redirectUrl);
   const client = await getOAuthClient();
   const token = await client.code.getToken(redirectUrl);
-  log.info("Exchanged Token", token);
+  log.info('Exchanged Token', token);
   await setStoredTokenAndProfile(token);
   return token;
 }
 
 async function setStoredTokenAndProfile(token: Token): Promise<StoredToken> {
   const profile = await new GapiClient(token).getUserInfoProfile();
-  log.info("Read Profile", profile);
+  log.info('Read Profile', profile);
   const storedToken: StoredToken = {
     accessToken: token.accessToken,
     refreshToken: token.refreshToken,
@@ -88,11 +86,9 @@ export async function clearStoredToken() {
 }
 
 export async function getStoredToken(): Promise<Token> {
-  const storedToken: StoredToken | undefined = await chromeStorage.get(
-    StoreKeyOAuthToken
-  );
+  const storedToken: StoredToken | undefined = await chromeStorage.get(StoreKeyOAuthToken);
   if (storedToken === undefined) {
-    throw new Error("OAuth token does not exist");
+    throw new Error('OAuth token does not exist');
   }
   const client = await getOAuthClient();
   return client.createToken(
@@ -109,18 +105,14 @@ export async function getStoredTokenAndRefresh(): Promise<Token> {
 }
 
 export async function getStoredProfile(): Promise<GapiUserInfo> {
-  const storedToken: StoredToken | undefined = await chromeStorage.get(
-    StoreKeyOAuthToken
-  );
+  const storedToken: StoredToken | undefined = await chromeStorage.get(StoreKeyOAuthToken);
   if (storedToken === undefined) {
-    throw new Error("OAuth token does not exist");
+    throw new Error('OAuth token does not exist');
   }
   return storedToken.profile;
 }
 
-export async function updateStoredProfile(
-  token?: Token
-): Promise<GapiUserInfo> {
+export async function updateStoredProfile(token?: Token): Promise<GapiUserInfo> {
   if (!token) {
     token = await getStoredTokenAndRefresh();
   }

@@ -1,20 +1,16 @@
-import cx from "classnames";
-import { debounce } from "lodash-es";
-import { waitSelector } from "../utils/contentScript";
-import styles from "./docs.module.scss";
-import { Token } from "client-oauth2";
-import { GapiClient } from "../utils/gapi";
-import { Singleflight } from "@zcong/singleflight";
-import { getManifestInfo, ManifestDrive } from "../utils/manifest";
-import ReactDOM from "react-dom";
-import React, { useEffect, useState } from "react";
-import { useToken } from "../utils/hooks/oauth";
-import {
-  ChevronRight16,
-  Launch16,
-  WarningAltFilled16,
-} from "@carbon/icons-react";
-import { log } from "../utils/log";
+import cx from 'classnames';
+import { debounce } from 'lodash-es';
+import { waitSelector } from '../utils/contentScript';
+import styles from './docs.module.scss';
+import { Token } from 'client-oauth2';
+import { GapiClient } from '../utils/gapi';
+import { Singleflight } from '@zcong/singleflight';
+import { getManifestInfo, ManifestDrive } from '../utils/manifest';
+import ReactDOM from 'react-dom';
+import React, { useEffect, useState } from 'react';
+import { useToken } from '../utils/hooks/oauth';
+import { ChevronRight16, Launch16, WarningAltFilled16 } from '@carbon/icons-react';
+import { log } from '../utils/log';
 
 const sf = new Singleflight();
 
@@ -32,34 +28,31 @@ function buildWikiUrl(drive: ManifestDrive, id: string) {
   return `${drive.workspace}/view/${id}`;
 }
 
-async function loadFileInfo(
-  fileId: string,
-  token: Token
-): Promise<FileInfo | undefined> {
+async function loadFileInfo(fileId: string, token: Token): Promise<FileInfo | undefined> {
   const manifest = await getManifestInfo();
   if (!manifest) {
-    log.warn("Skipped since manifest is unavailable");
+    log.warn('Skipped since manifest is unavailable');
   }
   const client = new GapiClient(token);
   log.info(`Getting file info for base file ${fileId}`);
   const file = await client.getDriveFile(fileId, {
-    fields: "*",
+    fields: '*',
     supportsAllDrives: true,
   });
-  log.info("File metadata", file);
+  log.info('File metadata', file);
   if (file.trashed) {
-    log.info("Skipped the file since it is trashed");
+    log.info('Skipped the file since it is trashed');
     return;
   }
   if (file.ownedByMe) {
-    log.info("File is owned by current user, and it should be orphan");
+    log.info('File is owned by current user, and it should be orphan');
     return {
       isOrphanAndOwner: true,
     };
   }
   if (!file.driveId) {
     log.info(
-      "File does not have a drive id, maybe the owner did not put it in the Wiki, skip listing parents"
+      'File does not have a drive id, maybe the owner did not put it in the Wiki, skip listing parents'
     );
     return {};
   }
@@ -99,15 +92,8 @@ async function loadFileInfo(
     }
     visitedParentIds.add(parentId);
 
-    if (
-      discoveredDrive.driveId === parentId ||
-      discoveredDrive.rootId === parentId
-    ) {
-      log.info(
-        `Parent is the workspace, finished`,
-        discoveredWorkspace,
-        discoveredDrive
-      );
+    if (discoveredDrive.driveId === parentId || discoveredDrive.rootId === parentId) {
+      log.info(`Parent is the workspace, finished`, discoveredWorkspace, discoveredDrive);
       parents.push({
         name: discoveredWorkspace!,
         url: buildWikiUrl(discoveredDrive, parentId),
@@ -117,7 +103,7 @@ async function loadFileInfo(
     try {
       log.info(`Getting parent file info (parent id = ${parentId})`);
       const parentFile = await client.getDriveFile(parentId, {
-        fields: "*",
+        fields: '*',
         supportsAllDrives: true,
       });
       log.info(`Parent file metadata`, parentFile);
@@ -140,10 +126,7 @@ async function loadFileInfo(
   };
 }
 
-function useFileInfo(
-  fileId: string,
-  token?: Token
-): [FileInfo | undefined, boolean] {
+function useFileInfo(fileId: string, token?: Token): [FileInfo | undefined, boolean] {
   const [loading, setLoading] = useState(false);
   const [loadToken, setLoadToken] = useState(0); // Used to reload the file
   const [fi, setFI] = useState<FileInfo | undefined>(undefined);
@@ -152,7 +135,7 @@ function useFileInfo(
     async function run() {
       setLoading(true);
       try {
-        log.info("Get Google drive file", fileId, token);
+        log.info('Get Google drive file', fileId, token);
         const fi = await loadFileInfo(fileId, token!);
         setFI(fi);
       } catch (e) {
@@ -174,20 +157,18 @@ function useFileInfo(
       setLoadToken((t) => t + 1);
     }, 1000);
 
-    const el = document.querySelector("#docs-chrome");
+    const el = document.querySelector('#docs-chrome');
     if (!el) {
-      log.error(
-        "GdocWiki failed to discover docs header, ignoring file location change"
-      );
+      log.error('GdocWiki failed to discover docs header, ignoring file location change');
       return;
     }
     const ms = new MutationObserver((records) => {
       for (let r of records) {
         const el = r.target as HTMLDivElement;
-        if (!el.classList.contains("picker-iframe")) {
+        if (!el.classList.contains('picker-iframe')) {
           continue;
         }
-        if (el.style.visibility === "hidden") {
+        if (el.style.visibility === 'hidden') {
           handlePickerHide();
         }
       }
@@ -195,7 +176,7 @@ function useFileInfo(
     ms.observe(el, {
       attributes: true,
       subtree: true,
-      attributeFilter: ["style"],
+      attributeFilter: ['style'],
     });
   }, []);
 
@@ -211,7 +192,7 @@ function App(props: { id: string }) {
       {Boolean(!isTokenLoading && !token) && (
         <a
           className={cx(styles.tag, styles.danger, styles.clickable)}
-          href={chrome.runtime.getURL("options.html")}
+          href={chrome.runtime.getURL('options.html')}
           target="_blank"
           rel="noreferrer"
         >
@@ -230,12 +211,7 @@ function App(props: { id: string }) {
           {fi?.parentItems?.map((pi) => {
             return (
               <>
-                <a
-                  href={pi.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={styles.wikiTreeItem}
-                >
+                <a href={pi.url} target="_blank" rel="noreferrer" className={styles.wikiTreeItem}>
                   {pi.name}
                 </a>
                 <span>
@@ -251,10 +227,10 @@ function App(props: { id: string }) {
 }
 
 export async function runDocs(id: string) {
-  const elements = await waitSelector(".docs-title-outer");
+  const elements = await waitSelector('.docs-title-outer');
   const containerElement = elements[0] as HTMLDivElement;
 
-  const appContainer = document.createElement("div");
+  const appContainer = document.createElement('div');
   appContainer.classList.add(styles.container);
   containerElement.prepend(appContainer);
   ReactDOM.render(<App id={id} />, appContainer);

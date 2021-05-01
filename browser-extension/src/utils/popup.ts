@@ -1,11 +1,7 @@
 /**
  * Open a new window via `chrome.windows.create` and return when window is closed.
  */
-export async function popupChromeWindow(
-  url: string,
-  width: number,
-  height: number
-): Promise<void> {
+export async function popupChromeWindow(url: string, width: number, height: number): Promise<void> {
   return new Promise((resolve, reject) => {
     let targetWindowId: number | null = null;
 
@@ -32,12 +28,12 @@ export async function popupChromeWindow(
           height,
           top: Math.round(top),
           left: Math.round(left),
-          type: "popup",
+          type: 'popup',
         },
         (w) => {
           if (!w) {
             revokeListener();
-            reject(new Error("Failed to create window"));
+            reject(new Error('Failed to create window'));
             return;
           }
           targetWindowId = w.id;

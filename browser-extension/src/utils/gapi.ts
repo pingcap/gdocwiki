@@ -1,7 +1,7 @@
-import { Singleflight } from "@zcong/singleflight";
-import axios, { AxiosInstance } from "axios";
-import type { Token } from "client-oauth2";
-import { log } from "./log";
+import { Singleflight } from '@zcong/singleflight';
+import axios, { AxiosInstance } from 'axios';
+import type { Token } from 'client-oauth2';
+import { log } from './log';
 
 export type DriveFile = gapi.client.drive.File;
 
@@ -33,9 +33,7 @@ export class GapiClient {
 
   async getUserInfoProfile(): Promise<GapiUserInfo> {
     try {
-      const r = await this.client.get(
-        "https://www.googleapis.com/oauth2/v1/userinfo"
-      );
+      const r = await this.client.get('https://www.googleapis.com/oauth2/v1/userinfo');
       return r.data as GapiUserInfo;
     } catch (e) {
       throw new Error(`Failed to read user profile: ${e.message}`);
@@ -59,12 +57,9 @@ export class GapiClient {
   ): Promise<DriveFile> {
     const fn = async () => {
       try {
-        const r = await this.client.get(
-          `https://www.googleapis.com/drive/v3/files/${fileId}`,
-          {
-            params,
-          }
-        );
+        const r = await this.client.get(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
+          params,
+        });
         return r.data as DriveFile;
       } catch (e) {
         log.error(e);

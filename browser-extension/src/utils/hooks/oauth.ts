@@ -1,15 +1,15 @@
-import { Token } from "client-oauth2";
-import { useCallback, useEffect, useState } from "react";
-import { GapiUserInfo } from "../gapi";
-import { log } from "../log";
+import { Token } from 'client-oauth2';
+import { useCallback, useEffect, useState } from 'react';
+import { GapiUserInfo } from '../gapi';
+import { log } from '../log';
 import {
   getStoredToken,
   getStoredTokenAndRefresh,
   StoredToken,
   StoreKeyOAuthToken,
   updateStoredProfile,
-} from "../oauth";
-import { useChromeStorageChangeListener } from "./storage";
+} from '../oauth';
+import { useChromeStorageChangeListener } from './storage';
 
 // Load profile on-demand when token exists. This also updates the stored token and profile.
 export function useLatestProfile(): [GapiUserInfo | undefined, boolean] {
@@ -25,7 +25,7 @@ export function useLatestProfile(): [GapiUserInfo | undefined, boolean] {
         const profile = await updateStoredProfile();
         setProfile(profile);
       } catch (e) {
-        log.info("Load profile failed");
+        log.info('Load profile failed');
         log.info(e);
       }
       setIsLoading(false);
@@ -33,22 +33,19 @@ export function useLatestProfile(): [GapiUserInfo | undefined, boolean] {
     init();
   }, [reloadToken]);
 
-  const onChange = useCallback(
-    (changes: { [key: string]: chrome.storage.StorageChange }) => {
-      const change = changes[StoreKeyOAuthToken];
-      if (!change) {
-        return;
-      }
-      const newValue = change.newValue as StoredToken | undefined;
-      const oldValue = change.oldValue as StoredToken | undefined;
-      // Only trigger reload when token changed from non-exist to exist or changed from exist to non-exist.
-      if (Boolean(newValue) !== Boolean(oldValue)) {
-        log.info("Token status is updated");
-        setReloadToken((t) => t + 1);
-      }
-    },
-    []
-  );
+  const onChange = useCallback((changes: { [key: string]: chrome.storage.StorageChange }) => {
+    const change = changes[StoreKeyOAuthToken];
+    if (!change) {
+      return;
+    }
+    const newValue = change.newValue as StoredToken | undefined;
+    const oldValue = change.oldValue as StoredToken | undefined;
+    // Only trigger reload when token changed from non-exist to exist or changed from exist to non-exist.
+    if (Boolean(newValue) !== Boolean(oldValue)) {
+      log.info('Token status is updated');
+      setReloadToken((t) => t + 1);
+    }
+  }, []);
 
   useChromeStorageChangeListener(onChange);
 
@@ -67,7 +64,7 @@ export function useToken(): [Token | undefined, boolean] {
         const token = await getStoredTokenAndRefresh();
         setToken(token);
       } catch (e) {
-        log.info("Load gdocwiki token failed");
+        log.info('Load gdocwiki token failed');
         log.info(e);
       }
       setIsLoading(false);
@@ -75,21 +72,18 @@ export function useToken(): [Token | undefined, boolean] {
     init();
   }, []);
 
-  const onChange = useCallback(
-    async (changes: { [key: string]: chrome.storage.StorageChange }) => {
-      const change = changes[StoreKeyOAuthToken];
-      if (!change) {
-        return;
-      }
-      try {
-        const token = await getStoredToken();
-        setToken(token);
-      } catch (e) {
-        setToken(undefined);
-      }
-    },
-    []
-  );
+  const onChange = useCallback(async (changes: { [key: string]: chrome.storage.StorageChange }) => {
+    const change = changes[StoreKeyOAuthToken];
+    if (!change) {
+      return;
+    }
+    try {
+      const token = await getStoredToken();
+      setToken(token);
+    } catch (e) {
+      setToken(undefined);
+    }
+  }, []);
 
   useChromeStorageChangeListener(onChange);
 

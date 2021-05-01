@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect } from 'react';
 
 export function useChromeStorageChangeListener(
   fn: (changes: { [key: string]: chrome.storage.StorageChange }) => void
@@ -8,7 +8,7 @@ export function useChromeStorageChangeListener(
       changes: { [key: string]: chrome.storage.StorageChange },
       namespace: chrome.storage.AreaName
     ) {
-      if (namespace !== "local") {
+      if (namespace !== 'local') {
         return;
       }
       fn(changes);

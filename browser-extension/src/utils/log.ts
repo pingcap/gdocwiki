@@ -1,3 +1,3 @@
-import consola from "consola";
+import consola from 'consola';
 
-export const log = consola.withTag("gdocwiki");
+export const log = consola.withTag('gdocwiki');
