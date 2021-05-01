@@ -1,4 +1,4 @@
-import type { Message } from './types';
+import type { ExternalMessage, Message } from './types';
 import { storeTokenFromOAuthRedirection } from '../utils/oauth';
 import { log } from '../utils/log';
 
@@ -23,3 +23,15 @@ chrome.runtime.onMessage.addListener(async (message: Message, sender) => {
       break;
   }
 });
+
+chrome.runtime.onMessageExternal.addListener(
+  (message: ExternalMessage, _sender, sendResponse: (response?: ExternalMessage) => void) => {
+    switch (message.event) {
+      case 'detectInstall':
+        sendResponse({
+          event: 'detectInstallResponse',
+          version: chrome.runtime.getManifest().version,
+        });
+    }
+  }
+);
