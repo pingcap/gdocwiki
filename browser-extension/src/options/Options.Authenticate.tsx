@@ -5,24 +5,21 @@ import {
   InlineLoading,
   TextInput,
   ToastNotification,
-} from "carbon-components-react";
-import { Formik } from "formik";
-import React, { useCallback, useState } from "react";
-import { isWebUri } from "valid-url";
-import googleIcon from "@iconify-icons/logos/google-icon";
-import { Icon } from "@iconify/react";
-import FormGroup from "./FormGroup";
-import axios from "axios";
-import { H4 } from "./Heading";
-import { clearStoredToken, requestOAuth } from "../utils/oauth";
-import {
-  castManifestData,
-  ManifestData,
-  storeManifestInfo,
-} from "../utils/manifest";
-import { useManifest } from "../utils/hooks/manifest";
-import { useLatestProfile } from "../utils/hooks/oauth";
-import { log } from "../utils/log";
+} from 'carbon-components-react';
+import { Formik } from 'formik';
+import React, { useCallback, useState } from 'react';
+import { isWebUri } from 'valid-url';
+import googleIcon from '@iconify-icons/logos/google-icon';
+import { Icon } from '@iconify/react';
+import FormGroup from './FormGroup';
+import axios from 'axios';
+import { H4 } from './Heading';
+import { clearStoredToken, getStoredProfile, requestOAuth } from '../utils/oauth';
+import { castManifestData, ManifestData, storeManifestInfo } from '../utils/manifest';
+import { useManifest } from '../utils/hooks/manifest';
+import { useLatestProfile } from '../utils/hooks/oauth';
+import { log } from '../utils/log';
+import { track } from '../utils/tracker';
 
 export default function AuthenticateOptions() {
   const [signInState, setSignInState] = useState<string | null>(null);
@@ -39,10 +36,7 @@ export default function AuthenticateOptions() {
       <H4>Authenticate</H4>
       {isLoadingProfile && (
         <FormGroup>
-          <InlineLoading
-            status="active"
-            description="Loading sign in status..."
-          />
+          <InlineLoading status="active" description="Loading sign in status..." />
         </FormGroup>
       )}
       {Boolean(!isLoadingProfile && profile?.email) && (
@@ -69,32 +63,29 @@ export default function AuthenticateOptions() {
       {Boolean(!isLoadingProfile && !profile?.email) && (
         <>
           <FormLabel>
-            Google sign in is required in order to enable this browser
-            extension. To begin, specify the GdocWiki workspace, and then use
-            your Google account to sign into this workspace.
+            Google sign in is required in order to enable this browser extension. To begin, specify
+            the GdocWiki workspace, and then use your Google account to sign into this workspace.
           </FormLabel>
           <Formik
             enableReinitialize={true}
-            initialValues={{ url: manifest?.uri || "" }}
+            initialValues={{ url: manifest?.uri || '' }}
             validate={({ url }) => {
               let errors: any = {};
               if (!url) {
-                errors["url"] = "Required";
+                errors['url'] = 'Required';
               } else if (!isWebUri(url)) {
-                errors["url"] = "Workspace URL is invalid";
+                errors['url'] = 'Workspace URL is invalid';
               }
               return errors;
             }}
             onSubmit={async (values) => {
-              setSignInState("Discovering the workspace...");
+              setSignInState('Discovering the workspace...');
               setErrMsg(null);
               const targetUri = `${values.url}/ext_manifest.json`;
               try {
-                const response = await axios.get(
-                  `${targetUri}?_t=${Date.now()}`
-                );
+                const response = await axios.get(`${targetUri}?_t=${Date.now()}`);
                 if (!response) {
-                  throw new Error("Unknown manifest");
+                  throw new Error('Unknown manifest');
                 }
                 const { data } = response;
                 let manifest: ManifestData;
@@ -104,27 +95,28 @@ export default function AuthenticateOptions() {
                   throw new Error(`Unrecognized manifest format. ${e.message}`);
                 }
                 await storeManifestInfo(values.url, manifest);
-                setSignInState(
-                  `${manifest.gapiHostedDomain} workspace detected, signing in...`
-                );
+                track({ event: 'readManifestSuccess', url: values.url });
+                setSignInState(`${manifest.gapiHostedDomain} workspace detected, signing in...`);
                 try {
                   const token = await requestOAuth();
-                  log.info("OAuth token retrieved");
+                  log.info('OAuth token retrieved');
                   log.info(token);
+                  try {
+                    const profile = await getStoredProfile();
+                    track({ event: 'oAuthFinished', email: profile.email });
+                  } catch (e) {}
                 } catch (e) {
-                  log.error("Sign in failed");
+                  log.error('Sign in failed');
                   log.info(e);
                   setErrMsg(<div>Sign in failed: {e.message}</div>);
                 }
               } catch (e) {
-                log.error("Detect workspace failed");
+                log.error('Detect workspace failed');
                 log.error(e);
                 setErrMsg(
                   <div>
                     Detect workspace failed. Did you specified the correct URL?
-                    <h3 className="bx--toast-notification__title">
-                      Error Details
-                    </h3>
+                    <h3 className="bx--toast-notification__title">Error Details</h3>
                     Request "{targetUri}" failed:
                     <br />
                     {e.message}
@@ -160,18 +152,14 @@ export default function AuthenticateOptions() {
                     title="Error"
                     subtitle={errMsg}
                     hideCloseButton
-                    style={{ width: "auto" }}
+                    style={{ width: 'auto' }}
                   />
                 )}
                 <FormGroup>
-                  {props.isSubmitting ? (
+                  {props.isSubmitting || signInState ? (
                     <InlineLoading status="active" description={signInState} />
                   ) : (
-                    <Button
-                      type="submit"
-                      kind="secondary"
-                      disabled={props.isSubmitting}
-                    >
+                    <Button type="submit" kind="secondary" disabled={props.isSubmitting}>
                       <Icon icon={googleIcon} style={{ marginRight: 8 }} />
                       Sign into this Workspace
                     </Button>

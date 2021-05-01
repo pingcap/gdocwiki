@@ -16,6 +16,7 @@
     "consola": "^2.15.3",
     "exponential-backoff": "^3.1.0",
     "formik": "^2.2.6",
+    "js-sls-logger": "^2.0.0-beta.2",
     "lodash-es": "^4.17.21",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",

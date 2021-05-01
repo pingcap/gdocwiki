@@ -7594,6 +7594,11 @@ jest@26.6.0:
     import-local "^3.0.2"
     jest-cli "^26.6.0"
 
+js-sls-logger@^2.0.0-beta.2:
+  version "2.0.0-beta.2"
+  resolved "https://registry.yarnpkg.com/js-sls-logger/-/js-sls-logger-2.0.0-beta.2.tgz#3241b0f552f97c2cdacad12234a8c4306b3cfde5"
+  integrity sha512-09T0hdLlet01EAvXlQeu1g42+k2ohwSdfZlPav8JTvaLBrSHJqN1xbr29j9ITqNNIZr7Ro1KmrpCgQ2X6Rh9WA==
+
 "js-tokens@^3.0.0 || ^4.0.0", js-tokens@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/js-tokens/-/js-tokens-4.0.0.tgz#19203fb59991df98e3a287050d4647cdeaf32499"
