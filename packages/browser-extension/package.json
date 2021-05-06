@@ -1,0 +1,71 @@
+{
+  "name": "@gdocwiki/browser-extension",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@carbon/icons-react": "^10.30.0",
+    "@iconify-icons/logos": "^1.1.9",
+    "@iconify/react": "^1.1.4",
+    "@zcong/singleflight": "^0.2.0",
+    "axios": "^0.21.1",
+    "carbon-components": "^10.32.1",
+    "carbon-components-react": "^7.32.1",
+    "carbon-icons": "^7.0.7",
+    "classnames": "^2.3.1",
+    "client-oauth2": "^4.3.3",
+    "consola": "^2.15.3",
+    "exponential-backoff": "^3.1.0",
+    "formik": "^2.2.6",
+    "js-sls-logger": "^2.0.0-beta.2",
+    "lodash-es": "^4.17.21",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "valid-url": "^1.0.9"
+  },
+  "scripts": {
+    "start": "react-app-rewired start --scripts-version react-browser-extension-scripts",
+    "build": "react-app-rewired build --scripts-version react-browser-extension-scripts",
+    "test": "react-app-rewired test --scripts-version react-browser-extension-scripts",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ],
+    "env": {
+      "webextensions": true
+    }
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@gdocwiki/types": "0.1.0",
+    "@testing-library/jest-dom": "^5.11.4",
+    "@testing-library/react": "^11.1.0",
+    "@testing-library/user-event": "^12.1.10",
+    "@types/carbon-components-react": "^7.31.0",
+    "@types/carbon__icons-react": "^10.28.0",
+    "@types/chrome": "^0.0.134",
+    "@types/gapi.client.drive": "^3.0.13",
+    "@types/lodash-es": "^4.17.4",
+    "@types/react": "^17.0.3",
+    "@types/react-dom": "^17.0.3",
+    "@types/valid-url": "^1.0.3",
+    "open-color": "^1.8.0",
+    "react-app-rewired": "^2.1.8",
+    "react-browser-extension-scripts": "4.0.10",
+    "sass": "^1.32.11",
+    "typescript": "^4.2.4"
+  }
+}

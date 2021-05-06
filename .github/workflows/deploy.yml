@@ -28,11 +28,13 @@ jobs:
       - name: Install dependencies
         run: yarn --frozen-lockfile
       - name: Build
+        working-directory: ./packages/browser-extension
         run: yarn build
         env:
           CI: false
           REACT_APP_USE_CONFIG_FILE: 1
       - name: Deploy
+        working-directory: ./packages/browser-extension
         env:
           DEPLOY_ACCESS_KEY_ID: ${{ secrets.DEPLOY_ACCESS_KEY_ID }}
           DEPLOY_ACCESS_SECRET: ${{ secrets.DEPLOY_ACCESS_SECRET }}

@@ -1,0 +1,7 @@
+{
+  "name": "@gdocwiki/types",
+  "version": "0.1.0",
+  "typings": "index.d.ts",
+  "license": "MIT",
+  "private": true
+}

@@ -1,0 +1,40 @@
+{
+  "name": "@gdocwiki/api-portal",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "penpal": "^5.3.0"
+  },
+  "scripts": {
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "deploy": "firebase deploy"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@gdocwiki/types": "0.1.0",
+    "react-scripts": "4.0.2",
+    "customize-cra": "^1.0.0",
+    "firebase-tools": "^9.10.0",
+    "react-app-rewire-multiple-entry": "^2.2.1",
+    "react-app-rewired": "^2.1.8",
+    "webpackbar": "^5.0.0-3"
+  }
+}

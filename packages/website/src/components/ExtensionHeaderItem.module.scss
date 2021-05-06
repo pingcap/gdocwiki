@@ -1,0 +1,12 @@
+@import 'open-color/open-color.scss';
+
+.item {
+  cursor: pointer;
+  background: linear-gradient(rgba($oc-yellow-6, 0.5), transparent);
+
+  :global(.bx--header__menu-item) {
+    &:hover {
+      background: rgba($oc-blue-5, 0.8);
+    }
+  }
+}
