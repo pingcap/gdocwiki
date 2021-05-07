@@ -155,7 +155,7 @@ function useFileInfo(fileId: string, token?: Token): [FileInfo | undefined, bool
     const handlePickerHide = debounce(() => {
       // When picker is closed, trigger reload
       setLoadToken((t) => t + 1);
-    }, 1000);
+    }, 5000);
 
     const el = document.querySelector('#docs-chrome');
     if (!el) {
@@ -185,7 +185,7 @@ function useFileInfo(fileId: string, token?: Token): [FileInfo | undefined, bool
 
 function App(props: { id: string }) {
   const [token, isTokenLoading] = useToken();
-  const [fi, isFILoading] = useFileInfo(props.id, token);
+  const [fi] = useFileInfo(props.id, token);
 
   return (
     <>
@@ -200,13 +200,13 @@ function App(props: { id: string }) {
           GdocWiki Extension Not Enabled
         </a>
       )}
-      {Boolean(!isFILoading && fi && fi.isOrphanAndOwner) && (
+      {Boolean(fi && fi.isOrphanAndOwner) && (
         <span className={cx(styles.tag, styles.warning)}>
           <WarningAltFilled16 style={{ marginRight: 6 }} />
           Document outside the Wiki
         </span>
       )}
-      {Boolean(!isFILoading && fi && fi.parentItems) && (
+      {Boolean(fi && fi.parentItems) && (
         <div className={styles.wikiTree}>
           {fi?.parentItems?.map((pi) => {
             return (
