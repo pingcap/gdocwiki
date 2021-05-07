@@ -9,6 +9,7 @@ A wiki based on Google Doc / Drive.
 2. Install dependencies:
 
    ```shell
+   cd packages/website
    yarn
    ```
 
@@ -74,7 +75,7 @@ REACT_APP_ROOT_DRIVE_ID=xxxxxxx
   - [x] Expand all
   - [x] Collapse all
   - [x] Configure specific folder children to be displayed in sidebar or not
-    - [ ] Activate nearest displayed parent
+    - [x] Activate nearest displayed parent
   - [x] Activate and expand sidebar item according to current page
   - [x] Support >500 pages in the sidebar
   - [x] Support external link in syntax `[xxx](https://yyy)`
@@ -113,7 +114,7 @@ REACT_APP_ROOT_DRIVE_ID=xxxxxxx
   - [x] Trash
     - [ ] Trash a link
   - [x] Move in a file
-    - [ ] Notification when the file cannot be moved out again
+    - [x] Notification when the file cannot be moved out again
     - [x] Move using shortcut
   - [x] Move in a folder (a shortcut will be always created for now?)
   - [ ] Move to another tree location
@@ -137,7 +138,7 @@ REACT_APP_ROOT_DRIVE_ID=xxxxxxx
 - [ ] Mobile Support
   - [ ] Responsive Sidebar
 - [x] Helpers
-  - [x] A Chrome extension for checking whether the doc is in the tree: [`browser-extension`](./browser-extension)
+  - [x] A Chrome extension for checking whether the doc is in the tree: [`browser-extension`](./packages/browser-extension)
 
 ## Note
 
