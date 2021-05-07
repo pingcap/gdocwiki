@@ -10,7 +10,7 @@ export interface IExtensionHeaderItemProps {
 
 export default function ExtensionHeaderItem({ onClick }: IExtensionHeaderItemProps) {
   const { isDetecting, isDetectFailed, installInfo } = useExtInstallStatus();
-  const isVisible = Boolean(false && !isDetecting && !isDetectFailed && !installInfo);
+  const isVisible = Boolean(!isDetecting && !isDetectFailed && !installInfo);
 
   return (
     <>

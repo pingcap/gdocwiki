@@ -11,7 +11,7 @@ export interface IExtensionBannerProps {
 export default function ExtensionBanner({ visible, onDismiss }: IExtensionBannerProps) {
   const { isDetecting, isDetectFailed, installInfo } = useExtInstallStatus();
 
-  const isVisible = Boolean(false && !isDetecting && !isDetectFailed && !installInfo && visible);
+  const isVisible = Boolean(!isDetecting && !isDetectFailed && !installInfo && visible);
 
   return (
     <div className={cx(styles.container, { [styles.visible]: isVisible })}>
