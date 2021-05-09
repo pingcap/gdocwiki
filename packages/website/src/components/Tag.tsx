@@ -29,7 +29,7 @@ function stringToColor(s: string): [string, string] {
   return [tagColors[pos], foreColors[pos]];
 }
 
-export default function Tag({ text, onClick }: ITagProps) {
+export function Tag({ text, onClick }: ITagProps) {
   const bgAndFore = useMemo(() => stringToColor(text), [text]);
   return (
     <span

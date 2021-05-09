@@ -1,28 +1,30 @@
-import { Add20, ChevronDown20, Close20, Menu20, Subtract20 } from '@carbon/icons-react';
+import { Add20, Close20, Menu20, Subtract20 } from '@carbon/icons-react';
 import {
   Header,
   HeaderGlobalAction,
   HeaderGlobalBar,
-  HeaderMenuItem,
-  HeaderNavigation,
   InlineLoading,
 } from 'carbon-components-react';
-import { Stack } from 'office-ui-fabric-react';
 import Trigger from 'rc-trigger';
 import React, { useCallback, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Router, Switch, Route, Link, LinkProps } from 'react-router-dom';
+import { Router, Switch, Route } from 'react-router-dom';
 import { useLocalStorage } from 'react-use';
-import { NavMenu } from './components';
-import ExtensionBanner from './components/ExtensionBanner';
-import ExtensionHeaderItem from './components/ExtensionHeaderItem';
-import { getConfig } from './config';
+import { ExtensionBanner } from './components';
 import { ExtInstallStatusProvider } from './context/ExtInstallStatus';
 import { RenderStackProvider } from './context/RenderStack';
 import useGapi from './hooks/useGapi';
 import useLoadDriveFiles from './hooks/useLoadDriveFiles';
-import { HeaderTitle, Content, HeaderUserAction, Sider, HeaderUserMenu } from './layout';
-import HeaderSearch from './layout/HeaderSearch';
+import {
+  HeaderExtraActions,
+  HeaderSearch,
+  HeaderTitle,
+  Content,
+  HeaderUserAction,
+  Sider,
+  HeaderUserMenu,
+} from './layout';
+import responsiveStyle from './layout/responsive.module.scss';
 import Page from './pages/Page';
 import { SearchResult, SearchTag } from './pages/Search';
 import SearchAllTags from './pages/Search/AllTags';
@@ -30,6 +32,8 @@ import Settings from './pages/Settings';
 import { selectMapIdToFile } from './reduxSlices/files';
 import { collapseAll, expand } from './reduxSlices/siderTree';
 import { history } from './utils';
+
+const expandSidebarByDefault = window.innerWidth >= 600;
 
 function DriveFilesLoader({ children }) {
   useLoadDriveFiles();
@@ -59,7 +63,7 @@ function useExtensionBannerController() {
 function App() {
   const dispatch = useDispatch();
   const { gapiLoaded } = useGapi();
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(expandSidebarByDefault);
   const mapIdToFile = useSelector(selectMapIdToFile);
 
   const handleOpenTOC = useCallback(() => setIsExpanded(true), []);
@@ -96,7 +100,12 @@ function App() {
               </HeaderGlobalAction>
             )}
             {isExpanded && (
-              <HeaderGlobalAction key="expand" aria-label="Expand All" onClick={handleTreeExpand}>
+              <HeaderGlobalAction
+                key="expand"
+                aria-label="Expand All"
+                onClick={handleTreeExpand}
+                className={responsiveStyle.hideInPhone}
+              >
                 <Add20 />
               </HeaderGlobalAction>
             )}
@@ -105,67 +114,14 @@ function App() {
                 key="collapse"
                 aria-label="Collapse All"
                 onClick={handleTreeCollapse}
+                className={responsiveStyle.hideInPhone}
               >
                 <Subtract20 />
               </HeaderGlobalAction>
             )}
             <HeaderTitle />
-            <HeaderNavigation>
-              <HeaderMenuItem<LinkProps> element={Link} to="/search/tag">
-                All Tags
-              </HeaderMenuItem>
-              {getConfig().NavItems.map((item) => {
-                switch (item.type) {
-                  case 'link':
-                    return (
-                      <HeaderMenuItem href={item.href} target={item.target}>
-                        {item.text ?? ''}
-                      </HeaderMenuItem>
-                    );
-                  case 'group':
-                    return (
-                      <Trigger
-                        popupAlign={{
-                          points: ['tl', 'bl'],
-                        }}
-                        mouseLeaveDelay={0.3}
-                        zIndex={10000}
-                        action="hover"
-                        popup={
-                          <NavMenu>
-                            {item.children?.map((childItem) => {
-                              switch (childItem.type) {
-                                case 'divider':
-                                  return <NavMenu.Divider>{childItem.text ?? ''}</NavMenu.Divider>;
-                                case 'link':
-                                  return (
-                                    <NavMenu.Link href={childItem.href} target={childItem.target}>
-                                      {childItem.text ?? ''}
-                                    </NavMenu.Link>
-                                  );
-                                default:
-                                  return null;
-                              }
-                            })}
-                          </NavMenu>
-                        }
-                        popupTransitionName="slide-up"
-                      >
-                        <HeaderMenuItem href="javascript:;">
-                          <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
-                            <span>{item.text ?? ''}</span>
-                            <ChevronDown20 />
-                          </Stack>
-                        </HeaderMenuItem>
-                      </Trigger>
-                    );
-                  default:
-                    return null;
-                }
-              })}
-              <ExtensionHeaderItem onClick={extBannerCtrl.showBanner} />
-            </HeaderNavigation>
-            <HeaderGlobalBar>
+            <HeaderExtraActions onExtensionAction={extBannerCtrl.showBanner} />
+            <HeaderGlobalBar className={responsiveStyle.hideInPhone}>
               <HeaderSearch />
               <Trigger
                 popupAlign={{

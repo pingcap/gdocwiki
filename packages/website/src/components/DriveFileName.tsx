@@ -3,7 +3,7 @@ import React from 'react';
 import { DriveFile, mdLink, MimeTypes } from '../utils';
 import { ShortcutIcon } from '.';
 
-function DriveFileName({ file }: { file: DriveFile }) {
+function DriveFileName_({ file }: { file: DriveFile }) {
   const link = mdLink.parse(file.name);
   if (link) {
     return <span>{link.title}</span>;
@@ -17,4 +17,4 @@ function DriveFileName({ file }: { file: DriveFile }) {
   }
 }
 
-export default React.memo(DriveFileName);
+export const DriveFileName = React.memo(DriveFileName_);

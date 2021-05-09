@@ -9,7 +9,7 @@ export interface INavMenuProps extends React.HTMLAttributes<HTMLElement> {
   children?: React.ReactNode;
 }
 
-export default function NavMenu({ children, ...restProps }: INavMenuProps) {
+export function NavMenu({ children, ...restProps }: INavMenuProps) {
   return (
     <nav className={styles.nav} {...restProps}>
       <ul>{children}</ul>

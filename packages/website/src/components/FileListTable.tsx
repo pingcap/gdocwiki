@@ -9,7 +9,7 @@ export interface IFileListTableProps {
   openInNewWindow: boolean;
 }
 
-export default function FileListTable({ files, openInNewWindow }: IFileListTableProps) {
+export function FileListTable({ files, openInNewWindow }: IFileListTableProps) {
   const getKey = useCallback((file: DriveFile) => {
     return file.id ?? '';
   }, []);

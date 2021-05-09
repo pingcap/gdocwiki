@@ -12,6 +12,7 @@ import { extractTags } from '../utils';
 import ContentPage from './ContentPage';
 import FileAction from './FileAction';
 import FileBreadcrumb from './FileBreadcrumb';
+import styles from './Page.module.scss';
 import RightContainer from './RightContainer';
 
 function Page() {
@@ -35,7 +36,7 @@ function Page() {
 
   return (
     <RightContainer>
-      <div style={{ marginBottom: 32 }}>
+      <div className={styles.actionBar}>
         <FileBreadcrumb file={file} />
         <FileAction />
         {tags.length > 0 && (

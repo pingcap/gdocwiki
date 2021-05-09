@@ -1,0 +1,13 @@
+@import '../mixin.scss';
+
+@include for-size(phone) {
+  .hideInPhone {
+    display: none !important;
+  }
+}
+
+@include for-size(phone-up) {
+  .showInPhone {
+    display: none !important;
+  }
+}

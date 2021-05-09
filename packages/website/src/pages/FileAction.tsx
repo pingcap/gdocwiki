@@ -1,3 +1,4 @@
+import cx from 'classnames';
 import dayjs from 'dayjs';
 import {
   CommandBar,
@@ -19,6 +20,7 @@ import styles from './FileAction.module.scss';
 import { showMoveFile } from './FileAction.moveFile';
 import { showRenameFile } from './FileAction.renameFile';
 import { showTrashFile } from './FileAction.trashFile';
+import responsiveStyle from '../layout/responsive.module.scss';
 
 function FileAction() {
   // Support we have a folder, containing a shortcut to a README document,
@@ -51,10 +53,13 @@ function FileAction() {
               size="20"
               round
             />
-            <span>
+            <span className={responsiveStyle.hideInPhone}>
               Last modified by {rInner.file.lastModifyingUser?.displayName}
               {' at '}
               {dayjs(rInner.file.modifiedTime).fromNow()}
+            </span>
+            <span className={responsiveStyle.showInPhone}>
+              {rInner.file.lastModifyingUser?.displayName}
             </span>
           </Stack>
         ) as any,

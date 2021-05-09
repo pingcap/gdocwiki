@@ -9,8 +9,6 @@ export function Title({ children }) {
   );
 }
 
-const Typography = {
+export const Typography = {
   Title,
 };
-
-export default Typography;

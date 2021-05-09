@@ -3,7 +3,7 @@ import { HeaderGlobalAction } from 'carbon-components-react';
 import React, { useMemo } from 'react';
 import Avatar from 'react-avatar';
 
-function HeaderUserAction() {
+function HeaderUserAction_() {
   // TODO: Respond to sign in state change
   const isSignedIn = gapi.auth2.getAuthInstance().isSignedIn.get();
   const profile = useMemo(() => {
@@ -29,4 +29,4 @@ function HeaderUserAction() {
   }
 }
 
-export default React.memo(HeaderUserAction);
+export const HeaderUserAction = React.memo(HeaderUserAction_);

@@ -22,6 +22,7 @@ import {
 } from '../reduxSlices/siderTree';
 import { DriveFile, mdLink, MimeTypes, parseFolderChildrenDisplaySettings } from '../utils';
 import styles from './Sider.module.scss';
+import { HeaderExtraActionsForMobile } from '.';
 
 function renderChildren(
   mapIdToFile: Record<string, DriveFile>,
@@ -113,7 +114,7 @@ function renderChildren(
     });
 }
 
-function Sider({ isExpanded = true }: { isExpanded?: boolean }) {
+function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
   const dispatch = useDispatch();
 
   const loading = useSelector(selectLoading);
@@ -148,6 +149,7 @@ function Sider({ isExpanded = true }: { isExpanded?: boolean }) {
 
   return (
     <div className={cx(styles.sider, { [styles.isExpanded]: isExpanded })}>
+      <HeaderExtraActionsForMobile />
       {loading && (
         <div className={styles.skeleton}>
           <SkeletonText paragraph />
@@ -173,7 +175,7 @@ function Sider({ isExpanded = true }: { isExpanded?: boolean }) {
   );
 }
 
-export default React.memo(Sider);
+export const Sider = React.memo(Sider_);
 
 function Content_({
   isExpanded = true,

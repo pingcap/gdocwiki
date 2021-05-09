@@ -1,6 +1,8 @@
+@import 'easings.scss';
 @import 'carbon-components/scss/globals/scss/_vars';
 @import 'carbon-components/scss/globals/scss/vendor/@carbon/elements/scss/import-once/import-once';
 @import 'carbon-components/scss/globals/scss/_helper-mixins';
+@import '../mixin.scss';
 
 $sider-width: 300px;
 
@@ -15,29 +17,52 @@ $sider-width: 300px;
   padding: 1rem 0;
   background-color: $ui-01;
 
-  z-index: 10000;
+  z-index: 7999;
 
   :global {
     .bx--label {
-      display: none;
+      padding-left: 1rem;
+    }
+    @include for-size(phone-up) {
+      .bx--label {
+        display: none;
+      }
     }
   }
 
-  display: none;
+  transition: opacity 0.3s $ease-out-cubic, transform 0.3s $ease-out-cubic;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(-50px);
+
+  @include for-size(phone) {
+    width: 100%;
+    padding: 0.5rem 0;
+    transform-origin: center top;
+    transform: scaleY(0.8);
+  }
 }
 
 .sider.isExpanded {
-  display: block;
+  opacity: 1;
+  transform: none;
+  pointer-events: all;
 }
 
 .skeleton {
   padding: 2rem;
+
+  @include for-size(phone-and-tablet) {
+    padding: 1rem;
+  }
 }
 
 .content {
   margin-top: 3rem;
 }
 
-.content.isExpanded {
-  margin-left: $sider-width;
+@include for-size(phone-up) {
+  .content.isExpanded {
+    margin-left: $sider-width;
+  }
 }

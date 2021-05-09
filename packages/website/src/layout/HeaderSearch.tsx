@@ -4,7 +4,7 @@ import React, { ChangeEvent, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import styles from './HeaderSearch.module.scss';
 
-function HeaderSearch() {
+function HeaderSearch_() {
   const location = useLocation();
   const { pathname } = location;
   const pathKey = '/search/keyword/';
@@ -47,4 +47,4 @@ function HeaderSearch() {
   );
 }
 
-export default React.memo(HeaderSearch);
+export const HeaderSearch = React.memo(HeaderSearch_);

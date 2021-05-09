@@ -2,7 +2,7 @@ import { Launch16 } from '@carbon/icons-react';
 import React from 'react';
 import { DriveFile, mdLink, MimeTypes } from '../utils';
 
-export default function DriveIcon({ file }: { file?: DriveFile }) {
+export function DriveIcon({ file }: { file?: DriveFile }) {
   if (!file) {
     return null;
   }

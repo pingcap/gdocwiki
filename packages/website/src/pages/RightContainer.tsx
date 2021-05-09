@@ -1,3 +1,5 @@
+import styles from './RightContainer.module.scss';
+
 export default function RightContainer({ children }) {
-  return <div style={{ padding: '3rem' }}>{children}</div>;
+  return <div className={styles.container}>{children}</div>;
 }

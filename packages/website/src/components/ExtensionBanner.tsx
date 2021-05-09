@@ -8,7 +8,7 @@ export interface IExtensionBannerProps {
   onDismiss?: () => void;
 }
 
-export default function ExtensionBanner({ visible, onDismiss }: IExtensionBannerProps) {
+export function ExtensionBanner({ visible, onDismiss }: IExtensionBannerProps) {
   const { isDetecting, isDetectFailed, installInfo } = useExtInstallStatus();
 
   const isVisible = Boolean(!isDetecting && !isDetectFailed && !installInfo && visible);

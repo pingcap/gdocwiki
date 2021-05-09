@@ -61,7 +61,7 @@ function dummyColumn(): IColumn {
   };
 }
 
-export default function Table(props: ITableProps) {
+export function Table(props: ITableProps) {
   const {
     className,
     extendLastColumn,

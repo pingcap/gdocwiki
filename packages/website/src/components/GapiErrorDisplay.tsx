@@ -5,10 +5,10 @@ import { Stack } from 'office-ui-fabric-react';
 import React, { useMemo } from 'react';
 import { handleGapiError, signIn } from '../utils';
 
-function GapiErrorDisplay({ error }: { error: any }) {
+function GapiErrorDisplay_({ error }: { error: any }) {
   const e = useMemo(() => handleGapiError(error), [error]);
 
-  if (gapi.auth2.getAuthInstance().isSignedIn.get()) {
+  if (false) {
     return (
       <InlineNotification
         kind="error"
@@ -45,4 +45,4 @@ function GapiErrorDisplay({ error }: { error: any }) {
   }
 }
 
-export default React.memo(GapiErrorDisplay);
+export const GapiErrorDisplay = React.memo(GapiErrorDisplay_);

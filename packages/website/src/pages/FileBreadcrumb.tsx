@@ -1,14 +1,17 @@
+import cx from 'classnames';
 import { Breadcrumb, IBreadcrumbItem, Stack } from 'office-ui-fabric-react';
 import React, { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { DriveIcon, ShortcutIcon } from '../components';
+import responsiveStyle from '../layout/responsive.module.scss';
 import { selectMapIdToFile } from '../reduxSlices/files';
 import { DriveFile, MimeTypes } from '../utils';
+import styles from './FileBreadcrumb.module.scss';
 
-function LastBreadcrumbItem({ file }: { file: DriveFile }) {
+export function CurrentFileBreadcrumbItem({ file }: { file: DriveFile }) {
   return (
-    <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
+    <Stack wrap verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
       <span>{file.name}</span>
       <DriveIcon file={file} />
       {file.mimeType === MimeTypes.GoogleShortcut && <ShortcutIcon />}
@@ -30,7 +33,7 @@ function useFilePathBreadcrumb(file?: DriveFile) {
       // File is not in the doc tree
       paths = [
         {
-          text: (<LastBreadcrumbItem file={file} />) as any,
+          text: (<CurrentFileBreadcrumbItem file={file} />) as any,
           key: file.id ?? '',
         },
       ];
@@ -51,7 +54,7 @@ function useFilePathBreadcrumb(file?: DriveFile) {
       let text: any = currentItem.name;
       let onClick: any = () => history.push(`/view/${currentItem.id}`);
       if (iterateId === file.id) {
-        text = (<LastBreadcrumbItem file={currentItem} />) as any;
+        text = (<CurrentFileBreadcrumbItem file={currentItem} />) as any;
       }
       paths.push({
         text,
@@ -93,7 +96,16 @@ function FileBreadcrumb({ file, extraItems }: IFileBreadcrumbProps) {
     return r;
   }, [paths, extraItems]);
   if ((items.length ?? 0) > 0) {
-    return <Breadcrumb items={items} />;
+    return (
+      <>
+        <div className={responsiveStyle.hideInPhone}>
+          <Breadcrumb items={items} />
+        </div>
+        <div className={cx(responsiveStyle.showInPhone, styles.fileName)}>
+          <CurrentFileBreadcrumbItem file={file!} />
+        </div>
+      </>
+    );
   } else {
     return null;
   }

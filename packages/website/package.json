@@ -15,6 +15,7 @@
     "classnames": "^2.2.6",
     "cra-template": "1.1.1",
     "dayjs": "^1.9.6",
+    "easings.scss": "^0.3.1",
     "eventemitter2": "^6.4.3",
     "formik": "^2.2.5",
     "ky": "^0.25.1",

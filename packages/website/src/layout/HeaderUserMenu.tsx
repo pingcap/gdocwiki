@@ -7,7 +7,7 @@ import Avatar from 'react-avatar';
 import { NavMenu } from '../components';
 import { signIn, signOut } from '../utils';
 
-export default function HeaderUserMenu() {
+export function HeaderUserMenu() {
   const isSignedIn = gapi.auth2.getAuthInstance().isSignedIn.get();
   const profile = useMemo(() => {
     if (isSignedIn) {

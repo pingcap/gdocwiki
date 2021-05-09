@@ -5,7 +5,7 @@ import { Link, LinkProps } from 'react-router-dom';
 import { getConfig } from '../config';
 import { selectMapIdToFile } from '../reduxSlices/files';
 
-function HeaderTitle() {
+function HeaderTitle_() {
   const mapIdToFile = useSelector(selectMapIdToFile);
 
   const appName = (() => {
@@ -22,4 +22,4 @@ function HeaderTitle() {
   );
 }
 
-export default React.memo(HeaderTitle);
+export const HeaderTitle = React.memo(HeaderTitle_);
