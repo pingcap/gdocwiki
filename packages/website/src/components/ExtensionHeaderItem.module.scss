@@ -2,11 +2,11 @@
 
 .item {
   cursor: pointer;
-  background: linear-gradient(rgba($oc-yellow-6, 0.5), transparent);
+  background: linear-gradient(rgba($oc-red-8, 0.5), rgba($oc-red-8, 0.3));
 
   :global(.bx--header__menu-item) {
     &:hover {
-      background: rgba($oc-blue-5, 0.8);
+      background: $oc-blue-9;
     }
   }
 }
