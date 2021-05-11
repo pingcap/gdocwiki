@@ -137,6 +137,7 @@ REACT_APP_ROOT_DRIVE_ID=xxxxxxx
   - [x] Search Tag
 - [x] Mobile Support
   - [x] Responsive Sidebar
+  - [ ] Responsive settings page
 - [x] Helpers
   - [x] A Chrome extension for checking whether the doc is in the tree: [`browser-extension`](./packages/browser-extension)
 

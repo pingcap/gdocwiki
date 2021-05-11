@@ -101,9 +101,11 @@ function FileBreadcrumb({ file, extraItems }: IFileBreadcrumbProps) {
         <div className={responsiveStyle.hideInPhone}>
           <Breadcrumb items={items} />
         </div>
-        <div className={cx(responsiveStyle.showInPhone, styles.fileName)}>
-          <CurrentFileBreadcrumbItem file={file!} />
-        </div>
+        {Boolean(file) && (
+          <div className={cx(responsiveStyle.showInPhone, styles.fileName)}>
+            <CurrentFileBreadcrumbItem file={file!} />
+          </div>
+        )}
       </>
     );
   } else {
