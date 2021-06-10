@@ -85,3 +85,4 @@ export const selectActiveId = (state: { tree: TreeState }) => state.tree.activeI
 export const selectSelected = (state: { tree: TreeState }) => [...state.tree.selected];
 
 export default slice.reducer;
+

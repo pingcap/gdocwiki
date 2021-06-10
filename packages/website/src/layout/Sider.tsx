@@ -13,6 +13,9 @@ import {
   selectMapIdToFile,
 } from '../reduxSlices/files';
 import {
+  selectHeaders,
+} from '../reduxSlices/headers';
+import {
   activate,
   expand,
   collapse,
@@ -21,6 +24,7 @@ import {
   selectSelected,
 } from '../reduxSlices/siderTree';
 import { DriveFile, mdLink, MimeTypes, parseFolderChildrenDisplaySettings } from '../utils';
+import { DocHeader, TreeHeading, isTreeHeading, MakeTree } from '../utils/docHeaders';
 import styles from './Sider.module.scss';
 import { HeaderExtraActionsForMobile } from '.';
 
@@ -123,6 +127,7 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
   const mapIdToChildren = useSelector(selectMapIdToChildren);
   const expanded = useSelector(selectExpanded);
   const selected = useSelector(selectSelected);
+  const headers = useSelector(selectHeaders);
 
   const id = useSelector(selectActiveId) ?? getConfig().REACT_APP_ROOT_ID;
 
@@ -147,6 +152,27 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
     }
   }, [id, mapIdToFile, dispatch]);
 
+  function entryNode(heading: DocHeader): JSX.Element{
+    const label = <a href={"#" + heading.id}>{heading.text}</a>
+    return <TreeNode key={heading.id} id={"tree-" + heading.id} label={label} />
+  }
+
+  function treeNode(heading: DocHeader, inner){
+    const label = <a href={"#" + heading.id}>{heading.text}</a>
+    return (
+      <TreeNode key={heading.id} id={"tree-" + heading.id} isExpanded={true} label={label}>
+        {inner}
+      </TreeNode>
+    )
+  }
+
+  function toTreeElements(node: TreeHeading | DocHeader): JSX.Element {
+    return isTreeHeading(node)
+      ? treeNode(node, node.entries.map(toTreeElements))
+      : entryNode(node)
+  }
+  const headerTreeNodes = MakeTree(headers.slice()).map(toTreeElements)
+
   return (
     <div className={cx(styles.sider, { [styles.isExpanded]: isExpanded })}>
       <HeaderExtraActionsForMobile />
@@ -170,6 +196,19 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
             handleToggle
           )}
         </TreeView>
+      )}
+      { headerTreeNodes.length > 0 && (
+        <div>
+          <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
+            &nbsp;
+          </Stack>
+          <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
+            &nbsp;Outline
+          </Stack>
+          <TreeView label="Document Headers" selected={[headerTreeNodes[0].key?.toString() ?? 0]}>
+            { headerTreeNodes }
+          </TreeView>
+        </div>
       )}
     </div>
   );
