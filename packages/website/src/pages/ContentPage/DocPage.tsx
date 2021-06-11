@@ -16,7 +16,7 @@ function isModifiedEvent(event) {
   return !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);
 }
 
-function prettify(baseEl: HTMLElement) {
+function prettify(baseEl: HTMLElement, fileId: string) {
   {
     // Remove all font families, except for some monospace fonts.
     const monoFF = ['source code', 'courier', 'mono'];
@@ -69,6 +69,23 @@ function prettify(baseEl: HTMLElement) {
       }
     }
   }
+  if (fileId) {
+    externallyLinkHeaders(baseEl, fileId)
+  }
+}
+
+function externallyLinkHeaders(baseEl: HTMLElement, fileId: string) {
+    // Link from headers into the GDoc
+    const headers = Array.from(baseEl.querySelectorAll("h1, h2, h3, h4, h5, h6")) as HTMLHeadingElement[]
+    for (const el of headers) {
+      let inner = el.childNodes[0]
+      let link = document.createElement('a')
+      link.target = '_blank';
+      link.classList.add('__gdoc_external_link');
+      link.href = 'https://docs.google.com/document/d/' + fileId +  '/edit#heading=' + el.id;
+      el.appendChild(link);
+      link.appendChild(inner);
+    }
 }
 
 function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
@@ -112,7 +129,7 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
         const htmlDoc = parser.parseFromString(resp.body, 'text/html');
         const bodyEl = htmlDoc.querySelector('body');
         if (bodyEl) {
-          prettify(bodyEl);
+          prettify(bodyEl, file.id ?? '');
           const styleEls = htmlDoc.querySelectorAll('style');
           styleEls.forEach((el) => bodyEl.appendChild(el));
           updateDoc(bodyEl);
