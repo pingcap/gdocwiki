@@ -1,8 +1,11 @@
 import { InlineLoading } from 'carbon-components-react';
 import React, { useCallback, useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom';
 import { useManagedRenderStack } from '../../context/RenderStack';
 import { history, DriveFile, parseDriveLink } from '../../utils';
+import { fromHTML } from '../../utils/docHeaders';
+import { setHeaders } from '../../reduxSlices/headers';
 
 export interface IDocPageProps {
   file: DriveFile;
@@ -72,6 +75,7 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
   const [docContent, setDocContent] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const history = useHistory();
+  const dispatch = useDispatch();
 
   useManagedRenderStack({
     depth: renderStackOffset,
@@ -79,10 +83,23 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
     file,
   });
 
+  function updateDoc(content: HTMLBodyElement | string) {
+    console.log("Update DOC");
+    if (typeof content === "string"){
+      setDocContent(content);
+    } else {
+      setDocContent(content.innerHTML);
+      console.log("Setting headers");
+      dispatch(setHeaders(
+        Array.from(content.querySelectorAll("h1, h2, h3, h4, h5, h6")).map(fromHTML)
+      ));
+    }
+  }
+
   useEffect(() => {
     async function loadPreview() {
       setIsLoading(true);
-      setDocContent('');
+      updateDoc('');
 
       try {
         const resp = await gapi.client.drive.files.export({
@@ -98,9 +115,9 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
           prettify(bodyEl);
           const styleEls = htmlDoc.querySelectorAll('style');
           styleEls.forEach((el) => bodyEl.appendChild(el));
-          setDocContent(bodyEl.innerHTML);
+          updateDoc(bodyEl);
         } else {
-          setDocContent('Error?');
+          updateDoc('Error?');
         }
       } finally {
         setIsLoading(false);
@@ -127,7 +144,7 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
     <div style={{ maxWidth: '50rem' }}>
       {isLoading && <InlineLoading description="Loading document content..." />}
       {!isLoading && (
-        <div
+        <div id="gdoc-html"
           style={{ maxWidth: '50rem' }}
           dangerouslySetInnerHTML={{ __html: docContent }}
           onClick={handleDocContentClick}
