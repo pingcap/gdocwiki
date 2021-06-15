@@ -95,7 +95,23 @@ export const selectMapIdToChildren: (state: any) => Record<string, DriveFile[]> 
       }
 
       retMap[id].sort((a, b) => {
-        return naturalCompare(a.name?.toLowerCase() ?? '', b.name?.toLowerCase() ?? '');
+        const aLower = a.name?.toLowerCase() ?? '';
+        const bLower = b.name?.toLowerCase() ?? '';
+
+        // Show the readme file first
+        const aReadme = aLower === 'readme';
+        const bReadme = bLower === 'readme';
+        if (aReadme && !bReadme) { return -1 }
+        if (bReadme && !aReadme) { return 1 }
+
+        // If a name begins with "." show it last
+        const ahidden = (a.name?.[0] ?? '') == "."
+        const bhidden = (b.name?.[0] ?? '') == "."
+        if (ahidden && !bhidden) { return 1 }
+        if (bhidden && !ahidden) { return -1 }
+
+        // Compare as lower case
+        return naturalCompare(aLower, bLower);
       });
     }
 

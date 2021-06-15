@@ -2,6 +2,19 @@
 
 A wiki based on Google Doc / Drive.
 
+## User Guide
+
+gdocwiki combines a folder tree view in a sidebar with a document preview in the main panel.
+This helps browse through content without opening lots of new tabs and also to understand the hierarchical relationship of content.
+
+An outline of headers are shown in the sidebar. Clicking on them will navigate to the header of the document shown in gdocwiki.
+The headers in the document preview are linked out to the Google doc at the location of the header. These can be clicked on to edit/suggest/comment on the doc.
+
+The following file name conventions are used:
+
+* a file named `readme` will be displayed automatically when navigating to a directory
+* a file/folder begining with `.` will be displayed last in the listings
+
 ## Getting Started
 
 1. Install [Node.js](https://nodejs.org/en/download/package-manager/), [yarn](https://classic.yarnpkg.com/en/docs/install)
