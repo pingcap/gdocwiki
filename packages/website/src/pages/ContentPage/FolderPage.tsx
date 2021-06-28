@@ -7,7 +7,7 @@ import { DriveFileName, DriveIcon, FileListTable } from '../../components';
 import { useManagedRenderStack } from '../../context/RenderStack';
 import { useFolderFilesMeta } from '../../hooks/useFolderFilesMeta';
 import { selectMapIdToFile } from '../../reduxSlices/files';
-import { DriveFile, mdLink, parseFolderChildrenDisplaySettings } from '../../utils';
+import { DriveFile, mdLink, MimeTypes, parseFolderChildrenDisplaySettings } from '../../utils';
 import styles from './FolderPage.module.scss';
 import ContentPage from '.';
 
@@ -16,34 +16,48 @@ interface IFolderChildrenProps {
   openInNewWindow: boolean;
 }
 
+interface IFileInList {
+  file: DriveFile;
+  openInNewWindow: boolean;
+}
+
+function FileLink({file, openInNewWindow}: IFileInList) {
+  const link = mdLink.parse(file.name);
+  const target = openInNewWindow ? '_blank' : undefined;
+  const inner = (
+    <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
+      <DriveIcon file={file} />
+      <DriveFileName file={file} />
+    </Stack>
+  );
+  return (
+    link ? (
+      <a href={link.url} target="_blank" rel="noreferrer">
+        {inner}
+      </a>
+    ) : (
+      <Link to={`/view/${file.id}`} target={target}>
+        {inner}
+      </Link>
+    )
+  );
+}
+
 function FolderChildrenList({ files, openInNewWindow }: IFolderChildrenProps) {
   return (
     <div className={styles.content}>
       <ul>
-        {(files ?? []).map((file) => {
-          const link = mdLink.parse(file.name);
-          const target = openInNewWindow ? '_blank' : undefined;
-          const inner = (
-            <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
-              <DriveIcon file={file} />
-              <DriveFileName file={file} />
-            </Stack>
-          );
+        {(files ?? []).map((file: gapi.client.drive.File) => {
+          if (file?.mimeType == MimeTypes.GoogleFolder){
+            return null;
+          }
           return (
             <li key={file.id}>
               <p>
-                {link ? (
-                  <a href={link.url} target="_blank" rel="noreferrer">
-                    {inner}
-                  </a>
-                ) : (
-                  <Link to={`/view/${file.id}`} target={target}>
-                    {inner}
-                  </Link>
-                )}
+                <FileLink file={file} openInNewWindow={openInNewWindow} />
               </p>
             </li>
-          );
+          )
         })}
       </ul>
     </div>
@@ -96,9 +110,8 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
   return (
     <div>
       {loading && <InlineLoading description="Loading folder contents..." />}
-      {readMeFile && <ContentPage file={readMeFile} renderStackOffset={renderStackOffset + 1} />}
       {!loading && !!error && error}
-      {!loading && !error && (
+      {!loading && !error && !readMeFile && (
         <div style={{ marginTop: 32 }}>
           {displaySettings.displayInContent === 'table' && (
             <FileListTable openInNewWindow={openInNewWindow} files={files} />
@@ -115,6 +128,7 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
           )}
         </div>
       )}
+      {readMeFile && <ContentPage file={readMeFile} renderStackOffset={renderStackOffset + 1} />}
     </div>
   );
 }
