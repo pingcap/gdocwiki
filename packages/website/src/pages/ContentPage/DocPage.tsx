@@ -141,6 +141,7 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
       }
     }
     loadPreview();
+    return function(){ dispatch(setHeaders([])) }
   }, [file.id]);
 
   const handleDocContentClick = useCallback(
