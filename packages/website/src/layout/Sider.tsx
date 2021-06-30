@@ -63,11 +63,7 @@ function renderChildren(
     }
   }
 
-  if (
-    parentId === activeId ||
-    (mapIdToFile?.[activeId]?.name?.toLowerCase() === 'readme' &&
-      mapIdToFile?.[activeId]?.parents?.[0] === parentId)
-  ) {
+  if (parentId === activeId || mapIdToFile?.[activeId]?.parents?.[0] === parentId) {
     // When selecting something, we display all of its children at last.
   } else {
     // When current item is not selected, we only display children item which is a folder.
@@ -105,8 +101,8 @@ function renderChildren(
       case 'hidden_folder':
         label = (
           <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
-            <span>{file.name}</span>
             <CollapseAll16 />
+            <span>{file.name}</span>
           </Stack>
         );
         break;
