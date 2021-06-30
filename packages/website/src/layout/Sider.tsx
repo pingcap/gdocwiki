@@ -60,14 +60,15 @@ function renderChildren(
   }
 
   // If there is a readme, show the files on the left sidebar
-  let parentSelectedId = false;
+  let treeSelected = false;
   let hasReadMeFile = false;
+
   for (const item of files) {
       if (item.name?.toLowerCase() === 'readme') {
         hasReadMeFile = true;
       }
-      if (parentId === selectedId) { // } && item.mimeType !== MimeTypes.GoogleFolder) {
-        parentSelectedId = true;
+      if (parentId === selectedId || item.id === selectedId) {
+        treeSelected = true;
       }
   }
 
@@ -132,7 +133,7 @@ function renderChildren(
         return <TreeNode key={file.id} id={file.id} {...nodeProps} />;
       }
     })
-    if (!(hasReadMeFile && parentSelectedId)){
+    if (!(hasReadMeFile && treeSelected)){
       return tree;
     } else {
       let fileNodes = files.filter((file) => file.mimeType !== MimeTypes.GoogleFolder).map((file) => {
