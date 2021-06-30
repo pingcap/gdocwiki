@@ -38,7 +38,7 @@ export function useFolderFilesMeta(id?: string) {
             fields: '*',
             pageSize: 1000,
           });
-          console.log(`loadFolderFilesMetadata files.list (page #${i + 1})`, id);
+          console.debug(`loadFolderFilesMetadata files.list (page #${i + 1})`, id, resp);
 
           if (reqRef.current !== checkpoint) {
             break;

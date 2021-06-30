@@ -1,6 +1,6 @@
 import { InlineLoading } from 'carbon-components-react';
 import React, { useCallback, useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux'
+import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { useManagedRenderStack } from '../../context/RenderStack';
 import { history, DriveFile, parseDriveLink } from '../../utils';
@@ -70,22 +70,25 @@ function prettify(baseEl: HTMLElement, fileId: string) {
     }
   }
   if (fileId) {
-    externallyLinkHeaders(baseEl, fileId)
+    externallyLinkHeaders(baseEl, fileId);
   }
 }
 
+// FIXME: Maybe better to provide as a popup action instead of a default action.
 function externallyLinkHeaders(baseEl: HTMLElement, fileId: string) {
-    // Link from headers into the GDoc
-    const headers = Array.from(baseEl.querySelectorAll("h1, h2, h3, h4, h5, h6")) as HTMLHeadingElement[]
-    for (const el of headers) {
-      let inner = el.childNodes[0]
-      let link = document.createElement('a')
-      link.target = '_blank';
-      link.classList.add('__gdoc_external_link');
-      link.href = 'https://docs.google.com/document/d/' + fileId +  '/edit#heading=' + el.id;
-      el.appendChild(link);
-      link.appendChild(inner);
-    }
+  // Link from headers into the GDoc
+  const headers = Array.from(
+    baseEl.querySelectorAll('h1, h2, h3, h4, h5, h6')
+  ) as HTMLHeadingElement[];
+  for (const el of headers) {
+    let inner = el.childNodes[0];
+    let link = document.createElement('a');
+    link.target = '_blank';
+    link.classList.add('__gdoc_external_link');
+    link.href = 'https://docs.google.com/document/d/' + fileId + '/edit#heading=' + el.id;
+    el.appendChild(link);
+    link.appendChild(inner);
+  }
 }
 
 function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
@@ -100,28 +103,35 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
     file,
   });
 
-  function updateDoc(content: HTMLBodyElement | string) {
-    if (typeof content === "string"){
+  const setDocWithPlainText = useCallback(
+    (content: string) => {
       setDocContent(content);
-    } else {
+      dispatch(setHeaders([]));
+    },
+    [dispatch]
+  );
+
+  const setDocWithRichContent = useCallback(
+    (content: HTMLBodyElement) => {
       setDocContent(content.innerHTML);
-      dispatch(setHeaders(
-        Array.from(content.querySelectorAll("h1, h2, h3, h4, h5, h6")).map(fromHTML)
-      ));
-    }
-  }
+      dispatch(
+        setHeaders(Array.from(content.querySelectorAll('h1, h2, h3, h4, h5, h6')).map(fromHTML))
+      );
+    },
+    [dispatch]
+  );
 
   useEffect(() => {
     async function loadPreview() {
       setIsLoading(true);
-      updateDoc('');
+      setDocWithPlainText('');
 
       try {
         const resp = await gapi.client.drive.files.export({
           fileId: file.id!,
           mimeType: 'text/html',
         });
-        console.log('DocPage files.export', file.id);
+        console.debug('DocPage files.export', file.id, resp);
 
         const parser = new DOMParser();
         const htmlDoc = parser.parseFromString(resp.body, 'text/html');
@@ -130,17 +140,19 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
           prettify(bodyEl, file.id ?? '');
           const styleEls = htmlDoc.querySelectorAll('style');
           styleEls.forEach((el) => bodyEl.appendChild(el));
-          updateDoc(bodyEl);
+          setDocWithRichContent(bodyEl);
         } else {
-          updateDoc('Error?');
+          setDocWithPlainText('Error?');
         }
       } finally {
         setIsLoading(false);
       }
     }
     loadPreview();
-    return function(){ dispatch(setHeaders([])) }
-  }, [file.id]);
+    return function () {
+      dispatch(setHeaders([]));
+    };
+  }, [file.id, dispatch, setDocWithPlainText, setDocWithRichContent]);
 
   const handleDocContentClick = useCallback(
     (ev: React.MouseEvent) => {
@@ -160,7 +172,7 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
     <div style={{ maxWidth: '50rem' }}>
       {isLoading && <InlineLoading description="Loading document content..." />}
       {!isLoading && (
-        <div id="gdoc-html"
+        <div
           style={{ maxWidth: '50rem' }}
           dangerouslySetInnerHTML={{ __html: docContent }}
           onClick={handleDocContentClick}

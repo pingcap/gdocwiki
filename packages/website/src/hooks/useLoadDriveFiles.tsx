@@ -30,6 +30,7 @@ export default function useLoadDriveFiles() {
         console.debug(
           `useLoadDriveFiles files.list (page #${i + 1})`,
           getConfig().REACT_APP_ROOT_DRIVE_ID,
+          resp
         );
         dispatch(updateFiles(resp.result.files ?? []));
         if (resp.result.nextPageToken) {
