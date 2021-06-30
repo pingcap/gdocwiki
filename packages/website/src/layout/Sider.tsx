@@ -1,12 +1,11 @@
 import { CollapseAll16, Launch16 } from '@carbon/icons-react';
-import { DriveFileName, DriveIcon } from '../components';
 import { InlineLoading, SkeletonText } from 'carbon-components-react';
 import TreeView, { TreeNode, TreeNodeProps } from 'carbon-components-react/lib/components/TreeView';
 import cx from 'classnames';
 import { Stack } from 'office-ui-fabric-react';
 import React, { useCallback, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { DriveIcon } from '../components';
 import { getConfig } from '../config';
 import {
   selectError,
@@ -23,13 +22,20 @@ import {
   selectExpanded,
   selectSelected,
 } from '../reduxSlices/siderTree';
-import { DriveFile, mdLink, MimeTypes, parseFolderChildrenDisplaySettings } from '../utils';
+import {
+  DriveFile,
+  fileIsFolderOrFolderShortcut,
+  MarkdownLink,
+  mdLink,
+  MimeTypes,
+  parseFolderChildrenDisplaySettings,
+} from '../utils';
 import { DocHeader, TreeHeading, isTreeHeading, MakeTree } from '../utils/docHeaders';
 import styles from './Sider.module.scss';
 import { HeaderExtraActionsForMobile } from '.';
 
 function renderChildren(
-  selectedId: string,
+  activeId: string,
   mapIdToFile: Record<string, DriveFile>,
   mapIdToChildren: Record<string, DriveFile[]>,
   parentId?: string,
@@ -57,35 +63,54 @@ function renderChildren(
     }
   }
 
-  // If there is a readme, show the files on the left sidebar
-  let treeSelected = false;
-  let hasReadMeFile = false;
-
-  for (const item of files) {
-    if (item.name?.toLowerCase() === 'readme') {
-      hasReadMeFile = true;
-    }
-    if (parentId === selectedId || item.id === selectedId) {
-      treeSelected = true;
-    }
+  if (
+    parentId === activeId ||
+    (mapIdToFile?.[activeId]?.name?.toLowerCase() === 'readme' &&
+      mapIdToFile?.[activeId]?.parents?.[0] === parentId)
+  ) {
+    // When selecting something, we display all of its children at last.
+  } else {
+    // When current item is not selected, we only display children item which is a folder.
+    files = files.filter((file) => {
+      return file.mimeType === MimeTypes.GoogleFolder;
+    });
   }
 
-  let tree = files
-    .filter((file) => {
-      // Only list folders in sidebar.
-      return file.mimeType === MimeTypes.GoogleFolder;
-    })
-    .map((file) => {
-      let isChildrenHidden = false;
-      const childrenDisplaySettings = parseFolderChildrenDisplaySettings(file);
-      if (!childrenDisplaySettings.displayInSidebar && file.mimeType === MimeTypes.GoogleFolder) {
-        isChildrenHidden = true;
-      }
+  return files.map((file) => {
+    let isChildrenHidden = false;
+    const childrenDisplaySettings = parseFolderChildrenDisplaySettings(file);
+    if (!childrenDisplaySettings.displayInSidebar && file.mimeType === MimeTypes.GoogleFolder) {
+      isChildrenHidden = true;
+    }
 
-      // Try to parse as a Markdown link
-      let label: React.ReactNode = file.name;
-      const link = mdLink.parse(file.name);
-      if (link) {
+    let itemType: 'hidden_folder' | 'folder' | 'link' | 'file';
+    let parsedLink: MarkdownLink | null = null;
+    if (fileIsFolderOrFolderShortcut(file)) {
+      if (isChildrenHidden) {
+        itemType = 'hidden_folder';
+      } else {
+        itemType = 'folder';
+      }
+    } else {
+      parsedLink = mdLink.parse(file.name);
+      if (parsedLink) {
+        itemType = 'link';
+      } else {
+        itemType = 'file';
+      }
+    }
+
+    let label: React.ReactNode = file.name;
+    switch (itemType) {
+      case 'hidden_folder':
+        label = (
+          <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
+            <span>{file.name}</span>
+            <CollapseAll16 />
+          </Stack>
+        );
+        break;
+      case 'link':
         label = (
           <Stack
             verticalAlign="center"
@@ -93,61 +118,46 @@ function renderChildren(
             tokens={{ childrenGap: 8 }}
             style={{ cursor: 'pointer' }}
           >
-            <span>{link.title}</span>
             <Launch16 />
+            <span>{parsedLink!.title}</span>
           </Stack>
         );
-      } else if (isChildrenHidden) {
+        break;
+      case 'file':
         label = (
           <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
-            <span>{file.name}</span>
-            <CollapseAll16 />
-          </Stack>
-        );
-      }
-
-      const childrenNode = renderChildren(
-        selectedId,
-        mapIdToFile,
-        mapIdToChildren,
-        file.id,
-        expanded,
-        handleToggle
-      );
-
-      const nodeProps: TreeNodeProps = {
-        isExpanded: expanded?.has(file.id ?? ''),
-        onToggle: handleToggle,
-        label,
-        value: file as any,
-      };
-      if ((childrenNode?.length ?? 0) > 0) {
-        return (
-          <TreeNode key={file.id} id={file.id} {...nodeProps}>
-            {childrenNode}
-          </TreeNode>
-        );
-      } else {
-        return <TreeNode key={file.id} id={file.id} {...nodeProps} />;
-      }
-    });
-  if (!(hasReadMeFile && treeSelected)) {
-    return tree;
-  } else {
-    let fileNodes = files
-      .filter((file) => file.mimeType !== MimeTypes.GoogleFolder)
-      .map((file) => {
-        let inner = (
-          <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
             <DriveIcon file={file} />
-            <DriveFileName file={file} />
+            <span>{file.name}</span>
           </Stack>
         );
-        let label = <Link to={`/view/${file.id}`}>{inner}</Link>;
-        return <TreeNode key={file.id} id={file.id} isExpanded={false} label={label} />;
-      });
-    return tree.concat(fileNodes);
-  }
+        break;
+    }
+
+    const childrenNode = renderChildren(
+      activeId,
+      mapIdToFile,
+      mapIdToChildren,
+      file.id,
+      expanded,
+      handleToggle
+    );
+
+    const nodeProps: TreeNodeProps = {
+      isExpanded: expanded?.has(file.id ?? ''),
+      onToggle: handleToggle,
+      label,
+      value: file as any,
+    };
+    if ((childrenNode?.length ?? 0) > 0) {
+      return (
+        <TreeNode key={file.id} id={file.id} {...nodeProps}>
+          {childrenNode}
+        </TreeNode>
+      );
+    } else {
+      return <TreeNode key={file.id} id={file.id} {...nodeProps} />;
+    }
+  });
 }
 
 function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
@@ -164,10 +174,7 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
   const id = useSelector(selectActiveId) ?? getConfig().REACT_APP_ROOT_ID;
 
   const handleSelect = useCallback((_ev, payload) => {
-    // not present for a file listing
-    if (payload.value) {
-      mdLink.handleFileLinkClick(payload.value);
-    }
+    mdLink.handleFileLinkClick(payload.value);
   }, []);
 
   const handleToggle = useCallback(

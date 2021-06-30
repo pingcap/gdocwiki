@@ -108,3 +108,11 @@ export function parseFolderChildrenDisplaySettings(file: DriveFile): FolderChild
     ...parsed,
   };
 }
+
+export function fileIsFolderOrFolderShortcut(file: DriveFile) {
+  return (
+    file.mimeType === MimeTypes.GoogleFolder ||
+    (file.mimeType === MimeTypes.GoogleShortcut &&
+      file.shortcutDetails?.targetMimeType === MimeTypes.GoogleFolder)
+  );
+}

@@ -1,6 +1,6 @@
 import { createSlice, createSelector } from '@reduxjs/toolkit';
 import naturalCompare from 'natural-compare-lite';
-import { DriveFile, extractTagsIntoSet } from '../utils';
+import { DriveFile, extractTagsIntoSet, fileIsFolderOrFolderShortcut } from '../utils';
 
 export interface FilesState {
   isLoading: boolean;
@@ -64,6 +64,19 @@ export const selectAllTags = (state: { files: FilesState }) => {
   return r;
 };
 
+function getFileSortKey(file: DriveFile) {
+  if (fileIsFolderOrFolderShortcut(file)) {
+    return 0;
+  }
+  if (file?.name?.toLowerCase() === 'readme') {
+    return 1;
+  }
+  if (file?.name?.startsWith('.')) {
+    return 99;
+  }
+  return 2;
+}
+
 // A map to lookup all childrens for a file id.
 export const selectMapIdToChildren: (state: any) => Record<string, DriveFile[]> = createSelector(
   [selectMapIdToFile],
@@ -95,23 +108,12 @@ export const selectMapIdToChildren: (state: any) => Record<string, DriveFile[]> 
       }
 
       retMap[id].sort((a, b) => {
-        const aLower = a.name?.toLowerCase() ?? '';
-        const bLower = b.name?.toLowerCase() ?? '';
-
-        // Show the readme file first
-        const aReadme = aLower === 'readme';
-        const bReadme = bLower === 'readme';
-        if (aReadme && !bReadme) { return -1 }
-        if (bReadme && !aReadme) { return 1 }
-
-        // If a name begins with "." show it last
-        const ahidden = (a.name?.[0] ?? '') == "."
-        const bhidden = (b.name?.[0] ?? '') == "."
-        if (ahidden && !bhidden) { return 1 }
-        if (bhidden && !ahidden) { return -1 }
-
-        // Compare as lower case
-        return naturalCompare(aLower, bLower);
+        const sortKeyA = getFileSortKey(a);
+        const sortKeyB = getFileSortKey(b);
+        if (sortKeyA !== sortKeyB) {
+          return sortKeyA - sortKeyB;
+        }
+        return naturalCompare(a.name?.toLowerCase() ?? '', b.name?.toLowerCase() ?? '');
       });
     }
 
