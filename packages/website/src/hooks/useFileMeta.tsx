@@ -32,7 +32,7 @@ export default function useFileMeta(id?: string) {
           fileId: id!,
           fields: '*',
         });
-        console.log('useFileMeta files.get', respFile);
+        console.debug('useFileMeta files.get', id);
 
         // If another request is performed, simply ignore this result.
         // This may happen when id changes very frequently

@@ -101,12 +101,10 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
   });
 
   function updateDoc(content: HTMLBodyElement | string) {
-    console.log("Update DOC");
     if (typeof content === "string"){
       setDocContent(content);
     } else {
       setDocContent(content.innerHTML);
-      console.log("Setting headers");
       dispatch(setHeaders(
         Array.from(content.querySelectorAll("h1, h2, h3, h4, h5, h6")).map(fromHTML)
       ));
@@ -123,7 +121,7 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
           fileId: file.id!,
           mimeType: 'text/html',
         });
-        console.log('DocPage files.export', file.id, resp);
+        console.log('DocPage files.export', file.id);
 
         const parser = new DOMParser();
         const htmlDoc = parser.parseFromString(resp.body, 'text/html');
