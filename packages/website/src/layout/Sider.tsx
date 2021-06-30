@@ -14,9 +14,7 @@ import {
   selectMapIdToChildren,
   selectMapIdToFile,
 } from '../reduxSlices/files';
-import {
-  selectHeaders,
-} from '../reduxSlices/headers';
+import { selectHeaders } from '../reduxSlices/headers';
 import {
   activate,
   expand,
@@ -60,15 +58,16 @@ function renderChildren(
   }
 
   // If there is a readme, show the files on the left sidebar
-  let parentSelectedId = false;
+  let treeSelected = false;
   let hasReadMeFile = false;
+
   for (const item of files) {
-      if (item.name?.toLowerCase() === 'readme') {
-        hasReadMeFile = true;
-      }
-      if (parentId === selectedId) { // } && item.mimeType !== MimeTypes.GoogleFolder) {
-        parentSelectedId = true;
-      }
+    if (item.name?.toLowerCase() === 'readme') {
+      hasReadMeFile = true;
+    }
+    if (parentId === selectedId || item.id === selectedId) {
+      treeSelected = true;
+    }
   }
 
   let tree = files
@@ -131,26 +130,24 @@ function renderChildren(
       } else {
         return <TreeNode key={file.id} id={file.id} {...nodeProps} />;
       }
-    })
-    if (!(hasReadMeFile && parentSelectedId)){
-      return tree;
-    } else {
-      let fileNodes = files.filter((file) => file.mimeType !== MimeTypes.GoogleFolder).map((file) => {
+    });
+  if (!(hasReadMeFile && treeSelected)) {
+    return tree;
+  } else {
+    let fileNodes = files
+      .filter((file) => file.mimeType !== MimeTypes.GoogleFolder)
+      .map((file) => {
         let inner = (
-            <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
-              <DriveIcon file={file} />
-              <DriveFileName file={file} />
-            </Stack>
-        )
-        let label = (
-          <Link to={`/view/${file.id}`}>
-            {inner}
-          </Link>
-        )
+          <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
+            <DriveIcon file={file} />
+            <DriveFileName file={file} />
+          </Stack>
+        );
+        let label = <Link to={`/view/${file.id}`}>{inner}</Link>;
         return <TreeNode key={file.id} id={file.id} isExpanded={false} label={label} />;
       });
-      return tree.concat(fileNodes)
-    }
+    return tree.concat(fileNodes);
+  }
 }
 
 function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
@@ -190,26 +187,24 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
     }
   }, [id, mapIdToFile, dispatch]);
 
-  function entryNode(heading: DocHeader): JSX.Element{
-    const label = <a href={"#" + heading.id}>{heading.text}</a>
-    return <TreeNode key={heading.id} id={"tree-" + heading.id} label={label} />
+  function entryNode(heading: DocHeader): JSX.Element {
+    const label = <a href={'#' + heading.id}>{heading.text}</a>;
+    return <TreeNode key={heading.id} id={'tree-' + heading.id} label={label} />;
   }
 
-  function treeNode(heading: DocHeader, inner){
-    const label = <a href={"#" + heading.id}>{heading.text}</a>
+  function treeNode(heading: DocHeader, inner) {
+    const label = <a href={'#' + heading.id}>{heading.text}</a>;
     return (
-      <TreeNode key={heading.id} id={"tree-" + heading.id} isExpanded={true} label={label}>
+      <TreeNode key={heading.id} id={'tree-' + heading.id} isExpanded={true} label={label}>
         {inner}
       </TreeNode>
-    )
+    );
   }
 
   function toTreeElements(node: TreeHeading | DocHeader): JSX.Element {
-    return isTreeHeading(node)
-      ? treeNode(node, node.entries.map(toTreeElements))
-      : entryNode(node)
+    return isTreeHeading(node) ? treeNode(node, node.entries.map(toTreeElements)) : entryNode(node);
   }
-  const headerTreeNodes = MakeTree(headers.slice()).map(toTreeElements)
+  const headerTreeNodes = MakeTree(headers.slice()).map(toTreeElements);
 
   return (
     <div className={cx(styles.sider, { [styles.isExpanded]: isExpanded })}>
@@ -236,7 +231,7 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
           )}
         </TreeView>
       )}
-      { headerTreeNodes.length > 0 && (
+      {headerTreeNodes.length > 0 && (
         <div>
           <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
             &nbsp;
@@ -245,7 +240,7 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
             &nbsp;Outline
           </Stack>
           <TreeView label="Document Headers" selected={[headerTreeNodes[0].key?.toString() ?? 0]}>
-            { headerTreeNodes }
+            {headerTreeNodes}
           </TreeView>
         </div>
       )}
