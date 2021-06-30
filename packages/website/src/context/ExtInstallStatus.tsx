@@ -25,6 +25,7 @@ export function ExtInstallStatusProvider({ children }) {
         setValue({ isDetecting: false, installInfo: info ? info : undefined });
         console.log('Detect extension completed, info =', info);
       } catch (e) {
+        console.log('Detect extension failed');
         setValue({ isDetecting: false, isDetectFailed: true });
       }
     }
