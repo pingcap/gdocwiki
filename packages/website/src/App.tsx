@@ -88,7 +88,7 @@ function App() {
       <ExtensionBanner visible={extBannerCtrl.visible} onDismiss={extBannerCtrl.handleDismiss} />
       <Router history={history}>
         <DriveFilesLoader>
-          <Header>
+          <Header aria-label="global actions">
             {!isExpanded && (
               <HeaderGlobalAction key="open" aria-label="Open TOC" onClick={handleOpenTOC}>
                 <Menu20 />
