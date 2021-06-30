@@ -1,11 +1,16 @@
 import { InlineLoading } from 'carbon-components-react';
+import dayjs from 'dayjs';
+import { Stack } from 'office-ui-fabric-react';
+import styles from '../FileAction.module.scss';
+import Avatar from 'react-avatar';
 import React, { useCallback, useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom';
 import { useManagedRenderStack } from '../../context/RenderStack';
 import { history, DriveFile, parseDriveLink } from '../../utils';
 import { fromHTML } from '../../utils/docHeaders';
 import { setHeaders } from '../../reduxSlices/headers';
+import { selectRevisions, disableRevisions } from '../../reduxSlices/files';
 
 export interface IDocPageProps {
   file: DriveFile;
@@ -94,8 +99,12 @@ function externallyLinkHeaders(baseEl: HTMLElement, fileId: string) {
 function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
   const [docContent, setDocContent] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const revs: Array<gapi.client.drive.Revision> = []
+  const [revisions, setRevisions] = useState(revs);
+  const [viewRevision, setViewRevision] = useState(0);
   const history = useHistory();
   const dispatch = useDispatch();
+  const revisionsEnabled = useSelector(selectRevisions);
 
   useManagedRenderStack({
     depth: renderStackOffset,
@@ -121,6 +130,20 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
     [dispatch]
   );
 
+  function loadHtml(body: string){
+    const parser = new DOMParser();
+    const htmlDoc = parser.parseFromString(body, 'text/html');
+    const bodyEl = htmlDoc.querySelector('body');
+    if (bodyEl) {
+      prettify(bodyEl, file.id ?? '');
+      const styleEls = htmlDoc.querySelectorAll('style');
+      styleEls.forEach((el) => bodyEl.appendChild(el));
+      setDocWithRichContent(bodyEl);
+    } else {
+      setDocWithPlainText('Error?');
+    }
+  }
+
   useEffect(() => {
     async function loadPreview() {
       setIsLoading(true);
@@ -131,19 +154,8 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
           fileId: file.id!,
           mimeType: 'text/html',
         });
-        console.debug('DocPage files.export', file.id, resp);
-
-        const parser = new DOMParser();
-        const htmlDoc = parser.parseFromString(resp.body, 'text/html');
-        const bodyEl = htmlDoc.querySelector('body');
-        if (bodyEl) {
-          prettify(bodyEl, file.id ?? '');
-          const styleEls = htmlDoc.querySelectorAll('style');
-          styleEls.forEach((el) => bodyEl.appendChild(el));
-          setDocWithRichContent(bodyEl);
-        } else {
-          setDocWithPlainText('Error?');
-        }
+        console.log('DocPage files.export', file.id);
+        loadHtml(resp.body);
       } finally {
         setIsLoading(false);
       }
@@ -153,6 +165,26 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
       dispatch(setHeaders([]));
     };
   }, [file.id, dispatch, setDocWithPlainText, setDocWithRichContent]);
+
+  useEffect(() => {
+    const fields = "revisions(id, modifiedTime, lastModifyingUser, exportLinks)"
+    async function loadRevisions() {
+      try {
+        const resp = await gapi.client.drive.revisions.list({fileId: file.id!, fields})
+        setRevisions(resp.result.revisions!.reverse());
+      } catch(e) {
+        console.error('DocPage files.revisions', file.id, e);
+      }
+    }
+
+    if (revisionsEnabled) {
+      loadRevisions();
+    } else {
+      setRevisions([]);
+    }
+
+    return function(){ dispatch(disableRevisions()) }
+  }, [file.id, revisionsEnabled]);
 
   const handleDocContentClick = useCallback(
     (ev: React.MouseEvent) => {
@@ -170,6 +202,35 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
 
   return (
     <div style={{ maxWidth: '50rem' }}>
+      {(revisions.length > 0) && (
+        <div className="revisions">
+          {revisions.map((revision) => {
+            const htmlLink = (revision.exportLinks ?? {})["text/html"];
+            return (<Stack
+              key={revision.id}
+              verticalAlign="center"
+              horizontal
+              tokens={{ childrenGap: 8 }}
+              className={styles.note}
+            >
+              <a href={htmlLink}>
+                {dayjs(revision.modifiedTime).fromNow()}
+              </a>
+              <Avatar
+                name={revision.lastModifyingUser?.displayName}
+                src={revision.lastModifyingUser?.photoLink}
+                size="20"
+                round
+              />
+              <span>
+                {revision.lastModifyingUser?.displayName}
+              </span>
+            </Stack>
+            )
+          })
+        }
+        </div>
+      )}
       {isLoading && <InlineLoading description="Loading document content..." />}
       {!isLoading && (
         <div

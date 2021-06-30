@@ -6,12 +6,14 @@ export interface FilesState {
   isLoading: boolean;
   error: Error | undefined;
   mapIdToFile: Record<string, DriveFile>;
+  revisions: boolean;
 }
 
 const initialState: FilesState = {
   isLoading: true,
   error: undefined,
   mapIdToFile: {},
+  revisions: false,
 };
 
 export const slice = createSlice({
@@ -38,11 +40,19 @@ export const slice = createSlice({
     removeFile: (state, { payload }: { payload: string }) => {
       delete state.mapIdToFile[payload];
     },
+    toggleRevisions: (state) => {
+      state.revisions = !state.revisions
+    },
+    disableRevisions: (state) => {
+      state.revisions = false
+    },
   },
 });
 
 export const {
   setLoading,
+  toggleRevisions,
+  disableRevisions,
   setError,
   clearFileList,
   updateFile,
@@ -50,6 +60,7 @@ export const {
   removeFile,
 } = slice.actions;
 
+export const selectRevisions = (state: { files: FilesState }) => state.files.revisions;
 export const selectLoading = (state: { files: FilesState }) => state.files.isLoading;
 export const selectError = (state: { files: FilesState }) => state.files.error;
 export const selectMapIdToFile = (state: { files: FilesState }) => state.files.mapIdToFile;

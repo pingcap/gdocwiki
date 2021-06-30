@@ -8,6 +8,7 @@ import {
 } from 'office-ui-fabric-react';
 import React, { useMemo } from 'react';
 import Avatar from 'react-avatar';
+import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { DriveIcon } from '../components';
 import { getConfig } from '../config';
@@ -21,11 +22,13 @@ import { showMoveFile } from './FileAction.moveFile';
 import { showRenameFile } from './FileAction.renameFile';
 import { showTrashFile } from './FileAction.trashFile';
 import responsiveStyle from '../layout/responsive.module.scss';
+import { toggleRevisions } from '../reduxSlices/files';
 
 function FileAction() {
   // Support we have a folder, containing a shortcut to a README document,
   // the rInner is README and the rOuter is the folder.
   const { inMost: rInner, outMost: rOuter } = useRender();
+  const dispatch = useDispatch();
 
   const history = useHistory();
 
@@ -40,6 +43,9 @@ function FileAction() {
       // For non-folder, show modify date, and how to open it.
       commands.push({
         key: 'modify_user',
+        onClick: () => {
+          dispatch(toggleRevisions());
+        },
         text: (
           <Stack
             verticalAlign="center"
