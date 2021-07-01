@@ -26,10 +26,10 @@ function FileAction() {
   // Support we have a folder, containing a shortcut to a README document,
   // the rInner is README and the rOuter is the folder.
   const { inMost: rInner, outMost: rOuter } = useRender();
-  const [revisionsEnabled, setRevisionsEnabled] = useState(false);
+  let [revisionsEnabled, setRevisionsEnabled] = useState(false);
   function toggleRevisions() {
-    console.info("toggling revisions");
-    setRevisionsEnabled(!revisionsEnabled)
+    revisionsEnabled = !revisionsEnabled;
+    setRevisionsEnabled(revisionsEnabled);
   }
   const revs: Array<gapi.client.drive.Revision> = []
   const [revisions, setRevisions] = useState(revs);
@@ -47,10 +47,7 @@ function FileAction() {
       // For non-folder, show modify date, and how to open it.
       commands.push({
         key: 'modify_user',
-        onClick: () => {
-          console.info("click toggle revisions");
-          toggleRevisions();
-        },
+        onClick: () => { toggleRevisions(); },
         text: (
           <Stack
             verticalAlign="center"
@@ -248,6 +245,7 @@ function FileAction() {
       <CommandBar items={commandBarItems} overflowItems={commandBarOverflowItems} />
       {revisionsEnabled && (
         <div className="revisions">
+          <hr/>
           {revisions.map((revision) => {
             const htmlLink = (revision.exportLinks ?? {})["text/html"];
             return (<Stack
@@ -272,7 +270,8 @@ function FileAction() {
             </Stack>
             )
           })
-        }
+          }
+          <hr/>
         </div>
       )}
     </div>
