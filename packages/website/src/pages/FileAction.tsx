@@ -252,21 +252,24 @@ function FileAction() {
               key={revision.id}
               verticalAlign="center"
               horizontal
-              tokens={{ childrenGap: 8 }}
+              tokens={{ childrenGap: 16, padding: 2 }}
               className={styles.note}
             >
               <a href={htmlLink}>
                 {dayjs(revision.modifiedTime).fromNow()}
               </a>
-              <Avatar
-                name={revision.lastModifyingUser?.displayName}
-                src={revision.lastModifyingUser?.photoLink}
-                size="20"
-                round
-              />
-              <span>
-                {revision.lastModifyingUser?.displayName}
-              </span>
+              <div>
+                <Avatar
+                  name={revision.lastModifyingUser?.displayName}
+                  src={revision.lastModifyingUser?.photoLink}
+                  size="20"
+                  round
+                />
+                <span>
+                  &nbsp;
+                  {revision.lastModifyingUser?.displayName}
+                </span>
+              </div>
             </Stack>
             )
           })
