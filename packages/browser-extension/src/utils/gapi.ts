@@ -40,6 +40,20 @@ export class GapiClient {
     }
   }
 
+  async addComment(
+    fileId: string,
+    content: string,
+  ): Promise<null> {
+    try {
+      await this.client.post(`https://www.googleapis.com/drive/v3/files/${fileId}/comments?fields=*`, {
+          content,
+      });
+      return null;
+    } catch (e) {
+      throw new Error(`Failed to post user comment: ${e.message}`);
+    }
+  }
+
   async getDriveFile(
     fileId: string,
     params: {

@@ -7,9 +7,10 @@ import { GapiClient } from '../utils/gapi';
 import { Singleflight } from '@zcong/singleflight';
 import { getManifestInfo, ManifestDrive } from '../utils/manifest';
 import ReactDOM from 'react-dom';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useToken } from '../utils/hooks/oauth';
 import { ChevronRight16, Launch16, WarningAltFilled16 } from '@carbon/icons-react';
+import Button from 'carbon-components-react/lib/components/Button';
 import { log } from '../utils/log';
 
 const sf = new Singleflight();
@@ -144,6 +145,12 @@ async function loadFileInfo(fileId: string, token: Token): Promise<FileInfo | un
   };
 }
 
+async function commentPleaseShare(fileId: string, token: Token, content: string): Promise<null> {
+  const client = new GapiClient(token);
+  log.info(`Getting file info for base file ${fileId}`);
+  return await client.addComment(fileId, content);
+}
+
 function useFileInfo(fileId: string, token?: Token): [FileInfo | undefined, boolean] {
   const [loading, setLoading] = useState(false);
   const [loadToken, setLoadToken] = useState(0); // Used to reload the file
@@ -204,6 +211,21 @@ function useFileInfo(fileId: string, token?: Token): [FileInfo | undefined, bool
 function App(props: { id: string }) {
   const [token, isTokenLoading] = useToken();
   const [fi] = useFileInfo(props.id, token);
+  const [showExtra, setShowExtra] = useState(false);
+  const [askShared, setAskShared] = useState(false);
+
+  async function askSharedDrive(user: gapi.client.drive.User) {
+      const ask = "@" + user.displayName + " Please add this file to a shared drive. That helps organize information, make it more discoverable, and manage permissions."
+      setAskShared(v => !v)
+      try {
+        log.info('Comment to move file to a shared drive', props.id);
+        await commentPleaseShare(props.id, token!, ask);
+      } catch (e) {
+        log.error(e);
+      } finally {
+        log.info("finally commented")
+      }
+  }
 
   return (
     <>
@@ -249,10 +271,24 @@ function App(props: { id: string }) {
         </div>
       )}
       {Boolean(fi && fi?.privateOwners?.length) && (
-        <span className={cx(styles.tag, styles.warning)}>
+        showExtra ?
+        <>
           <WarningAltFilled16 style={{ marginRight: 6 }} />
-          Not in shared drive.
-        </span>
+          <span className={cx(styles.tag)} onClick={() => {setShowExtra(v => !v)}}>
+            Owned by {fi?.privateOwners?.[0].displayName} {fi?.privateOwners?.[0].emailAddress}
+          </span>
+          {!askShared &&
+          <Button className={cx(styles.tag)} onClick={() => {askSharedDrive(fi?.privateOwners?.[0]!)}}>
+            Ask for shared drive
+          </Button>
+          }
+        </> :
+        <>
+          <WarningAltFilled16 style={{ marginRight: 6 }} />
+          <Button className={cx(styles.tag, styles.warning)} onClick={() => {setShowExtra(v => !v)}}>
+            Not in shared drive
+          </Button>
+        </>
       )}
     </>
   );
