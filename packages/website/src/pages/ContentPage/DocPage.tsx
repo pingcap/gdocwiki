@@ -1,6 +1,6 @@
 import { InlineLoading } from 'carbon-components-react';
 import React, { useCallback, useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom';
 import { useManagedRenderStack } from '../../context/RenderStack';
 import { history, DriveFile, parseDriveLink } from '../../utils';
@@ -121,6 +121,20 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
     [dispatch]
   );
 
+  function loadHtml(body: string){
+    const parser = new DOMParser();
+    const htmlDoc = parser.parseFromString(body, 'text/html');
+    const bodyEl = htmlDoc.querySelector('body');
+    if (bodyEl) {
+      prettify(bodyEl, file.id ?? '');
+      const styleEls = htmlDoc.querySelectorAll('style');
+      styleEls.forEach((el) => bodyEl.appendChild(el));
+      setDocWithRichContent(bodyEl);
+    } else {
+      setDocWithPlainText('Error?');
+    }
+  }
+
   useEffect(() => {
     async function loadPreview() {
       setIsLoading(true);
@@ -131,19 +145,8 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
           fileId: file.id!,
           mimeType: 'text/html',
         });
-        console.debug('DocPage files.export', file.id, resp);
-
-        const parser = new DOMParser();
-        const htmlDoc = parser.parseFromString(resp.body, 'text/html');
-        const bodyEl = htmlDoc.querySelector('body');
-        if (bodyEl) {
-          prettify(bodyEl, file.id ?? '');
-          const styleEls = htmlDoc.querySelectorAll('style');
-          styleEls.forEach((el) => bodyEl.appendChild(el));
-          setDocWithRichContent(bodyEl);
-        } else {
-          setDocWithPlainText('Error?');
-        }
+        console.log('DocPage files.export', file.id);
+        loadHtml(resp.body);
       } finally {
         setIsLoading(false);
       }

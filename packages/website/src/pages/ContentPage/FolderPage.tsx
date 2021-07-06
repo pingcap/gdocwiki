@@ -75,10 +75,12 @@ export interface IFolderPageProps {
   renderStackOffset?: number;
 }
 
+export const folderPageId = 'FolderPage';
+
 function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPageProps) {
   useManagedRenderStack({
     depth: renderStackOffset,
-    id: 'FolderPage',
+    id: folderPageId,
     file,
   });
 
