@@ -94,7 +94,6 @@ function externallyLinkHeaders(baseEl: HTMLElement, fileId: string) {
 function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
   const [docContent, setDocContent] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const revs: Array<gapi.client.drive.Revision> = []
   const history = useHistory();
   const dispatch = useDispatch();
 

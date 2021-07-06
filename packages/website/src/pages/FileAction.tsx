@@ -21,6 +21,7 @@ import { showMoveFile } from './FileAction.moveFile';
 import { showRenameFile } from './FileAction.renameFile';
 import { showTrashFile } from './FileAction.trashFile';
 import responsiveStyle from '../layout/responsive.module.scss';
+import { folderPageId } from './ContentPage/FolderPage';
 
 function FileAction() {
   // Support we have a folder, containing a shortcut to a README document,
@@ -220,13 +221,14 @@ function FileAction() {
   }, [rInner?.file, rOuter?.file, outerFolder.file, history]);
 
   useEffect(() => {
+    if (rInner?.id === folderPageId) { return }
     const fields = "revisions(id, modifiedTime, lastModifyingUser, exportLinks)"
     async function loadRevisions() {
       try {
         const resp = await gapi.client.drive.revisions.list({fileId: rInner?.file.id!, fields})
         setRevisions(resp.result.revisions!.reverse());
       } catch(e) {
-        console.error('DocPage files.revisions', rInner?.file.id, e);
+        console.error('DocPage files.revisions', rInner, e);
       }
     }
 
