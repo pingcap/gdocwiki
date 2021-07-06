@@ -26,10 +26,9 @@ function FileAction() {
   // Support we have a folder, containing a shortcut to a README document,
   // the rInner is README and the rOuter is the folder.
   const { inMost: rInner, outMost: rOuter } = useRender();
-  let [revisionsEnabled, setRevisionsEnabled] = useState(false);
+  const [revisionsEnabled, setRevisionsEnabled] = useState("");
   function toggleRevisions() {
-    revisionsEnabled = !revisionsEnabled;
-    setRevisionsEnabled(revisionsEnabled);
+    setRevisionsEnabled(v => v === rInner?.file.id! ? "" : rInner?.file.id!);
   }
   const revs: Array<gapi.client.drive.Revision> = []
   const [revisions, setRevisions] = useState(revs);
@@ -239,11 +238,12 @@ function FileAction() {
   if (commandBarItems.length === 0 && commandBarOverflowItems.length === 0) {
     return null;
   }
+  const showRevisions = revisionsEnabled && (revisionsEnabled === rInner?.file.id) && (revisions.length > 0);
 
   return (
     <div>
       <CommandBar items={commandBarItems} overflowItems={commandBarOverflowItems} />
-      {revisionsEnabled && (
+      {showRevisions && (
         <div className="revisions">
           <hr/>
           {revisions.map((revision) => {
