@@ -74,20 +74,52 @@ function prettify(baseEl: HTMLElement, fileId: string) {
   }
 }
 
-// FIXME: Maybe better to provide as a popup action instead of a default action.
 function externallyLinkHeaders(baseEl: HTMLElement, fileId: string) {
+  function headerLink(fileId: string, headerId: string): HTMLAnchorElement {
+    let link = document.createElement('a');
+    link.target = '_blank';
+    link.classList.add('__gdoc_external_link');
+    link.href = 'https://docs.google.com/document/d/' + fileId + '/edit#heading=' + headerId;
+    return link;
+  }
+
   // Link from headers into the GDoc
   const headers = Array.from(
     baseEl.querySelectorAll('h1, h2, h3, h4, h5, h6')
   ) as HTMLHeadingElement[];
   for (const el of headers) {
-    let inner = el.childNodes[0];
-    let link = document.createElement('a');
-    link.target = '_blank';
-    link.classList.add('__gdoc_external_link');
-    link.href = 'https://docs.google.com/document/d/' + fileId + '/edit#heading=' + el.id;
-    el.appendChild(link);
-    link.appendChild(inner);
+    let children = Array.from(el.childNodes);
+    if (children.every((n) => n.nodeName === 'SPAN')) {
+      let style: string | null = null;
+      for (const inner of children) {
+        if (!style) {
+          style = (inner as HTMLElement).getAttribute('style');
+        }
+        let link = headerLink(fileId, el.id);
+        link.innerHTML = (inner as HTMLElement).innerHTML;
+        for (const a of (inner as HTMLElement).attributes) {
+          link.setAttribute(a.name, a.value);
+        }
+        el.appendChild(link);
+        el.removeChild(inner);
+      }
+      // Fix a Google Docs export bug
+      // Sometimes when there are multiple spans in the header
+      // Some of the span are missing the header styling
+      if (style) {
+        for (const child of el.childNodes) {
+          if (!(child as HTMLElement).getAttribute('style')) {
+            (child as HTMLElement).setAttribute('style', style);
+          }
+        }
+      }
+    } else {
+      const link = headerLink(fileId, el.id);
+      el.appendChild(link);
+      for (const inner of children) {
+        link.appendChild(inner);
+      }
+    }
   }
 }
 
