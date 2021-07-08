@@ -147,18 +147,20 @@ function renderChildren(
     };
     if ((childrenNode?.length ?? 0) > 0) {
       return (
-        <TreeNode key={file.id} {...nodeProps}>
+        <TreeNode key={file.id} id={file.id} {...nodeProps}>
           {childrenNode}
         </TreeNode>
       );
     } else {
-      return <TreeNode key={file.id} {...nodeProps} />;
+      return <TreeNode key={file.id} id={file.id} {...nodeProps} />;
     }
   });
 }
 
 function selectFile(file: gapi.client.drive.File) {
-  return () => { mdLink.handleFileLinkClick(file); }
+  return () => {
+    mdLink.handleFileLinkClick(file);
+  };
 }
 
 function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
@@ -224,7 +226,7 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
         </div>
       )}
       {!loading && !error && (
-        <TreeView label="Table of Content" selected={selected} active={id}>
+        <TreeView label="Table of Contents" selected={selected} active={id} id={'tree-toc'}>
           {renderChildren(
             id,
             mapIdToFile,
@@ -243,7 +245,11 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
           <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
             &nbsp;Outline
           </Stack>
-          <TreeView label="Document Headers" selected={[headerTreeNodes[0].key?.toString() ?? 0]}>
+          <TreeView
+            label="Document Headers"
+            selected={[headerTreeNodes[0].key?.toString() ?? 0]}
+            id="tree-document-headers"
+          >
             {headerTreeNodes}
           </TreeView>
         </div>
