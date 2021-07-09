@@ -72,6 +72,22 @@ function prettify(baseEl: HTMLElement, fileId: string) {
   if (fileId) {
     externallyLinkHeaders(baseEl, fileId);
   }
+
+  highlightComments(baseEl);
+}
+
+function highlightComments(baseEl: HTMLElement) {
+  for (const sup of baseEl.querySelectorAll('sup')) {
+    if (sup.children?.[0].id.startsWith('cmnt_')) {
+      const span = sup.previousElementSibling;
+      if (span && span.nodeName === 'SPAN') {
+        let style = span.getAttribute('style') || '';
+        if (!style.includes('background-color')) {
+          span.setAttribute('style', style + ';background-color: rgb(255, 200, 100)');
+        }
+      }
+    }
+  }
 }
 
 function externallyLinkHeaders(baseEl: HTMLElement, fileId: string) {
