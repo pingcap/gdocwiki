@@ -1,6 +1,6 @@
 import cx from 'classnames';
 import { debounce } from 'lodash-es';
-import { waitSelector } from '../utils/contentScript';
+import { waitFor, waitSelector, triggerMouseEvent } from '../utils/contentScript';
 import styles from './docs.module.scss';
 import { Token } from 'client-oauth2';
 import { GapiClient } from '../utils/gapi';
@@ -227,6 +227,29 @@ function App(props: { id: string }) {
 }
 
 export async function runDocs(id: string) {
+  // Add ?versions to the url params to deep-link to the versions page
+  var urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.has('versions')) {
+    console.debug('wait to click on versions link');
+    const docsNotice = await waitFor(() => {
+      const docsNotice = document.getElementById('docs-notice');
+      if (!docsNotice || docsNotice.textContent === "" || docsNotice.getAttribute("aria-disabled") === "true") {
+        throw new Error("No docs notice");
+      }
+      return docsNotice
+    })
+    if (docsNotice) {
+      console.debug("found versions link, triggering click")
+      triggerMouseEvent(docsNotice, "mousedown", {})
+      setTimeout(function(){
+        console.log("mouseup")
+        triggerMouseEvent(docsNotice, "mouseup", {})
+      }, 100)
+    } else {
+      console.debug("no docs version link found")
+    }
+  }
+
   const elements = await waitSelector('.docs-title-outer');
   const containerElement = elements[0] as HTMLDivElement;
 
