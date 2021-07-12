@@ -6,6 +6,7 @@ import { useManagedRenderStack } from '../../context/RenderStack';
 import { history, DriveFile, parseDriveLink } from '../../utils';
 import { fromHTML } from '../../utils/docHeaders';
 import { setHeaders } from '../../reduxSlices/headers';
+import { selectExpanded } from '../../reduxSlices/siderTree';
 
 export interface IDocPageProps {
   file: DriveFile;
@@ -73,18 +74,42 @@ function prettify(baseEl: HTMLElement, fileId: string) {
     externallyLinkHeaders(baseEl, fileId);
   }
 
-  highlightComments(baseEl);
+  highlightAndLinkComments(baseEl);
 }
 
-function highlightComments(baseEl: HTMLElement) {
+// Highlight commented text just as in Google Docs.
+// Link to the comment text at the bottom of the doc.
+function highlightAndLinkComments(baseEl: HTMLElement) {
   for (const sup of baseEl.querySelectorAll('sup')) {
-    if (sup.children?.[0].id.startsWith('cmnt_')) {
+    const supLink = sup.children?.[0];
+    if (supLink.id.startsWith('cmnt_')) {
       const span = sup.previousElementSibling;
       if (span && span.nodeName === 'SPAN') {
+        const link = document.createElement('a');
+        const href = supLink.getAttribute('href');
+        if (!href) {
+          console.error('no href for a link');
+          continue;
+        }
+        link.setAttribute('href', href);
+        for (const name of span.getAttributeNames()) {
+          link.setAttribute(name, span.getAttribute(name) ?? '');
+        }
         let style = span.getAttribute('style') || '';
         if (!style.includes('background-color')) {
-          span.setAttribute('style', style + ';background-color: rgb(255, 200, 100)');
+          style = style + ';background-color: rgb(255, 222, 173)';
         }
+        // The linked text should not be styled like a link.
+        // The highlight already indicates it is a link like in Google Docs.
+        if (!style.includes('text-decoration')) {
+          style = style + ';text-decoration: none';
+        }
+        if (!style.match(/(^|[; ])color:/)) {
+          style = style + ';color: rgb(0, 0, 0);';
+        }
+        link.setAttribute('style', style);
+        link.textContent = span.textContent;
+        span.replaceWith(link);
       }
     }
   }
