@@ -210,7 +210,7 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
   function toTreeElements(node: TreeHeading | DocHeader): JSX.Element {
     return isTreeHeading(node) ? treeNode(node, node.entries.map(toTreeElements)) : entryNode(node);
   }
-  const headerTreeNodes = MakeTree(headers.slice()).map(toTreeElements);
+  const headerTreeNodes = (headers ?? []).slice().map(toTreeElements);
 
   return (
     <div className={cx(styles.sider, { [styles.isExpanded]: isExpanded })}>

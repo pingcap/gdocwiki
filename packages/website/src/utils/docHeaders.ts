@@ -11,8 +11,22 @@ export type DocHeader = DocLink & DocHeading;
 
 export function fromHTML(heading: Element): DocHeader {
   const level = parseInt(heading.nodeName.match(/\d/)?.[0] ?? '0');
+  let alteredText = '';
+  let needsAlteration = false;
+  // remove comment
+  for (const node of heading.children) {
+    if (node.nodeName === 'SUP') {
+      const supLink = node.children?.[0];
+      if (supLink.id.startsWith('cmnt_')) {
+        needsAlteration = true;
+        continue;
+      }
+    }
+    alteredText = alteredText + node.textContent ?? '';
+  }
+
   return {
-    text: heading.textContent ?? '',
+    text: needsAlteration ? alteredText : heading.textContent ?? '',
     id: heading.id,
     level,
   };

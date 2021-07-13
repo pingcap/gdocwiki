@@ -1,20 +1,21 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { DocHeader } from '../utils/docHeaders';
+import { DocHeader, TreeHeading, MakeTree } from '../utils/docHeaders';
 
 export interface HeadersState {
-  headers: Array<any>;
+  headers?: (TreeHeading | DocHeader)[];
 }
 
 const initialStateHeaders: HeadersState = {
   headers: [],
-}
+};
 
 export const slice = createSlice({
   name: 'headers',
   initialState: initialStateHeaders,
   reducers: {
-    setHeaders: (state, { payload }: { payload: Array<DocHeader> }) => {
-      state.headers = payload;
+    setHeaders: (state, { payload }: { payload: (TreeHeading | DocHeader)[] }) => {
+      console.debug('set Headers');
+      state.headers = MakeTree(payload);
     },
   },
 })
