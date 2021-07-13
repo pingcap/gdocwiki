@@ -8,7 +8,7 @@ import { useHistory } from 'react-router-dom';
 import { useManagedRenderStack } from '../../context/RenderStack';
 import { setHeaders, setComments, selectComments } from '../../reduxSlices/doc';
 import { history, DriveFile, parseDriveLink } from '../../utils';
-import { fromHTML } from '../../utils/docHeaders';
+import { fromHTML, MakeTree } from '../../utils/docHeaders';
 
 export interface IDocPageProps {
   file: DriveFile;
@@ -72,11 +72,12 @@ function prettify(baseEl: HTMLElement, fileId: string) {
       }
     }
   }
+
+  highlightAndLinkComments(baseEl);
+
   if (fileId) {
     externallyLinkHeaders(baseEl, fileId);
   }
-
-  highlightAndLinkComments(baseEl);
 }
 
 // Highlight commented text just as in Google Docs.
@@ -86,33 +87,35 @@ function highlightAndLinkComments(baseEl: HTMLElement) {
     const supLink = sup.children?.[0];
     if (supLink.id.startsWith('cmnt_')) {
       const span = sup.previousElementSibling;
-      if (span && span.nodeName === 'SPAN') {
-        const link = document.createElement('a');
-        const href = supLink.getAttribute('href');
-        if (!href) {
-          console.error('no href for a link');
-          continue;
-        }
-        link.setAttribute('href', href);
-        for (const name of span.getAttributeNames()) {
-          link.setAttribute(name, span.getAttribute(name) ?? '');
-        }
-        let style = span.getAttribute('style') || '';
-        if (!style.includes('background-color')) {
-          style = style + ';background-color: rgb(255, 222, 173)';
-        }
-        // The linked text should not be styled like a link.
-        // The highlight already indicates it is a link like in Google Docs.
-        if (!style.includes('text-decoration')) {
-          style = style + ';text-decoration: none';
-        }
-        if (!style.match(/(^|[; ])color:/)) {
-          style = style + ';color: rgb(0, 0, 0);';
-        }
-        link.setAttribute('style', style);
-        link.textContent = span.textContent;
-        span.replaceWith(link);
+      if (!span || span.nodeName !== 'SPAN') {
+        continue;
       }
+
+      const link = document.createElement('a');
+      const href = supLink.getAttribute('href');
+      if (!href) {
+        console.error('no href for a link');
+        continue;
+      }
+      link.setAttribute('href', href);
+      for (const name of span.getAttributeNames()) {
+        link.setAttribute(name, span.getAttribute(name) ?? '');
+      }
+      let style = span.getAttribute('style') || '';
+      if (!style.includes('background-color')) {
+        style = style + ';background-color: rgb(255, 222, 173)';
+      }
+      // The linked text should not be styled like a link.
+      // The highlight already indicates it is a link like in Google Docs.
+      if (!style.includes('text-decoration')) {
+        style = style + ';text-decoration: none';
+      }
+      if (!style.match(/(^|[; ])color:/)) {
+        style = style + ';color: rgb(0, 0, 0);';
+      }
+      link.setAttribute('style', style);
+      link.textContent = span.textContent;
+      span.replaceWith(link);
     }
   }
 }
@@ -156,7 +159,10 @@ function externallyLinkHeaders(baseEl: HTMLElement, fileId: string) {
           }
         }
       }
-    } else {
+
+      // A header may already be linked, for example if there is a comment
+      // In this case ignore the header
+    } else if (children.every((n) => n.nodeName !== 'A')) {
       const link = headerLink(fileId, el.id);
       el.appendChild(link);
       for (const inner of children) {
@@ -189,12 +195,15 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
 
   const setDocWithRichContent = useCallback(
     (content: HTMLBodyElement) => {
-      setDocContent(content.innerHTML);
       dispatch(
-        setHeaders(Array.from(content.querySelectorAll('h1, h2, h3, h4, h5, h6')).map(fromHTML))
+        setHeaders(
+          MakeTree(Array.from(content.querySelectorAll('h1, h2, h3, h4, h5, h6')).map(fromHTML))
+        )
       );
+      prettify(content, file.id ?? '');
+      setDocContent(content.innerHTML);
     },
-    [dispatch]
+    [file.id, dispatch]
   );
 
   useEffect(() => {
@@ -203,7 +212,6 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
       const htmlDoc = parser.parseFromString(body, 'text/html');
       const bodyEl = htmlDoc.querySelector('body');
       if (bodyEl) {
-        prettify(bodyEl, file.id ?? '');
         const styleEls = htmlDoc.querySelectorAll('style');
         styleEls.forEach((el) => bodyEl.appendChild(el));
         setDocWithRichContent(bodyEl);

@@ -1,8 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { DocHeader } from '../utils/docHeaders';
+import { DocHeader, TreeHeading } from '../utils/docHeaders';
 
 export interface DocState {
-  headers: any[];
+  headers?: (TreeHeading | DocHeader)[];
   comments: gapi.client.drive.Comment[];
 }
 
@@ -15,7 +15,7 @@ export const slice = createSlice({
   name: 'doc',
   initialState: initialStateDoc,
   reducers: {
-    setHeaders: (state, { payload }: { payload: DocHeader[] }) => {
+    setHeaders: (state, { payload }: { payload: (TreeHeading | DocHeader)[] }) => {
       state.headers = payload;
     },
     setComments: (state, { payload }: { payload: gapi.client.drive.Comment[] }) => {
