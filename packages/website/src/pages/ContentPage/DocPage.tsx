@@ -3,10 +3,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom';
 import { useManagedRenderStack } from '../../context/RenderStack';
+import { setHeaders } from '../../reduxSlices/headers';
 import { history, DriveFile, parseDriveLink } from '../../utils';
 import { fromHTML } from '../../utils/docHeaders';
-import { setHeaders } from '../../reduxSlices/headers';
-import { selectExpanded } from '../../reduxSlices/siderTree';
 
 export interface IDocPageProps {
   file: DriveFile;
@@ -194,21 +193,21 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
     [dispatch]
   );
 
-  function loadHtml(body: string){
-    const parser = new DOMParser();
-    const htmlDoc = parser.parseFromString(body, 'text/html');
-    const bodyEl = htmlDoc.querySelector('body');
-    if (bodyEl) {
-      prettify(bodyEl, file.id ?? '');
-      const styleEls = htmlDoc.querySelectorAll('style');
-      styleEls.forEach((el) => bodyEl.appendChild(el));
-      setDocWithRichContent(bodyEl);
-    } else {
-      setDocWithPlainText('Error?');
-    }
-  }
-
   useEffect(() => {
+    function loadHtml(body: string){
+      const parser = new DOMParser();
+      const htmlDoc = parser.parseFromString(body, 'text/html');
+      const bodyEl = htmlDoc.querySelector('body');
+      if (bodyEl) {
+        prettify(bodyEl, file.id ?? '');
+        const styleEls = htmlDoc.querySelectorAll('style');
+        styleEls.forEach((el) => bodyEl.appendChild(el));
+        setDocWithRichContent(bodyEl);
+      } else {
+        setDocWithPlainText('Error?');
+      }
+    }
+
     async function loadPreview() {
       setIsLoading(true);
       setDocWithPlainText('');
