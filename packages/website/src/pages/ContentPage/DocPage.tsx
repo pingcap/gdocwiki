@@ -1,3 +1,4 @@
+import { ArrowUp16, Launch16 } from '@carbon/icons-react';
 import { InlineLoading } from 'carbon-components-react';
 import { Stack } from 'office-ui-fabric-react';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -321,52 +322,61 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
         console.debug('did not find comment for', origText);
       }
     }
-  }, [docComments, isLoading]);
 
-  function ReactComment(props: {
-    htmlId: string;
-    topHref: string;
-    comment: gapi.client.drive.Comment;
-  }) {
-    const { htmlId, topHref, comment } = props;
-    return (
-      <>
-        <Stack horizontal key={topHref} tokens={{ childrenGap: 0, padding: 0 }}>
-          <a id={htmlId} href={topHref}>
-            ↑
-          </a>
-        </Stack>
-        <Stack horizontal key={comment.id} tokens={{ childrenGap: 8, padding: 8 }}>
-          <Stack>
-            <Avatar
-              name={comment.author?.displayName}
-              src={'https://' + comment.author?.photoLink}
-              size="30"
-              round
-            />
+    function ReactComment(props: {
+      htmlId: string;
+      topHref: string;
+      comment: gapi.client.drive.Comment;
+    }) {
+      const { htmlId, topHref, comment } = props;
+      return (
+        <>
+          <Stack horizontal key={topHref} tokens={{ childrenGap: 10, padding: 0 }}>
+            <a id={htmlId} href={topHref}>
+              Back
+              <ArrowUp16 />
+            </a>
+            <a
+              target="_blank"
+              rel="noreferrer"
+              href={'https://docs.google.com/document/d/' + file.id + '/?disco=' + comment.id}
+            >
+              View in Doc
+              <Launch16 />
+            </a>
           </Stack>
-          <Stack>
-            <p dangerouslySetInnerHTML={{ __html: comment.htmlContent ?? '' }}></p>
-          </Stack>
-        </Stack>
-        {comment.replies?.map((reply) => (
-          <Stack horizontal key={reply.id} tokens={{ childrenGap: 8, padding: 8 }}>
+          <Stack horizontal key={comment.id} tokens={{ childrenGap: 8, padding: 8 }}>
             <Stack>
               <Avatar
-                name={reply.author?.displayName}
-                src={reply.author?.photoLink}
+                name={comment.author?.displayName}
+                src={'https://' + comment.author?.photoLink}
                 size="30"
                 round
               />
             </Stack>
             <Stack>
-              <p dangerouslySetInnerHTML={{ __html: reply.htmlContent ?? '' }}></p>
+              <p dangerouslySetInnerHTML={{ __html: comment.htmlContent ?? '' }}></p>
             </Stack>
           </Stack>
-        ))}
-      </>
-    );
-  }
+          {comment.replies?.map((reply) => (
+            <Stack horizontal key={reply.id} tokens={{ childrenGap: 8, padding: 8 }}>
+              <Stack>
+                <Avatar
+                  name={reply.author?.displayName}
+                  src={reply.author?.photoLink}
+                  size="30"
+                  round
+                />
+              </Stack>
+              <Stack>
+                <p dangerouslySetInnerHTML={{ __html: reply.htmlContent ?? '' }}></p>
+              </Stack>
+            </Stack>
+          ))}
+        </>
+      );
+    }
+  }, [docComments, isLoading, file.id]);
 
   const handleDocContentClick = useCallback(
     (ev: React.MouseEvent) => {
