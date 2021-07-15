@@ -301,7 +301,11 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
           parent.removeChild(child);
         }
         ReactDOM.render(
-          ReactComment({ comment, topHref: commentLink.getAttribute('href') ?? '#' }),
+          ReactComment({
+            comment,
+            htmlId: commentLink.id,
+            topHref: commentLink.getAttribute('href') ?? '#',
+          }),
           parent
         );
         // need to delete all the replies
@@ -319,12 +323,18 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
     }
   }, [docComments, isLoading]);
 
-  function ReactComment(props: { topHref: string; comment: gapi.client.drive.Comment }) {
-    const { topHref, comment } = props;
+  function ReactComment(props: {
+    htmlId: string;
+    topHref: string;
+    comment: gapi.client.drive.Comment;
+  }) {
+    const { htmlId, topHref, comment } = props;
     return (
       <>
         <Stack horizontal key={topHref} tokens={{ childrenGap: 0, padding: 0 }}>
-          <a href={topHref}>↑</a>
+          <a id={htmlId} href={topHref}>
+            ↑
+          </a>
         </Stack>
         <Stack horizontal key={comment.id} tokens={{ childrenGap: 8, padding: 8 }}>
           <Stack>
