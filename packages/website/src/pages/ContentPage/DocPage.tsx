@@ -331,20 +331,26 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
       const { htmlId, topHref, comment } = props;
       return (
         <>
-          <Stack horizontal key={topHref} tokens={{ childrenGap: 10, padding: 0 }}>
-            <a id={htmlId} href={topHref}>
-              Back
+          <Stack
+            horizontal
+            style={{ paddingLeft: '10px', paddingTop: '5px' }}
+            key={topHref}
+            tokens={{ childrenGap: 12, padding: 0 }}
+          >
+            <a id={htmlId} href={topHref} title="back to doc">
               <ArrowUp16 />
             </a>
             <a
               target="_blank"
               rel="noreferrer"
+              title="open in doc"
               href={'https://docs.google.com/document/d/' + file.id + '/?disco=' + comment.id}
             >
-              View in Doc
               <Launch16 />
             </a>
+            <em>{comment.quotedFileContent?.value}</em>
           </Stack>
+          <hr/>
           <Stack horizontal key={comment.id} tokens={{ childrenGap: 8, padding: 8 }}>
             <Stack>
               <Avatar
