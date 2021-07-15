@@ -369,7 +369,7 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
               <Stack>
                 <Avatar
                   name={reply.author?.displayName}
-                  src={reply.author?.photoLink}
+                  src={'https://' + reply.author?.photoLink}
                   size="30"
                   round
                 />
