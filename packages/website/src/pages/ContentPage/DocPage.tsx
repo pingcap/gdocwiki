@@ -1,9 +1,12 @@
 import { InlineLoading } from 'carbon-components-react';
+import { Stack } from 'office-ui-fabric-react';
 import React, { useCallback, useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux'
+import Avatar from 'react-avatar';
+import ReactDOM from 'react-dom';
+import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom';
 import { useManagedRenderStack } from '../../context/RenderStack';
-import { setHeaders } from '../../reduxSlices/headers';
+import { setHeaders, setComments, selectComments } from '../../reduxSlices/doc';
 import { history, DriveFile, parseDriveLink } from '../../utils';
 import { fromHTML } from '../../utils/docHeaders';
 
@@ -168,6 +171,7 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
   const [isLoading, setIsLoading] = useState(true);
   const history = useHistory();
   const dispatch = useDispatch();
+  const docComments = useSelector(selectComments);
 
   useManagedRenderStack({
     depth: renderStackOffset,
@@ -228,6 +232,123 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
       dispatch(setHeaders([]));
     };
   }, [file.id, dispatch, setDocWithPlainText, setDocWithRichContent]);
+
+  useEffect(() => {
+    async function loadComments() {
+      try {
+        // problem: this does not return all of the visible comments
+        const resp = await gapi.client.drive.comments.list({
+          fileId: file.id!,
+          includeDeleted: false,
+          fields: '*',
+          pageSize: 100,
+        });
+        const respComments = resp.result.comments ?? [];
+        dispatch(setComments(respComments));
+      } catch (e) {
+        console.error('error loading comments', e);
+      }
+    }
+    loadComments();
+    return function () {
+      dispatch(setComments([]));
+    };
+  }, [file.id]);
+
+  useEffect(() => {
+    const comments = docComments.filter((comment) => comment.resolved !== true);
+    if (comments.length === 0) {
+      return;
+    }
+
+    const commentLookup = {};
+    for (const comment of comments) {
+      commentLookup[comment.content ?? ''] = comment;
+    }
+    const replyLookup = {};
+    let i = 0;
+    while (true) {
+      i += 1;
+      const domId = 'cmnt' + i.toString();
+      const commentLink = document.getElementById(domId);
+      if (!commentLink) {
+        return;
+      }
+      let parent = commentLink.parentElement;
+      while (parent && parent.nodeName !== 'DIV') {
+        parent = parent.parentElement;
+      }
+      if (!parent) {
+        console.error('no parent for comment');
+        continue;
+      }
+      let origTextPieces = [commentLink.nextElementSibling?.textContent ?? ''];
+      for (const child of Array.from(parent.children).slice(1)) {
+        origTextPieces.push(child.textContent || '');
+      }
+      const origText = origTextPieces.join('\n');
+      const comment = commentLookup[origText];
+      if (comment) {
+        for (const child of parent.children) {
+          parent.removeChild(child);
+        }
+        ReactDOM.render(
+          ReactComment({ comment, topHref: commentLink.getAttribute('href') ?? '#' }),
+          parent
+        );
+        // need to delete all the replies
+        for (const reply of comment.replies) {
+          replyLookup[reply.content] = reply;
+        }
+      } else if (replyLookup[origText]) {
+        // note that we no longer link replies back to the text
+        // So delete those supers as well
+        document.getElementById((commentLink.getAttribute('href') ?? '').slice(1))?.remove();
+        parent.remove();
+      } else {
+        console.debug('did not find comment for', origText);
+      }
+    }
+  }, [docComments, isLoading]);
+
+  function ReactComment(props: { topHref: string; comment: gapi.client.drive.Comment }) {
+    const { topHref, comment } = props;
+    return (
+      <>
+        <Stack horizontal key={topHref} tokens={{ childrenGap: 0, padding: 0 }}>
+          <a href={topHref}>↑</a>
+        </Stack>
+        <Stack horizontal key={comment.id} tokens={{ childrenGap: 8, padding: 8 }}>
+          <Stack>
+            <Avatar
+              name={comment.author?.displayName}
+              src={'https://' + comment.author?.photoLink}
+              size="30"
+              round
+            />
+          </Stack>
+          <Stack>
+            <p dangerouslySetInnerHTML={{ __html: comment.htmlContent ?? '' }}></p>
+          </Stack>
+        </Stack>
+        {comment.replies?.map((reply) => (
+          <Stack horizontal key={reply.id} tokens={{ childrenGap: 8, padding: 8 }}>
+            <Stack>
+              <Avatar
+                name={reply.author?.displayName}
+                src={reply.author?.photoLink}
+                size="30"
+                round
+              />
+            </Stack>
+            <Stack>
+              <p dangerouslySetInnerHTML={{ __html: reply.htmlContent ?? '' }}></p>
+            </Stack>
+          </Stack>
+        ))}
+      </>
+    );
+  }
 
   const handleDocContentClick = useCallback(
     (ev: React.MouseEvent) => {

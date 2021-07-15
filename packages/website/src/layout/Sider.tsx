@@ -13,7 +13,7 @@ import {
   selectMapIdToChildren,
   selectMapIdToFile,
 } from '../reduxSlices/files';
-import { selectHeaders } from '../reduxSlices/headers';
+import { selectHeaders } from '../reduxSlices/doc';
 import {
   activate,
   expand,
