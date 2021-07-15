@@ -89,6 +89,11 @@ function highlightAndLinkComments(baseEl: HTMLElement) {
     if (supLink.id.startsWith('cmnt_')) {
       const span = sup.previousElementSibling;
       if (!span || span.nodeName !== 'SPAN') {
+        if (span && span.id.startsWith('cmnt_')) {
+          // There are multiple sups next to eachother for replies
+          // This removes the replies
+          sup.remove();
+        }
         continue;
       }
 
@@ -116,6 +121,8 @@ function highlightAndLinkComments(baseEl: HTMLElement) {
       }
       link.setAttribute('style', style);
       link.textContent = span.textContent;
+      link.id = supLink.id;
+      sup.remove();
       span.replaceWith(link);
     }
   }
