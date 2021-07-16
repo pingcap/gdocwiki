@@ -7,13 +7,13 @@ import React, { useCallback, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { DriveIcon } from '../components';
 import { getConfig } from '../config';
+import { selectHeaders } from '../reduxSlices/doc';
 import {
   selectError,
   selectLoading,
   selectMapIdToChildren,
   selectMapIdToFile,
 } from '../reduxSlices/files';
-import { selectHeaders } from '../reduxSlices/doc';
 import {
   activate,
   expand,
@@ -30,7 +30,7 @@ import {
   MimeTypes,
   parseFolderChildrenDisplaySettings,
 } from '../utils';
-import { DocHeader, TreeHeading, isTreeHeading, MakeTree } from '../utils/docHeaders';
+import { DocHeader, TreeHeading, isTreeHeading } from '../utils/docHeaders';
 import styles from './Sider.module.scss';
 import { HeaderExtraActionsForMobile } from '.';
 
@@ -210,7 +210,7 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
   function toTreeElements(node: TreeHeading | DocHeader): JSX.Element {
     return isTreeHeading(node) ? treeNode(node, node.entries.map(toTreeElements)) : entryNode(node);
   }
-  const headerTreeNodes = MakeTree(headers.slice()).map(toTreeElements);
+  const headerTreeNodes = (headers ?? []).slice().map(toTreeElements);
 
   return (
     <div className={cx(styles.sider, { [styles.isExpanded]: isExpanded })}>

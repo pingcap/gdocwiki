@@ -1,5 +1,6 @@
 import {
   Add16,
+  ArrowUp16,
   ChevronDown16,
   ChevronRight16,
   Edit16,
@@ -20,6 +21,7 @@ import React from 'react';
 export function registerIcons() {
   register({
     icons: {
+      ArrowUp: <ArrowUp16 />,
       More: <OverflowMenuHorizontal16 />,
       ChevronRight: <ChevronRight16 />,
       ChevronDown: <ChevronDown16 />,

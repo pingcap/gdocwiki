@@ -1,3 +1,4 @@
+import { ArrowUp16, Launch16 } from '@carbon/icons-react';
 import { InlineLoading } from 'carbon-components-react';
 import { Stack } from 'office-ui-fabric-react';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -8,7 +9,7 @@ import { useHistory } from 'react-router-dom';
 import { useManagedRenderStack } from '../../context/RenderStack';
 import { setHeaders, setComments, selectComments } from '../../reduxSlices/doc';
 import { history, DriveFile, parseDriveLink } from '../../utils';
-import { fromHTML } from '../../utils/docHeaders';
+import { fromHTML, MakeTree } from '../../utils/docHeaders';
 
 export interface IDocPageProps {
   file: DriveFile;
@@ -72,11 +73,12 @@ function prettify(baseEl: HTMLElement, fileId: string) {
       }
     }
   }
+
+  highlightAndLinkComments(baseEl);
+
   if (fileId) {
     externallyLinkHeaders(baseEl, fileId);
   }
-
-  highlightAndLinkComments(baseEl);
 }
 
 // Highlight commented text just as in Google Docs.
@@ -86,33 +88,42 @@ function highlightAndLinkComments(baseEl: HTMLElement) {
     const supLink = sup.children?.[0];
     if (supLink.id.startsWith('cmnt_')) {
       const span = sup.previousElementSibling;
-      if (span && span.nodeName === 'SPAN') {
-        const link = document.createElement('a');
-        const href = supLink.getAttribute('href');
-        if (!href) {
-          console.error('no href for a link');
-          continue;
+      if (!span || span.nodeName !== 'SPAN') {
+        if (span && span.id.startsWith('cmnt_')) {
+          // There are multiple sups next to eachother for replies
+          // This removes the replies
+          sup.remove();
         }
-        link.setAttribute('href', href);
-        for (const name of span.getAttributeNames()) {
-          link.setAttribute(name, span.getAttribute(name) ?? '');
-        }
-        let style = span.getAttribute('style') || '';
-        if (!style.includes('background-color')) {
-          style = style + ';background-color: rgb(255, 222, 173)';
-        }
-        // The linked text should not be styled like a link.
-        // The highlight already indicates it is a link like in Google Docs.
-        if (!style.includes('text-decoration')) {
-          style = style + ';text-decoration: none';
-        }
-        if (!style.match(/(^|[; ])color:/)) {
-          style = style + ';color: rgb(0, 0, 0);';
-        }
-        link.setAttribute('style', style);
-        link.textContent = span.textContent;
-        span.replaceWith(link);
+        continue;
       }
+
+      const link = document.createElement('a');
+      const href = supLink.getAttribute('href');
+      if (!href) {
+        console.error('no href for a link');
+        continue;
+      }
+      link.setAttribute('href', href);
+      for (const name of span.getAttributeNames()) {
+        link.setAttribute(name, span.getAttribute(name) ?? '');
+      }
+      let style = span.getAttribute('style') || '';
+      if (!style.includes('background-color')) {
+        style = style + ';background-color: rgb(255, 222, 173)';
+      }
+      // The linked text should not be styled like a link.
+      // The highlight already indicates it is a link like in Google Docs.
+      if (!style.includes('text-decoration')) {
+        style = style + ';text-decoration: none';
+      }
+      if (!style.match(/(^|[; ])color:/)) {
+        style = style + ';color: rgb(0, 0, 0);';
+      }
+      link.setAttribute('style', style);
+      link.textContent = span.textContent;
+      link.id = supLink.id;
+      sup.remove();
+      span.replaceWith(link);
     }
   }
 }
@@ -156,7 +167,10 @@ function externallyLinkHeaders(baseEl: HTMLElement, fileId: string) {
           }
         }
       }
-    } else {
+
+      // A header may already be linked, for example if there is a comment
+      // In this case ignore the header
+    } else if (children.every((n) => n.nodeName !== 'A')) {
       const link = headerLink(fileId, el.id);
       el.appendChild(link);
       for (const inner of children) {
@@ -189,12 +203,15 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
 
   const setDocWithRichContent = useCallback(
     (content: HTMLBodyElement) => {
-      setDocContent(content.innerHTML);
       dispatch(
-        setHeaders(Array.from(content.querySelectorAll('h1, h2, h3, h4, h5, h6')).map(fromHTML))
+        setHeaders(
+          MakeTree(Array.from(content.querySelectorAll('h1, h2, h3, h4, h5, h6')).map(fromHTML))
+        )
       );
+      prettify(content, file.id ?? '');
+      setDocContent(content.innerHTML);
     },
-    [dispatch]
+    [file.id, dispatch]
   );
 
   useEffect(() => {
@@ -203,7 +220,6 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
       const htmlDoc = parser.parseFromString(body, 'text/html');
       const bodyEl = htmlDoc.querySelector('body');
       if (bodyEl) {
-        prettify(bodyEl, file.id ?? '');
         const styleEls = htmlDoc.querySelectorAll('style');
         styleEls.forEach((el) => bodyEl.appendChild(el));
         setDocWithRichContent(bodyEl);
@@ -293,7 +309,11 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
           parent.removeChild(child);
         }
         ReactDOM.render(
-          ReactComment({ comment, topHref: commentLink.getAttribute('href') ?? '#' }),
+          ReactComment({
+            comment,
+            htmlId: commentLink.id,
+            topHref: commentLink.getAttribute('href') ?? '#',
+          }),
           parent
         );
         // need to delete all the replies
@@ -309,46 +329,67 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
         console.debug('did not find comment for', origText);
       }
     }
-  }, [docComments, isLoading]);
 
-  function ReactComment(props: { topHref: string; comment: gapi.client.drive.Comment }) {
-    const { topHref, comment } = props;
-    return (
-      <>
-        <Stack horizontal key={topHref} tokens={{ childrenGap: 0, padding: 0 }}>
-          <a href={topHref}>↑</a>
-        </Stack>
-        <Stack horizontal key={comment.id} tokens={{ childrenGap: 8, padding: 8 }}>
-          <Stack>
-            <Avatar
-              name={comment.author?.displayName}
-              src={'https://' + comment.author?.photoLink}
-              size="30"
-              round
-            />
+    function ReactComment(props: {
+      htmlId: string;
+      topHref: string;
+      comment: gapi.client.drive.Comment;
+    }) {
+      const { htmlId, topHref, comment } = props;
+      return (
+        <>
+          <Stack
+            horizontal
+            style={{ paddingLeft: '10px', paddingTop: '5px' }}
+            key={topHref}
+            tokens={{ childrenGap: 12, padding: 0 }}
+          >
+            <a id={htmlId} href={topHref} title="back to doc">
+              <ArrowUp16 />
+            </a>
+            <a
+              target="_blank"
+              rel="noreferrer"
+              title="open in doc"
+              href={'https://docs.google.com/document/d/' + file.id + '/?disco=' + comment.id}
+            >
+              <Launch16 />
+            </a>
+            <em>{comment.quotedFileContent?.value}</em>
           </Stack>
-          <Stack>
-            <p dangerouslySetInnerHTML={{ __html: comment.htmlContent ?? '' }}></p>
-          </Stack>
-        </Stack>
-        {comment.replies?.map((reply) => (
-          <Stack horizontal key={reply.id} tokens={{ childrenGap: 8, padding: 8 }}>
+          <hr/>
+          <Stack horizontal key={comment.id} tokens={{ childrenGap: 8, padding: 8 }}>
             <Stack>
               <Avatar
-                name={reply.author?.displayName}
-                src={reply.author?.photoLink}
+                name={comment.author?.displayName}
+                src={'https://' + comment.author?.photoLink}
                 size="30"
                 round
               />
             </Stack>
             <Stack>
-              <p dangerouslySetInnerHTML={{ __html: reply.htmlContent ?? '' }}></p>
+              <p dangerouslySetInnerHTML={{ __html: comment.htmlContent ?? '' }}></p>
             </Stack>
           </Stack>
-        ))}
-      </>
-    );
-  }
+          {comment.replies?.map((reply) => (
+            <Stack horizontal key={reply.id} tokens={{ childrenGap: 8, padding: 8 }}>
+              <Stack>
+                <Avatar
+                  name={reply.author?.displayName}
+                  src={'https://' + reply.author?.photoLink}
+                  size="30"
+                  round
+                />
+              </Stack>
+              <Stack>
+                <p dangerouslySetInnerHTML={{ __html: reply.htmlContent ?? '' }}></p>
+              </Stack>
+            </Stack>
+          ))}
+        </>
+      );
+    }
+  }, [docComments, isLoading, file.id]);
 
   const handleDocContentClick = useCallback(
     (ev: React.MouseEvent) => {
