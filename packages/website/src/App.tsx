@@ -8,7 +8,7 @@ import {
 import Trigger from 'rc-trigger';
 import React, { useCallback, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Router, Switch, Route } from 'react-router-dom';
+import { Redirect, Router, Switch, Route } from 'react-router-dom';
 import { useLocalStorage } from 'react-use';
 import { ExtensionBanner } from './components';
 import { ExtInstallStatusProvider } from './context/ExtInstallStatus';
@@ -161,6 +161,12 @@ function App() {
                 <Route exact path="/search/tag/:tag">
                   <SearchTag />
                 </Route>
+                {/* translate lazy copy & paste from Google Docs */}
+                <Redirect to="/view/:id" from="/view/:id/*" />
+                <Redirect to="/view/:id" from="/d/:id" />
+                <Redirect to="/view/:id" from="/d/:id/*" />
+                <Redirect to="/view/:id" from="/document/d/:id" />
+                <Redirect to="/view/:id" from="/document/d/:id/*" />
               </Switch>
             </RenderStackProvider>
           </Content>
