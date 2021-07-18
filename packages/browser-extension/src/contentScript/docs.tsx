@@ -19,9 +19,15 @@ type TreePathItem = {
   url: string;
 };
 
+type ParentTree = {
+  file: TreePathItem;
+  folder?: TreePathItem;
+  parents: Array<TreePathItem>;
+}
+
 type FileInfo = {
   isOrphanAndOwner?: boolean;
-  parentItems?: Array<TreePathItem>;
+  parentTree?: ParentTree;
 };
 
 function buildWikiUrl(drive: ManifestDrive, id: string) {
@@ -121,8 +127,16 @@ async function loadFileInfo(fileId: string, token: Token): Promise<FileInfo | un
   parents.reverse();
 
   log.info(`Parents list has been built`, parents);
+
   return {
-    parentItems: parents,
+    parentTree: {
+      folder: parents.pop(),
+      file: {
+        name: file.name!,
+        url: buildWikiUrl(discoveredDrive, file.id!),
+      },
+      parents
+    },
   };
 }
 
@@ -206,9 +220,9 @@ function App(props: { id: string }) {
           Document outside the Wiki
         </span>
       )}
-      {Boolean(fi && fi.parentItems) && (
+      {Boolean(fi && fi.parentTree) && (
         <div className={styles.wikiTree}>
-          {fi?.parentItems?.map((pi) => {
+          {fi?.parentTree!.parents.map((pi) => {
             return (
               <>
                 <a href={pi.url} target="_blank" rel="noreferrer" className={styles.wikiTreeItem}>
@@ -220,6 +234,14 @@ function App(props: { id: string }) {
               </>
             );
           })}
+          {fi!.parentTree!.folder && (
+            <a href={fi?.parentTree!.folder.url} target="_blank" rel="noreferrer" className={styles.wikiTreeItem}>
+              {fi?.parentTree!.folder.name}
+            </a>
+          )}
+          <a href={fi!.parentTree!.file.url} target="_blank" rel="noreferrer" className={styles.wikiTreeItem}>
+            <ChevronRight16 />
+          </a>
         </div>
       )}
     </>
