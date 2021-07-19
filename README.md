@@ -92,11 +92,13 @@ REACT_APP_ROOT_DRIVE_ID=xxxxxxx
   - [x] Activate and expand sidebar item according to current page
   - [x] Support >500 pages in the sidebar
   - [x] Support external link in syntax `[xxx](https://yyy)`
-    - [ ] Open Google drive external links in wiki directly
+    - [x] Open Google drive external links in wiki directly
 - [x] Content Preview
   - [x] Google doc
     - [x] Rewrite links to open in wiki directly
     - [x] Support #xxx anchors in the Google doc
+    - [x] Show comment threads
+    - [x] Show revision history
     - [ ] Prettify
       - [x] Pretty font families
       - [x] Pretty monospace fonts
