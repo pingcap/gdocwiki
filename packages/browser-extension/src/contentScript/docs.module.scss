@@ -56,6 +56,12 @@
   align-items: center;
 }
 
+.wikiTreeIcon {
+  & {
+    padding-top: 4px;
+  }
+}
+
 .wikiTreeItem {
   & {
     font-size: 1rem;

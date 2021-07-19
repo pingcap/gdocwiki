@@ -228,7 +228,7 @@ function App(props: { id: string }) {
                 <a href={pi.url} target="_blank" rel="noreferrer" className={styles.wikiTreeItem}>
                   {pi.name}
                 </a>
-                <span>
+                <span className={styles.wikiTreeIcon}>
                   <ChevronRight16 />
                 </span>
               </>
@@ -239,8 +239,9 @@ function App(props: { id: string }) {
               {fi?.parentTree!.folder.name}
             </a>
           )}
-          <a href={fi!.parentTree!.file.url} target="_blank" rel="noreferrer" className={styles.wikiTreeItem}>
+          <a href={fi!.parentTree!.file.url} target="_blank" rel="noreferrer" className={styles.wikiTreeIcon}>
             <ChevronRight16 />
+            <Launch16/>
           </a>
         </div>
       )}
