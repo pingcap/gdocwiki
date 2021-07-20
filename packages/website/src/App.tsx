@@ -139,10 +139,17 @@ function App() {
           <Content isExpanded={isExpanded}>
             <RenderStackProvider>
               <Switch>
+                {/* translate lazy copy & paste from Google Docs */}
+                <Redirect to="/view/:id" from="/view/:id/edit" />
+                <Redirect to="/view/:id" from="/document/d/:id" />
+                <Redirect to="/view/:id" from="/document/d/:id/*" />
+                <Redirect to="/view/:id" from="/https\://:domain/document/d/:id" />
+                <Redirect to="/view/:id" from="/https\://:domain/document/d/:id/*" />
+
                 <Route exact path="/">
                   <Page />
                 </Route>
-                <Route exact path="/view/:id">
+                <Route path="/view/:id">
                   <Page />
                 </Route>
                 <Route exact path="/view/:id/settings">
@@ -157,12 +164,9 @@ function App() {
                 <Route exact path="/search/tag/:tag">
                   <SearchTag />
                 </Route>
-                {/* translate lazy copy & paste from Google Docs */}
-                <Redirect to="/view/:id" from="/view/:id/*" />
-                <Redirect to="/view/:id" from="/d/:id" />
-                <Redirect to="/view/:id" from="/d/:id/*" />
-                <Redirect to="/view/:id" from="/document/d/:id" />
-                <Redirect to="/view/:id" from="/document/d/:id/*" />
+                <Route path="/n/:slug/:id">
+                  <Page />
+                </Route>
               </Switch>
             </RenderStackProvider>
           </Content>
