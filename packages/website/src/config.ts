@@ -59,6 +59,30 @@ if (!config.REACT_APP_USE_CONFIG_FILE) {
   }
 }
 
+const configStorageKey = 'app-config';
+function loadSavedConfig() {
+  const savedConfig = localStorage?.getItem(configStorageKey);
+  if (savedConfig) {
+    const oc = JSON.parse(savedConfig);
+    for (const key in oc) {
+      if (oc[key]) {
+        config[key] = oc[key];
+      }
+    }
+    return true;
+  }
+  return false;
+}
+
+export async function loadConfig() {
+  if (loadSavedConfig()) {
+    // update in the background. On next reload the new config will be used
+    overwriteConfig();
+  } else {
+    await overwriteConfig();
+  }
+}
+
 export async function overwriteConfig() {
   try {
     const url = `${process.env.PUBLIC_URL}/config.json?_=${Date.now()}`;
@@ -68,6 +92,7 @@ export async function overwriteConfig() {
         config[key] = oc[key];
       }
     }
+    localStorage?.setItem(configStorageKey, JSON.stringify(config));
   } catch (e) {
     if (config.REACT_APP_USE_CONFIG_FILE) {
       throw e;
