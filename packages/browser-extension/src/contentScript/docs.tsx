@@ -28,8 +28,9 @@ type ParentTree = {
 
 type FileInfo = {
   isOrphanAndOwner?: boolean;
-  parentTree?: ParentTree;
+  parentTree: ParentTree;
   privateOwners?: gapi.client.drive.User[];
+  trashed?: boolean;
 };
 
 function buildWikiUrl(drive: ManifestDrive, id: string) {
@@ -48,30 +49,46 @@ async function loadFileInfo(fileId: string, token: Token): Promise<FileInfo | un
     supportsAllDrives: true,
   });
   log.info('File metadata', file);
+
+  const { drives } = manifest!.data;
+  const parentTree = {
+    parents: [],
+    file: {
+      name: file.name ?? '',
+      url: buildWikiUrl(drives[Object.keys(drives)[0]], file.id!)
+    }
+  }
+
   if (file.trashed) {
     log.info('Skipped the file since it is trashed');
-    return;
+    return {
+      parentTree,
+      trashed: true,
+    };
   }
+
   if (file.ownedByMe) {
     log.info('File is owned by current user, and it should be orphan');
     return {
       isOrphanAndOwner: true,
+      parentTree,
     };
   }
+
   if (!file.driveId) {
     log.info(
       'File does not have a drive id, maybe the owner did not put it in the Wiki, skip listing parents'
     );
     const orgOwners = file.owners?.filter((owner) => owner.emailAddress?.split("@")?.[1] === manifest?.data.gapiHostedDomain)
     return {
-      privateOwners: orgOwners
+      privateOwners: orgOwners,
+      parentTree,
     };
   }
 
   let discoveredDrive: ManifestDrive | undefined;
   let discoveredWorkspace: string | undefined;
 
-  const { drives } = manifest!.data;
   for (const name in drives) {
     if (drives[name].driveId === file.driveId) {
       discoveredDrive = drives[name];
@@ -83,7 +100,7 @@ async function loadFileInfo(fileId: string, token: Token): Promise<FileInfo | un
     log.info(
       `File drive ${file.driveId} does not match drives in the manifest, skip listing parents`
     );
-    return {};
+    return { parentTree };
   }
 
   // Now we know the drive of the file, let's list parents.
@@ -208,18 +225,39 @@ function useFileInfo(fileId: string, token?: Token): [FileInfo | undefined, bool
   return [fi, loading];
 }
 
-function App(props: { id: string }) {
-  const [token, isTokenLoading] = useToken();
-  const [fi] = useFileInfo(props.id, token);
+function Loading(props: { isTokenLoading?: boolean; token?: Token; }) {
+  if (props.isTokenLoading || !props.token) {
+    return null
+  }
+
+  return (
+    <a
+      className={cx(styles.tag, styles.danger, styles.clickable)}
+      href={chrome.runtime.getURL('options.html')}
+      target="_blank"
+      rel="noreferrer"
+    >
+      <Launch16 style={{ marginRight: 6 }} />
+      GdocWiki Extension Not Enabled
+    </a>
+  )
+}
+
+function PrivateOwners(props: { id: string, token: Token, privateOwners?: gapi.client.drive.User[]; }) {
   const [showExtra, setShowExtra] = useState(false);
   const [askShared, setAskShared] = useState(false);
+
+  const { privateOwners, token, id } = props;
+  if (!privateOwners?.length) {
+    return null
+  }
 
   async function askSharedDrive(user: gapi.client.drive.User) {
       const ask = "@" + user.displayName + " Please add this file to a shared drive. That helps organize information, make it more discoverable, and manage permissions."
       setAskShared(v => !v)
       try {
         log.info('Comment to move file to a shared drive', props.id);
-        await commentPleaseShare(props.id, token!, ask);
+        await commentPleaseShare(id, token, ask);
       } catch (e) {
         log.error(e);
       } finally {
@@ -227,70 +265,81 @@ function App(props: { id: string }) {
       }
   }
 
+  return showExtra ?
+  <>
+    <WarningAltFilled16 style={{ marginRight: 6 }} />
+    <span className={cx(styles.tag)} onClick={() => {setShowExtra(v => !v)}}>
+      Owned by {privateOwners?.[0].displayName} {privateOwners?.[0].emailAddress}
+    </span>
+    {!askShared &&
+    <Button className={cx(styles.tag)} onClick={() => {askSharedDrive(privateOwners?.[0]!)}}>
+      Ask for shared drive
+    </Button>
+    }
+  </> :
+  <>
+    <WarningAltFilled16 style={{ marginRight: 6 }} />
+    <Button className={cx(styles.tag, styles.warning)} onClick={() => {setShowExtra(v => !v)}}>
+      Not in shared drive
+    </Button>
+  </>
+}
+
+function Folders(props: {parentTree: ParentTree}) {
+  const { parentTree } = props;
+  if (!parentTree.folder) {
+    return null
+  }
+
+  return (
+    <div className={styles.wikiTree}>
+      {parentTree.parents?.map((pi) => {
+        return (
+          <>
+            <a href={pi.url} target="_blank" rel="noreferrer" className={styles.wikiTreeItem}>
+              {pi.name}
+            </a>
+            <span className={styles.wikiTreeIcon}>
+              <ChevronRight16 />
+            </span>
+          </>
+        );
+      })}
+      <a href={parentTree.folder.url} target="_blank" rel="noreferrer" className={styles.wikiTreeItem}>
+        {parentTree.folder.name}
+      </a>
+      <a href={parentTree.file.url} target="_blank" rel="noreferrer" className={styles.wikiTreeIcon}>
+        <ChevronRight16 />
+      </a>
+    </div>
+  )
+}
+
+
+function App(props: { id: string }) {
+  const [token, isTokenLoading] = useToken();
+  const [fi] = useFileInfo(props.id, token);
+
+  if (!token || isTokenLoading) {
+    return <Loading token={token} isTokenLoading={isTokenLoading} />
+  }
+  if (!fi || fi.trashed) {
+    return null
+  }
+
   return (
     <>
-      {Boolean(!isTokenLoading && !token) && (
-        <a
-          className={cx(styles.tag, styles.danger, styles.clickable)}
-          href={chrome.runtime.getURL('options.html')}
-          target="_blank"
-          rel="noreferrer"
-        >
-          <Launch16 style={{ marginRight: 6 }} />
-          GdocWiki Extension Not Enabled
-        </a>
-      )}
-      {Boolean(fi && fi.isOrphanAndOwner) && (
+      {Boolean(fi.isOrphanAndOwner) && (
         <span className={cx(styles.tag, styles.warning)}>
           <WarningAltFilled16 style={{ marginRight: 6 }} />
           Document outside the Wiki
         </span>
       )}
-      {Boolean(fi && fi.parentTree) && (
-        <div className={styles.wikiTree}>
-          {fi?.parentTree!.parents.map((pi) => {
-            return (
-              <>
-                <a href={pi.url} target="_blank" rel="noreferrer" className={styles.wikiTreeItem}>
-                  {pi.name}
-                </a>
-                <span className={styles.wikiTreeIcon}>
-                  <ChevronRight16 />
-                </span>
-              </>
-            );
-          })}
-          {fi!.parentTree!.folder && (
-            <a href={fi?.parentTree!.folder.url} target="_blank" rel="noreferrer" className={styles.wikiTreeItem}>
-              {fi?.parentTree!.folder.name}
-            </a>
-          )}
-          <a href={fi!.parentTree!.file.url} target="_blank" rel="noreferrer" className={styles.wikiTreeIcon}>
-            <ChevronRight16 />
-            <Launch16/>
-          </a>
-        </div>
-      )}
-      {Boolean(fi && fi?.privateOwners?.length) && (
-        showExtra ?
-        <>
-          <WarningAltFilled16 style={{ marginRight: 6 }} />
-          <span className={cx(styles.tag)} onClick={() => {setShowExtra(v => !v)}}>
-            Owned by {fi?.privateOwners?.[0].displayName} {fi?.privateOwners?.[0].emailAddress}
-          </span>
-          {!askShared &&
-          <Button className={cx(styles.tag)} onClick={() => {askSharedDrive(fi?.privateOwners?.[0]!)}}>
-            Ask for shared drive
-          </Button>
-          }
-        </> :
-        <>
-          <WarningAltFilled16 style={{ marginRight: 6 }} />
-          <Button className={cx(styles.tag, styles.warning)} onClick={() => {setShowExtra(v => !v)}}>
-            Not in shared drive
-          </Button>
-        </>
-      )}
+      <PrivateOwners id={props.id} token={token} privateOwners={fi.privateOwners} />
+      <Folders parentTree={fi.parentTree} />
+      <a href={fi.parentTree.file.url} target="_blank" rel="noreferrer" className={styles.wikiTreeIcon}>
+        <Launch16/>
+      </a>
     </>
   );
 }
