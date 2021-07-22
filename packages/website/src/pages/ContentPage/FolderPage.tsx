@@ -105,7 +105,9 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
   return (
     <div>
       {loading && <InlineLoading description="Loading folder contents..." />}
-      {readMeFile && <ContentPage file={readMeFile} renderStackOffset={renderStackOffset + 1} />}
+      {readMeFile && (
+        <ContentPage loading={null} file={readMeFile} renderStackOffset={renderStackOffset + 1} />
+      )}
       {!loading && !!error && error}
       {!loading && !error && (
         <div style={{ marginTop: 32 }}>

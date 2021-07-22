@@ -54,7 +54,7 @@ function Page() {
       </div>
       {loading && <InlineLoading description="Loading file metadata..." />}
       {!loading && !!error && error}
-      {!loading && !!file && <ContentPage file={file} />}
+      {<ContentPage loading={loading || error ? id : null} file={file} />}
     </RightContainer>
   );
 }

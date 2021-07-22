@@ -250,6 +250,14 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
   }, [file.id, dispatch, setDocWithPlainText, setDocWithRichContent]);
 
   useEffect(() => {
+    // When optimistically rendering the document, only an id is available.
+    // Avoid optimistically fetching comments as well.
+    // This API call would actually succeed against a folder
+    // but we wouldn't end up using the resulit.
+    if (!file.name) {
+      return;
+    }
+
     async function loadComments() {
       try {
         // problem: this does not return all of the visible comments
@@ -269,7 +277,7 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
     return function () {
       dispatch(setComments([]));
     };
-  }, [file.id]);
+  }, [file.id, dispatch, file.name]);
 
   useEffect(() => {
     const comments = docComments.filter((comment) => comment.resolved !== true);
