@@ -24,6 +24,7 @@ function ShortcutPage({ file, renderStackOffset = 0 }: IShortcutPageProps) {
       {!loading && !!error && error}
       {!loading && !!pointingFile && (
         <ContentPage
+          loading={null}
           file={pointingFile}
           shortCutFile={file}
           renderStackOffset={renderStackOffset + 1}

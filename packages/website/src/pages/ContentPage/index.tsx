@@ -6,12 +6,19 @@ import PreviewPage from './PreviewPage';
 import ShortcutPage from './ShortcutPage';
 
 export interface IContentPageProps {
-  file: DriveFile;
+  loading: string | null;
+  file?: DriveFile;
   shortCutFile?: DriveFile;
   renderStackOffset?: number;
 }
 
-function ContentPage({ file, shortCutFile, renderStackOffset = 0 }: IContentPageProps) {
+function ContentPage({ loading, file, shortCutFile, renderStackOffset = 0 }: IContentPageProps) {
+  // Assume a document for speed in that case.
+  // We might be wrong, but that will get corrected without issue.
+  if (loading !== null) {
+    return <DocPage file={{ id: loading }} renderStackOffset={renderStackOffset} />;
+  }
+
   if (PreviewableMimeTypes.indexOf(file?.mimeType ?? '') > -1) {
     return <PreviewPage file={file!} renderStackOffset={renderStackOffset} />;
   }
@@ -37,7 +44,7 @@ function ContentPage({ file, shortCutFile, renderStackOffset = 0 }: IContentPage
   return (
     <div>
       This file cannot be previewed.{' '}
-      <a href={file.webViewLink} target="_blank" rel="noreferrer">
+      <a href={file!.webViewLink} target="_blank" rel="noreferrer">
         View in Google Drive
       </a>
     </div>
