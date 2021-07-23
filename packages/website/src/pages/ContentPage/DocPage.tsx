@@ -288,6 +288,8 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
       const domId = 'cmnt' + i.toString();
       const commentLink = document.getElementById(domId);
       if (!commentLink) {
+        // console.debug(commentLookup);
+        // console.debug(replyLookup);
         return;
       }
       let parent = commentLink.parentElement;
@@ -300,11 +302,15 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
       }
       let origTextPieces = [commentLink.nextElementSibling?.textContent ?? ''];
       for (const child of Array.from(parent.children).slice(1)) {
+        if (child.textContent?.startsWith('_Assigned to')) {
+          continue;
+        }
         origTextPieces.push(child.textContent || '');
       }
       const origText = origTextPieces.join('\n');
       const comment = commentLookup[origText];
       if (comment) {
+        delete commentLookup[origText];
         for (const child of parent.children) {
           parent.removeChild(child);
         }
@@ -321,6 +327,7 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
           replyLookup[reply.content] = reply;
         }
       } else if (replyLookup[origText]) {
+        delete replyLookup[origText];
         // note that we no longer link replies back to the text
         // So delete those supers as well
         document.getElementById((commentLink.getAttribute('href') ?? '').slice(1))?.remove();
@@ -344,20 +351,24 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
             key={topHref}
             tokens={{ childrenGap: 12, padding: 0 }}
           >
-            <a id={htmlId} href={topHref} title="back to doc">
-              <ArrowUp16 />
-            </a>
             <a
               target="_blank"
               rel="noreferrer"
-              title="open in doc"
+              title="open to comment in google doc"
               href={'https://docs.google.com/document/d/' + file.id + '/?disco=' + comment.id}
             >
               <Launch16 />
             </a>
-            <em>{comment.quotedFileContent?.value}</em>
+            <span>
+              <a id={htmlId} href={topHref} style={{ textDecoration: 'none' }} title="back to text">
+                <em>{comment.quotedFileContent?.value}</em>
+              </a>
+              <a id={htmlId} href={topHref} title="back to text">
+                <ArrowUp16 />
+              </a>
+            </span>
           </Stack>
-          <hr/>
+          <hr />
           <Stack horizontal key={comment.id} tokens={{ childrenGap: 8, padding: 8 }}>
             <Stack>
               <Avatar
