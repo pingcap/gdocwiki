@@ -94,12 +94,10 @@ function App() {
                 <Menu20 />
               </HeaderGlobalAction>
             )}
-            {isExpanded && (
+            {isExpanded && [
               <HeaderGlobalAction key="close" aria-label="Close TOC" onClick={handleCloseTOC}>
                 <Close20 />
-              </HeaderGlobalAction>
-            )}
-            {isExpanded && (
+              </HeaderGlobalAction>,
               <HeaderGlobalAction
                 key="expand"
                 aria-label="Expand All"
@@ -107,9 +105,7 @@ function App() {
                 className={responsiveStyle.hideInPhone}
               >
                 <Add20 />
-              </HeaderGlobalAction>
-            )}
-            {isExpanded && (
+              </HeaderGlobalAction>,
               <HeaderGlobalAction
                 key="collapse"
                 aria-label="Collapse All"
@@ -117,8 +113,8 @@ function App() {
                 className={responsiveStyle.hideInPhone}
               >
                 <Subtract20 />
-              </HeaderGlobalAction>
-            )}
+              </HeaderGlobalAction>,
+            ]}
             <HeaderTitle />
             <HeaderExtraActions onExtensionAction={extBannerCtrl.showBanner} />
             <HeaderGlobalBar className={responsiveStyle.hideInPhone}>
