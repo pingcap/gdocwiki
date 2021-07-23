@@ -60,6 +60,7 @@ if (!config.REACT_APP_USE_CONFIG_FILE) {
 }
 
 const configStorageKey = 'app-config';
+
 function loadSavedConfig() {
   const savedConfig = localStorage?.getItem(configStorageKey);
   if (savedConfig) {
@@ -76,14 +77,18 @@ function loadSavedConfig() {
 
 export async function loadConfig() {
   if (loadSavedConfig()) {
-    // update in the background. On next reload the new config will be used
-    overwriteConfig();
+    // Update the config in the background.
+    // On next reload the new config will be used.
+    // Wait 5 seconds to avoid increasing the number of requests at startup and document load
+    setTimeout(function () {
+      overwriteConfig();
+    }, 5000);
   } else {
     await overwriteConfig();
   }
 }
 
-export async function overwriteConfig() {
+async function overwriteConfig() {
   try {
     const url = `${process.env.PUBLIC_URL}/config.json?_=${Date.now()}`;
     const oc = (await ky(url).json()) as Record<string, any>;
