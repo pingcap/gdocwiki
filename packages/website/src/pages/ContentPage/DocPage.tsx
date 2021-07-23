@@ -10,6 +10,7 @@ import { useManagedRenderStack } from '../../context/RenderStack';
 import { setHeaders, setComments, selectComments } from '../../reduxSlices/doc';
 import { history, DriveFile, parseDriveLink } from '../../utils';
 import { fromHTML, MakeTree } from '../../utils/docHeaders';
+import styles from './FolderPage.module.scss';
 
 export interface IDocPageProps {
   file: DriveFile;
@@ -63,7 +64,8 @@ function prettify(baseEl: HTMLElement, fileId: string) {
       const id = parseDriveLink(el.href);
       if (id) {
         el.href = history.createHref({ pathname: `/view/${id}` });
-        el.dataset['__gdoc_history'] = `/view/${id}`;
+        el.dataset['__gdoc_id'] = id;
+        el.classList.add(styles.gdocLink);
         continue;
       }
       if ((el.getAttribute('href') ?? '').indexOf('#') !== 0) {
@@ -391,15 +393,39 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
     }
   }, [docComments, isLoading, file.id]);
 
+  useEffect(
+    function linkPreview() {
+      for (const link of document.querySelectorAll('.' + styles.gdocLink)) {
+        const id = (link as HTMLElement).dataset?.['__gdoc_id'];
+        if (id) {
+          const req = { fileId: id, supportsAllDrives: true, fields: 'thumbnailLink' }
+          gapi.client.drive.files.get(req).then((rsp) => {
+            const imgSrc = rsp.result.thumbnailLink;
+            if (!imgSrc) {
+              return;
+            }
+            let img = document.createElement('img');
+            img.src = imgSrc;
+            img.alt = 'File Icon';
+            img.classList.add(styles.gdocThumbnail);
+            img.setAttribute('style', 'border:solid;');
+            link.append(img);
+          });
+        }
+      }
+    },
+    [isLoading, file.id]
+  );
+
   const handleDocContentClick = useCallback(
     (ev: React.MouseEvent) => {
       if (isModifiedEvent(ev)) {
         return;
       }
-      const h = (ev.target as HTMLElement).dataset?.['__gdoc_history'];
-      if (h) {
+      const id = (ev.target as HTMLElement).dataset?.['__gdoc_id'];
+      if (id) {
         ev.preventDefault();
-        history.push(h);
+        history.push( `/view/${id}`);
       }
     },
     [history]
