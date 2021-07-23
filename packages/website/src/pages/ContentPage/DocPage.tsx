@@ -120,7 +120,7 @@ function highlightAndLinkComments(baseEl: HTMLElement) {
         style = style + ';color: rgb(0, 0, 0);';
       }
       link.setAttribute('style', style);
-      link.textContent = span.textContent;
+      link.innerHTML = span.innerHTML;
       link.id = supLink.id;
       sup.remove();
       span.replaceWith(link);
