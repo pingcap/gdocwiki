@@ -51,7 +51,7 @@ function PreviewPage({ file, renderStackOffset = 0 }: IPreviewPageProps) {
             width="100%"
             src={file.webViewLink.replace(/\/(edit|view)\?usp=drivesdk/, '/preview')}
             ref={ref}
-            style={{ height: 'calc(100vh - 300px)', minHeight: 500 }}
+            style={{ height: 'calc(100vh - 220px)', minHeight: 500 }}
           />
         </div>
       )}

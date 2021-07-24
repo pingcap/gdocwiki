@@ -62,8 +62,8 @@ function FileAction() {
               round
             />
             <span className={responsiveStyle.hideInPhone}>
-              Last modified by {rInner.file.lastModifyingUser?.displayName}
-              {' at '}
+              {rInner.file.lastModifyingUser?.displayName}
+              {' edited '}
               {dayjs(rInner.file.modifiedTime).fromNow()}
             </span>
             <span className={responsiveStyle.showInPhone}>
@@ -279,6 +279,7 @@ function FileAction() {
           <hr/>
         </div>
       )}
+      <hr />
     </div>
   );
 }
