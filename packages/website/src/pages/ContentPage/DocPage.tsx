@@ -395,7 +395,7 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
               />
             </Stack>
             <Stack>
-              <p dangerouslySetInnerHTML={{ __html: comment.htmlContent ?? '' }}></p>
+              <span dangerouslySetInnerHTML={{ __html: comment.htmlContent ?? '' }} />
             </Stack>
           </Stack>
           {comment.replies?.map((reply) => (
@@ -409,7 +409,7 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
                 />
               </Stack>
               <Stack>
-                <p dangerouslySetInnerHTML={{ __html: reply.htmlContent ?? '' }}></p>
+                <span dangerouslySetInnerHTML={{ __html: reply.htmlContent ?? '' }} />
               </Stack>
             </Stack>
           ))}
