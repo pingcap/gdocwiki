@@ -2,12 +2,14 @@ import { createSlice } from '@reduxjs/toolkit';
 import { DriveFile } from '../utils';
 
 export interface TreeState {
+  sidebarOpen: boolean;
   activeId?: string;
   expanded: Array<string>;
   selected: Array<string>;
 }
 
 const initialState: TreeState = {
+  sidebarOpen: window.innerWidth >= 600,
   expanded: [],
   selected: [],
 };
@@ -21,6 +23,14 @@ export const slice = createSlice({
   name: 'tree',
   initialState,
   reducers: {
+    closeSidebar: (state, { payload }: { payload: undefined }) => {
+      state.sidebarOpen = false;
+    },
+
+    openSidebar: (state, { payload }: { payload: undefined }) => {
+      state.sidebarOpen = true;
+    },
+
     setActiveId: (state, { payload }: { payload: string }) => {
       state.activeId = payload;
     },
@@ -75,7 +85,15 @@ export const slice = createSlice({
   },
 });
 
-export const { setActiveId, activate, expand, collapse, collapseAll } = slice.actions;
+export const {
+  closeSidebar,
+  openSidebar,
+  setActiveId,
+  activate,
+  expand,
+  collapse,
+  collapseAll,
+} = slice.actions;
 
 export const selectExpanded = (state: { tree: TreeState }) =>
   new Set(state.tree.expanded) as ReadonlySet<string>;
@@ -83,6 +101,8 @@ export const selectExpanded = (state: { tree: TreeState }) =>
 export const selectActiveId = (state: { tree: TreeState }) => state.tree.activeId;
 
 export const selectSelected = (state: { tree: TreeState }) => [...state.tree.selected];
+
+export const selectSidebarOpen = (state: { tree: TreeState }) => state.tree.sidebarOpen;
 
 export default slice.reducer;
 
