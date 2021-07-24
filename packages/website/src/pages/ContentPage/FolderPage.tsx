@@ -7,6 +7,7 @@ import { DriveFileName, DriveIcon, FileListTable } from '../../components';
 import { useManagedRenderStack } from '../../context/RenderStack';
 import { useFolderFilesMeta } from '../../hooks/useFolderFilesMeta';
 import { selectMapIdToFile } from '../../reduxSlices/files';
+import { selectSidebarOpen } from '../../reduxSlices/siderTree';
 import { DriveFile, mdLink, parseFolderChildrenDisplaySettings } from '../../utils';
 import styles from './FolderPage.module.scss';
 import ContentPage from '.';
@@ -60,7 +61,7 @@ function FolderChildrenList({ files, openInNewWindow }: IFolderChildrenProps) {
 function FolderChildrenHide({ files, openInNewWindow }: IFolderChildrenProps) {
   return (
     <Accordion align="start">
-      <AccordionItem title={`Sub pages (${files?.length ?? 0})`}>
+      <AccordionItem title={`Folder Contents (${files?.length ?? 0})`}>
         <FolderChildrenList files={files} openInNewWindow={openInNewWindow} />
       </AccordionItem>
     </Accordion>
@@ -82,6 +83,7 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
     file,
   });
 
+  const sidebarOpen = useSelector(selectSidebarOpen);
   const mapIdToFile = useSelector(selectMapIdToFile);
   const openInNewWindow = useMemo(() => {
     // If current folder is not in the tree, open new window
@@ -102,12 +104,23 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
     }
   }, [files]);
 
+  if (readMeFile) {
+    return (
+      <>
+        {!sidebarOpen && !loading && !error && (
+          <div style={{ maxWidth: '50rem' }}>
+            {loading && <InlineLoading description="Loading folder contents..." />}
+            <FolderChildrenHide openInNewWindow={openInNewWindow} files={files} />
+          </div>
+        )}
+        <ContentPage loading={null} file={readMeFile} renderStackOffset={renderStackOffset + 1} />
+      </>
+    );
+  }
+
   return (
     <div>
       {loading && <InlineLoading description="Loading folder contents..." />}
-      {readMeFile && (
-        <ContentPage loading={null} file={readMeFile} renderStackOffset={renderStackOffset + 1} />
-      )}
       {!loading && !!error && error}
       {!loading && !error && (
         <div style={{ marginTop: 32 }}>

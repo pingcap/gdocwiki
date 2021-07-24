@@ -30,10 +30,14 @@ import { SearchResult, SearchTag } from './pages/Search';
 import SearchAllTags from './pages/Search/AllTags';
 import Settings from './pages/Settings';
 import { selectMapIdToFile } from './reduxSlices/files';
-import { collapseAll, expand } from './reduxSlices/siderTree';
+import {
+  collapseAll,
+  expand,
+  selectSidebarOpen,
+  closeSidebar,
+  openSidebar,
+} from './reduxSlices/siderTree';
 import { history } from './utils';
-
-const expandSidebarByDefault = window.innerWidth >= 600;
 
 function DriveFilesLoader({ children }) {
   useLoadDriveFiles();
@@ -63,11 +67,11 @@ function useExtensionBannerController() {
 function App() {
   const dispatch = useDispatch();
   const { gapiLoaded } = useGapi();
-  const [isExpanded, setIsExpanded] = useState(expandSidebarByDefault);
+  const sidebarOpen = useSelector(selectSidebarOpen);
   const mapIdToFile = useSelector(selectMapIdToFile);
 
-  const handleOpenTOC = useCallback(() => setIsExpanded(true), []);
-  const handleCloseTOC = useCallback(() => setIsExpanded(false), []);
+  const handleOpenTOC = () => dispatch(openSidebar());
+  const handleCloseTOC = () => dispatch(closeSidebar());
   const handleTreeExpand = useCallback(() => {
     let ids: string[] = [];
     for (let id in mapIdToFile) {
@@ -89,12 +93,12 @@ function App() {
       <Router history={history}>
         <DriveFilesLoader>
           <Header aria-label="global actions">
-            {!isExpanded && (
+            {!sidebarOpen && (
               <HeaderGlobalAction key="open" aria-label="Open TOC" onClick={handleOpenTOC}>
                 <Menu20 />
               </HeaderGlobalAction>
             )}
-            {isExpanded && [
+            {sidebarOpen && [
               <HeaderGlobalAction key="close" aria-label="Close TOC" onClick={handleCloseTOC}>
                 <Close20 />
               </HeaderGlobalAction>,
@@ -134,9 +138,9 @@ function App() {
                 </div>
               </Trigger>
             </HeaderGlobalBar>
-            <Sider isExpanded={isExpanded} />
+            <Sider isExpanded={sidebarOpen} />
           </Header>
-          <Content isExpanded={isExpanded}>
+          <Content isExpanded={sidebarOpen}>
             <RenderStackProvider>
               <Switch>
                 <Route exact path="/">
