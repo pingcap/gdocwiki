@@ -7,7 +7,7 @@ import ReactDOM from 'react-dom';
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom';
 import { useManagedRenderStack } from '../../context/RenderStack';
-import { setHeaders, setComments, selectComments } from '../../reduxSlices/doc';
+import { setHeaders, setComments, selectComments, setFile, setNoFile } from '../../reduxSlices/doc';
 import { history, DriveFile, parseDriveLink } from '../../utils';
 import { fromHTML, MakeTree } from '../../utils/docHeaders';
 
@@ -186,6 +186,14 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
   const history = useHistory();
   const dispatch = useDispatch();
   const docComments = useSelector(selectComments);
+
+  useCallback(() => {
+    if (file.name) {
+      dispatch(setFile(file));
+    } else {
+      dispatch(setNoFile());
+    }
+  }, [dispatch, file])();
 
   useManagedRenderStack({
     depth: renderStackOffset,

@@ -7,7 +7,7 @@ import React, { useCallback, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { DriveIcon } from '../components';
 import { getConfig } from '../config';
-import { selectHeaders } from '../reduxSlices/doc';
+import { selectHeaders, selectDriveFile } from '../reduxSlices/doc';
 import {
   selectError,
   selectLoading,
@@ -173,6 +173,7 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
   const expanded = useSelector(selectExpanded);
   const selected = useSelector(selectSelected);
   const headers = useSelector(selectHeaders);
+  const file = useSelector(selectDriveFile);
 
   const id = useSelector(selectActiveId) ?? getConfig().REACT_APP_ROOT_ID;
 
@@ -238,12 +239,13 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
         </TreeView>
       )}
       {headerTreeNodes.length > 0 && (
-        <div>
-          <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
-            &nbsp;
-          </Stack>
-          <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
-            &nbsp;Outline
+        <div style={{ marginTop: '30px' }}>
+          <Stack
+            style={{ display: 'flex', justifyContent: 'center' }}
+            verticalAlign="center"
+            horizontal
+          >
+            <p>{file?.name}</p>
           </Stack>
           <TreeView
             label="Document Headers"
