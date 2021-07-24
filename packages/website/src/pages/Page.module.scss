@@ -2,9 +2,4 @@
 
 .actionBar {
   padding-top: 0.5rem;
-  margin-bottom: 1rem;
-
-  @include for-size(phone-and-tablet) {
-    margin-bottom: 1rem;
-  }
 }
