@@ -4,17 +4,27 @@ import {
   CommandBar,
   ICommandBarItemProps,
   IContextualMenuItem,
+  Pivot,
+  PivotItem,
   Stack,
 } from 'office-ui-fabric-react';
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useCallback, useMemo, useEffect, useState } from 'react';
 import Avatar from 'react-avatar';
+import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { DriveIcon } from '../components';
 import { getConfig } from '../config';
 import { useRender } from '../context/RenderStack';
 import useFileMeta from '../hooks/useFileMeta';
 import responsiveStyle from '../layout/responsive.module.scss';
-import { MimeTypes, shouldShowFolderChildrenSettings, shouldShowTagSettings } from '../utils';
+import { selectDocMode, setDocMode } from '../reduxSlices/doc';
+import {
+  DocMode,
+  DriveFile,
+  MimeTypes,
+  shouldShowFolderChildrenSettings,
+  shouldShowTagSettings,
+} from '../utils';
 import { folderPageId } from './ContentPage/FolderPage';
 import { showCreateFile } from './FileAction.createFile';
 import { showCreateLink } from './FileAction.createLink';
@@ -22,10 +32,9 @@ import styles from './FileAction.module.scss';
 import { showMoveFile } from './FileAction.moveFile';
 import { showRenameFile } from './FileAction.renameFile';
 import { showTrashFile } from './FileAction.trashFile';
-import { DriveFile } from '../utils';
 
 function Revisions(props: { file: DriveFile }) {
-  const revs: Array<gapi.client.drive.Revision> = []
+  const revs: Array<gapi.client.drive.Revision> = [];
   const [revisions, setRevisions] = useState(revs);
   const { file } = props;
 
@@ -90,7 +99,10 @@ function FileAction() {
   // Support we have a folder, containing a shortcut to a README document,
   // the rInner is README and the rOuter is the folder.
   const { inMost: rInner, outMost: rOuter } = useRender();
-  const [revisionsEnabled, setRevisionsEnabled] = useState('');
+  const [revisionsEnabled, setRevisionsEnabled] = useState(false);
+  const [lastFileId, setLastFileId] = useState('');
+  const dispatch = useDispatch();
+  const docMode = useSelector(selectDocMode);
 
   const history = useHistory();
 
@@ -98,13 +110,30 @@ function FileAction() {
     rOuter?.file.mimeType === MimeTypes.GoogleFolder ? rOuter?.file.id : rOuter?.file.parents?.[0];
   const outerFolder = useFileMeta(outerFolderId);
 
+  if (lastFileId !== (rInner?.file.id ?? '')) {
+    setLastFileId(rInner?.file.id ?? '');
+    dispatch(setDocMode('view'));
+    setRevisionsEnabled(false);
+  }
+
   const commandBarItems: ICommandBarItemProps[] = useMemo(() => {
     function toggleRevisions() {
-      setRevisionsEnabled((v) => (v === rInner?.file.id! ? '' : rInner?.file.id!));
+      setRevisionsEnabled((v) => !v);
     }
     const commands: ICommandBarItemProps[] = [];
 
     if (rInner?.file && rInner.file.mimeType !== MimeTypes.GoogleFolder) {
+      if (rInner.file.webViewLink) {
+        commands.push({
+          key: 'launch',
+          text: 'Open',
+          iconProps: { iconName: 'Launch' },
+          onClick: () => {
+            window.open(rInner.file.webViewLink, '_blank');
+          },
+        });
+      }
+
       // For non-folder, show modify date, and how to open it.
       commands.push({
         key: 'modify_user',
@@ -135,29 +164,6 @@ function FileAction() {
           </Stack>
         ) as any,
       });
-
-      let previewText = 'Open Preview';
-      let previewIcon = 'Launch';
-
-      switch (rInner.file.mimeType) {
-        case MimeTypes.GoogleDocument:
-        case MimeTypes.GoogleSpreadsheet:
-        case MimeTypes.GooglePresentation:
-          previewText = 'Open Google Doc';
-          previewIcon = 'MdiFileEdit';
-          break;
-      }
-
-      if (rInner.file.webViewLink) {
-        commands.push({
-          key: 'view',
-          text: previewText,
-          iconProps: { iconName: previewIcon },
-          onClick: () => {
-            window.open(rInner.file.webViewLink, '_blank');
-          },
-        });
-      }
     }
     {
       // Open folder command
@@ -283,17 +289,35 @@ function FileAction() {
     return commands;
   }, [rInner?.file, rOuter?.file, outerFolder.file, history]);
 
+  const switchDocMode = useCallback(
+    (item) => {
+      dispatch(setDocMode(item.props['itemKey'] as DocMode));
+    },
+    [dispatch]
+  );
+
   if (commandBarItems.length === 0 && commandBarOverflowItems.length === 0) {
     return null;
   }
 
   return (
-    <div>
-      <CommandBar items={commandBarItems} overflowItems={commandBarOverflowItems} />
-      {revisionsEnabled && rInner && revisionsEnabled === rInner?.file.id && (
-        <Revisions file={rInner.file} />
-      )}
-    </div>
+    <>
+      <Stack horizontal>
+        {rInner?.file.mimeType === MimeTypes.GoogleDocument && (
+          <Stack.Item>
+            <Pivot onLinkClick={switchDocMode} selectedKey={docMode}>
+              <PivotItem itemKey="view" aria-label="view" itemIcon="MdiFileEdit" />
+              <PivotItem itemKey="preview" aria-label="preview" itemIcon="View" />
+              <PivotItem itemKey="edit" aria-label="edit" itemIcon="Edit" />
+            </Pivot>
+          </Stack.Item>
+        )}
+        <Stack.Item disableShrink grow={10}>
+          <CommandBar items={commandBarItems} overflowItems={commandBarOverflowItems} />
+        </Stack.Item>
+      </Stack>
+      {revisionsEnabled && <Revisions file={rInner!.file} />}
+    </>
   );
 }
 

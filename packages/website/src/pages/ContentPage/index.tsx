@@ -1,4 +1,6 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
+import { selectDocMode } from '../../reduxSlices/doc';
 import { DriveFile, MimeTypes, PreviewableMimeTypes } from '../../utils';
 import DocPage from './DocPage';
 import FolderPage from './FolderPage';
@@ -13,6 +15,8 @@ export interface IContentPageProps {
 }
 
 function ContentPage({ loading, file, shortCutFile, renderStackOffset = 0 }: IContentPageProps) {
+  const docMode = useSelector(selectDocMode);
+
   // Assume a document for speed in that case.
   // We might be wrong, but that will get corrected without issue.
   if (loading !== null) {
@@ -25,6 +29,10 @@ function ContentPage({ loading, file, shortCutFile, renderStackOffset = 0 }: ICo
 
   switch (file?.mimeType ?? '') {
     case MimeTypes.GoogleDocument:
+      if (docMode !== 'view') {
+        const edit = docMode === 'edit';
+        return <PreviewPage edit={edit} file={file!} renderStackOffset={renderStackOffset} />;
+      }
       return <DocPage file={file!} renderStackOffset={renderStackOffset} />;
     case MimeTypes.GoogleFolder:
       return (
