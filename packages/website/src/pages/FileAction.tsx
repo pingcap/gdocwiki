@@ -247,39 +247,35 @@ function FileAction() {
       <CommandBar items={commandBarItems} overflowItems={commandBarOverflowItems} />
       {showRevisions && (
         <div className="revisions">
-          <hr/>
+          <hr />
           {revisions.map((revision) => {
-            const htmlLink = (revision.exportLinks ?? {})["text/html"];
-            return (<Stack
-              key={revision.id}
-              verticalAlign="center"
-              horizontal
-              tokens={{ childrenGap: 16, padding: 2 }}
-              className={styles.note}
-            >
-              <a href={htmlLink}>
-                {dayjs(revision.modifiedTime).fromNow()}
-              </a>
-              <div>
-                <Avatar
-                  name={revision.lastModifyingUser?.displayName}
-                  src={revision.lastModifyingUser?.photoLink}
-                  size="20"
-                  round
-                />
-                <span>
-                  &nbsp;
-                  {revision.lastModifyingUser?.displayName}
-                </span>
-              </div>
-            </Stack>
+            const htmlLink = (revision.exportLinks ?? {})['text/html'];
+            return (
+              <Stack
+                key={revision.id}
+                verticalAlign="center"
+                horizontal
+                tokens={{ childrenGap: 16, padding: 2 }}
+                className={styles.note}
+              >
+                <a href={htmlLink}>{dayjs(revision.modifiedTime).fromNow()}</a>
+                <div>
+                  <Avatar
+                    name={revision.lastModifyingUser?.displayName}
+                    src={revision.lastModifyingUser?.photoLink}
+                    size="20"
+                    round
+                  />
+                  <span>
+                    &nbsp;
+                    {revision.lastModifyingUser?.displayName}
+                  </span>
+                </div>
+              </Stack>
             )
-          })
-          }
-          <hr/>
+          })}
         </div>
       )}
-      <hr />
     </div>
   );
 }
