@@ -19,6 +19,7 @@ import useFileMeta from '../hooks/useFileMeta';
 import responsiveStyle from '../layout/responsive.module.scss';
 import { selectDocMode, setDocMode } from '../reduxSlices/doc';
 import {
+  extractTags,
   DocMode,
   DriveFile,
   MimeTypes,
@@ -96,8 +97,9 @@ function Revisions(props: { file: DriveFile }) {
 }
 
 function FileAction() {
-  // Support we have a folder, containing a shortcut to a README document,
-  // the rInner is README and the rOuter is the folder.
+  // When viewing a folder and auto-displaying a README,
+  // rOuter is the folder and rInner is the README.
+  // Otherwise they are the same.
   const { inMost: rInner, outMost: rOuter } = useRender();
   const [revisionsEnabled, setRevisionsEnabled] = useState(false);
   const [lastFileId, setLastFileId] = useState('');
@@ -116,6 +118,28 @@ function FileAction() {
     setRevisionsEnabled(false);
   }
 
+  const tags = useMemo(() => {
+    if (!rInner?.file) {
+      return [];
+    }
+    return extractTags(rInner.file);
+  }, [rInner?.file]);
+
+  const settingsCommand = useCallback(
+    (file: DriveFile) => {
+      const isFolder = file.mimeType === MimeTypes.GoogleFolder;
+      return {
+        key: 'settings',
+        text: !isFolder ? 'Tag' : 'Settings',
+        iconProps: { iconName: 'Settings' },
+        onClick: () => {
+          history.push(`/view/${file.id}/settings`);
+        },
+      };
+    },
+    [history]
+  );
+
   const commandBarItems: ICommandBarItemProps[] = useMemo(() => {
     function toggleRevisions() {
       setRevisionsEnabled((v) => !v);
@@ -126,7 +150,6 @@ function FileAction() {
       if (rInner.file.webViewLink) {
         commands.push({
           key: 'launch',
-          text: 'Open',
           iconProps: { iconName: 'Launch' },
           onClick: () => {
             window.open(rInner.file.webViewLink, '_blank');
@@ -180,8 +203,14 @@ function FileAction() {
         },
       });
     }
+
+    const file = rInner?.file;
+    if (file && shouldShowTagSettings(file) && tags.length === 0) {
+      commands.push(settingsCommand(file));
+    }
+
     return commands;
-  }, [rInner?.file, outerFolder.file]);
+  }, [rInner?.file, outerFolder.file, tags.length, settingsCommand]);
 
   const commandBarOverflowItems = useMemo(() => {
     const commands: ICommandBarItemProps[] = [];
@@ -274,20 +303,15 @@ function FileAction() {
           },
         });
       }
-      if (shouldShowTagSettings(rOuter.file) || shouldShowFolderChildrenSettings(rInner?.file)) {
-        commands.push({
-          key: 'settings',
-          text: `Settings`,
-          iconProps: { iconName: 'Settings' },
-          onClick: () => {
-            history.push(`/view/${rOuter.file.id}/settings`);
-          },
-        });
-      }
+    }
+
+    const file = rInner?.file;
+    if (file && shouldShowTagSettings(file) && tags.length > 0) {
+      commands.push(settingsCommand(file));
     }
 
     return commands;
-  }, [rInner?.file, rOuter?.file, outerFolder.file, history]);
+  }, [rInner?.file, rOuter?.file, outerFolder.file, tags.length, settingsCommand]);
 
   const switchDocMode = useCallback(
     (item) => {
@@ -313,7 +337,10 @@ function FileAction() {
           </Stack.Item>
         )}
         <Stack.Item disableShrink grow={10}>
-          <CommandBar items={commandBarItems} overflowItems={commandBarOverflowItems} />
+          {(rInner?.file.mimeType === MimeTypes.GoogleFolder)
+            ? (<CommandBar items={commandBarItems.concat(commandBarOverflowItems)} />)
+            : (<CommandBar items={commandBarItems} overflowItems={commandBarOverflowItems} />)
+          }
         </Stack.Item>
       </Stack>
       {revisionsEnabled && <Revisions file={rInner!.file} />}

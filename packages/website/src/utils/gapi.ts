@@ -80,6 +80,10 @@ export function shouldShowTagSettings(file?: DriveFile): boolean {
   return !!file?.capabilities?.canEdit;
 }
 
+export function editable(file?: DriveFile): boolean {
+  return !!file?.capabilities?.canEdit;
+}
+
 export function shouldShowFolderChildrenSettings(file?: DriveFile): boolean {
   return !!(file?.capabilities?.canEdit && file?.mimeType === MimeTypes.GoogleFolder);
 }
