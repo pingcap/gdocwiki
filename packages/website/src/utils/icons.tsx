@@ -6,7 +6,6 @@ import {
   Edit16,
   Launch16,
   Link16,
-  OverflowMenuHorizontal16,
   View16,
   Settings16,
   TrashCan16,
@@ -14,16 +13,13 @@ import {
 } from '@carbon/icons-react';
 import googleDrive from '@iconify-icons/logos/google-drive';
 import fileEdit from '@iconify-icons/mdi/file-edit';
-import folderPlus from '@iconify-icons/mdi/folder-plus';
 import { Icon } from '@iconify/react';
 import { registerIcons as register } from 'office-ui-fabric-react';
-import React from 'react';
 
 export function registerIcons() {
   register({
     icons: {
       ArrowUp: <ArrowUp16 />,
-      More: <OverflowMenuHorizontal16 />,
       ChevronRight: <ChevronRight16 />,
       ChevronDown: <ChevronDown16 />,
       Launch: <Launch16 />,
@@ -36,7 +32,6 @@ export function registerIcons() {
       StackedMove: <WatsonHealthStackedMove16 />,
       ColorGoogleDrive: <Icon icon={googleDrive} />,
       MdiFileEdit: <Icon icon={fileEdit} />,
-      MdiFolderPlus: <Icon icon={folderPlus} />,
     },
   });
 }
