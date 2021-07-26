@@ -50,10 +50,10 @@ function PreviewPage({ file, edit = false, renderStackOffset = 0 }: IPreviewPage
     );
   }
 
-  const iframeSrc =
-    edit === true
-      ? file.webViewLink.replace(/\/(edit|view)\?usp=drivesdk/, '/edit')
-      : file.webViewLink.replace(/\/(edit|view)\?usp=drivesdk/, '/preview');
+  const iframeSrc = file.webViewLink.replace(
+    /\/(edit|view)\?usp=drivesdk/,
+    edit === true ? '/edit' : '/preview'
+  );
 
   return (
     <div style={contentStyle}>

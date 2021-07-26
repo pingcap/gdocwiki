@@ -18,14 +18,7 @@ import { useRender } from '../context/RenderStack';
 import useFileMeta from '../hooks/useFileMeta';
 import responsiveStyle from '../layout/responsive.module.scss';
 import { selectDocMode, setDocMode } from '../reduxSlices/doc';
-import {
-  editable,
-  extractTags,
-  DocMode,
-  DriveFile,
-  MimeTypes,
-  shouldShowTagSettings,
-} from '../utils';
+import { canChangeSettings, canEdit, extractTags, DocMode, DriveFile, MimeTypes } from '../utils';
 import { folderPageId } from './ContentPage/FolderPage';
 import { showCreateFile } from './FileAction.createFile';
 import { showCreateLink } from './FileAction.createLink';
@@ -205,7 +198,7 @@ function FileAction() {
     }
 
     const file = rInner?.file;
-    if (file && shouldShowTagSettings(file) && tags.length === 0) {
+    if (file && canChangeSettings(file) && tags.length === 0) {
       commands.push(settingsCommand(file));
     }
 
@@ -306,7 +299,7 @@ function FileAction() {
     }
 
     const file = rInner?.file;
-    if (file && shouldShowTagSettings(file) && tags.length > 0) {
+    if (file && canChangeSettings(file) && tags.length > 0) {
       commands.push(settingsCommand(file));
     }
 
@@ -332,7 +325,7 @@ function FileAction() {
             <Pivot onLinkClick={switchDocMode} selectedKey={docMode}>
               <PivotItem itemKey="view" aria-label="view" itemIcon="MdiFileEdit" />
               <PivotItem itemKey="preview" aria-label="preview" itemIcon="View" />
-              {editable(rInner?.file) && (
+              {canEdit(rInner?.file) && (
                 <PivotItem itemKey="edit" aria-label="edit" itemIcon="Edit" />
               )}
             </Pivot>
