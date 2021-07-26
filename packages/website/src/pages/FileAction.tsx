@@ -1,4 +1,6 @@
-import cx from 'classnames';
+import { View16, Edit16 } from '@carbon/icons-react';
+import fileEdit from '@iconify-icons/mdi/file-edit';
+import { Icon } from '@iconify/react';
 import dayjs from 'dayjs';
 import {
   CommandBar,
@@ -7,6 +9,7 @@ import {
   Pivot,
   PivotItem,
   Stack,
+  TooltipHost,
 } from 'office-ui-fabric-react';
 import React, { useCallback, useMemo, useEffect, useState } from 'react';
 import Avatar from 'react-avatar';
@@ -317,16 +320,23 @@ function FileAction() {
     return null;
   }
 
+  function tooltip(mode: DocMode, icon: JSX.Element) {
+    return () => <TooltipHost content={mode}>{icon}</TooltipHost>;
+  }
+
   return (
     <>
       <Stack horizontal>
         {rInner?.file.mimeType === MimeTypes.GoogleDocument && (
           <Stack.Item>
             <Pivot onLinkClick={switchDocMode} selectedKey={docMode}>
-              <PivotItem itemKey="view" aria-label="view" itemIcon="MdiFileEdit" />
-              <PivotItem itemKey="preview" aria-label="preview" itemIcon="View" />
+              <PivotItem
+                itemKey="view"
+                onRenderItemLink={tooltip('view', <Icon icon={fileEdit} />)}
+              />
+              <PivotItem itemKey="preview" onRenderItemLink={tooltip('preview', <View16 />)} />
               {canEdit(rInner?.file) && (
-                <PivotItem itemKey="edit" aria-label="edit" itemIcon="Edit" />
+                <PivotItem itemKey="edit" onRenderItemLink={tooltip('edit', <Edit16 />)} />
               )}
             </Pivot>
           </Stack.Item>
