@@ -14,8 +14,8 @@ import {
 import React, { useCallback, useMemo, useEffect, useState } from 'react';
 import Avatar from 'react-avatar';
 import { useDispatch, useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
-import { DriveIcon } from '../components';
+import { useHistory, Link } from 'react-router-dom';
+import { DriveIcon, Tag } from '../components';
 import { getConfig } from '../config';
 import { useRender } from '../context/RenderStack';
 import useFileMeta from '../hooks/useFileMeta';
@@ -324,6 +324,10 @@ function FileAction() {
     return () => <TooltipHost content={mode}>{icon}</TooltipHost>;
   }
 
+  if (!rInner?.file) {
+    return null;
+  }
+
   return (
     <>
       <Stack horizontal>
@@ -341,16 +345,53 @@ function FileAction() {
             </Pivot>
           </Stack.Item>
         )}
-        <Stack.Item disableShrink grow={10}>
-          {rInner?.file.mimeType === MimeTypes.GoogleFolder ? (
-            <CommandBar items={commandBarItems.concat(commandBarOverflowItems)} />
-          ) : (
-            <CommandBar items={commandBarItems} overflowItems={commandBarOverflowItems} />
-          )}
-        </Stack.Item>
+        {docMode === 'view' && (
+          <Stack.Item disableShrink grow={10}>
+            {rInner?.file.mimeType === MimeTypes.GoogleFolder ? (
+              <CommandBar items={commandBarItems.concat(commandBarOverflowItems)} />
+            ) : (
+              <CommandBar items={commandBarItems} overflowItems={commandBarOverflowItems} />
+            )}
+          </Stack.Item>
+        )}
+        {docMode !== 'view' && (
+          <Stack.Item disableShrink grow={10}>
+            <Tags tags={tags} file={rInner!.file} />
+          </Stack.Item>
+        )}
       </Stack>
       {revisionsEnabled && <Revisions file={rInner!.file} />}
+      {docMode === 'view' && <Tags tags={tags} file={rInner!.file} />}
     </>
+  );
+}
+
+function Tags({ file, tags }: { file: DriveFile; tags: string[] }) {
+  if (tags.length === 0) {
+    return null;
+  }
+
+  return (
+    <Stack horizontal>
+      <Stack
+        verticalAlign="center"
+        horizontal
+        tokens={{ childrenGap: 4 }}
+        style={{ paddingLeft: 8, paddingTop: 12 }}
+      >
+        {tags.map((tag) => (
+          <Tag.Link key={tag} text={tag} />
+        ))}
+      </Stack>
+      <Stack
+        verticalAlign="center"
+        horizontal
+        tokens={{ childrenGap: 4 }}
+        style={{ paddingLeft: 8, paddingTop: 12 }}
+      >
+        <Link to={`/view/${file.id}/settings`}>Add Tag</Link>
+      </Stack>
+    </Stack>
   );
 }
 
