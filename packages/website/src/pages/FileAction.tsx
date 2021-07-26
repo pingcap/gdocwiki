@@ -311,9 +311,13 @@ function FileAction() {
 
   const switchDocMode = useCallback(
     (item) => {
-      dispatch(setDocMode(item.props['itemKey'] as DocMode));
+      const mode = item.props['itemKey'];
+      if (rInner?.file) {
+        history.push(`/view/${rInner?.file.id}/${mode}`);
+      }
+      dispatch(setDocMode(mode as DocMode));
     },
-    [dispatch]
+    [dispatch, history, rInner?.file]
   );
 
   if (commandBarItems.length === 0 && commandBarOverflowItems.length === 0) {

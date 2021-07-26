@@ -144,7 +144,6 @@ function App() {
             <RenderStackProvider>
               <Switch>
                 {/* translate lazy copy & paste from Google Docs */}
-                <Redirect to="/view/:id" from="/view/:id/edit" />
                 <Redirect to="/view/:id" from="/document/d/:id" />
                 <Redirect to="/view/:id" from="/document/d/:id/*" />
                 <Redirect to="/view/:id" from="/https\://:domain/document/d/:id" />
@@ -153,11 +152,17 @@ function App() {
                 <Route exact path="/">
                   <Page />
                 </Route>
-                <Route path="/view/:id">
-                  <Page />
+                <Route path="/view/:id/edit">
+                  <Page docMode="edit" />
+                </Route>
+                <Route path="/view/:id/preview">
+                  <Page docMode="preview" />
                 </Route>
                 <Route exact path="/view/:id/settings">
                   <Settings />
+                </Route>
+                <Route path="/view/:id">
+                  <Page />
                 </Route>
                 <Route exact path="/search/keyword/:keyword">
                   <SearchResult />

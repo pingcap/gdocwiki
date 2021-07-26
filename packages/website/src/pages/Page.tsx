@@ -1,21 +1,31 @@
 import { InlineLoading } from 'carbon-components-react';
 import React from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { getConfig } from '../config';
 import useFileMeta from '../hooks/useFileMeta';
 import useTitle from '../hooks/useTitle';
 import useUpdateSiderFromPath from '../hooks/useUpdateSiderFromPath';
-import { selectDocMode } from '../reduxSlices/doc';
+import { selectDocMode, setDocMode } from '../reduxSlices/doc';
 import { selectPageReloadToken } from '../reduxSlices/pageReload';
+import { DocMode } from '../utils';
 import ContentPage from './ContentPage';
 import FileAction from './FileAction';
 import FileBreadcrumb from './FileBreadcrumb';
 import styles from './Page.module.scss';
 import RightContainer from './RightContainer';
 
-function Page() {
+interface PageProps {
+  docMode?: DocMode;
+}
+
+function Page(props: PageProps) {
   const id = useUpdateSiderFromPath('id');
   const { file, loading, error } = useFileMeta(id);
+  const dispatch = useDispatch();
+  console.log('Page doc mode', props.docMode);
+  if (props.docMode) {
+    dispatch(setDocMode(props.docMode));
+  }
   const docMode = useSelector(selectDocMode);
 
   useTitle((file) => {
@@ -39,9 +49,10 @@ function Page() {
   );
 }
 
-function Reloader() {
+function Reloader(props: PageProps) {
+  console.log('Page doc mode', props.docMode);
   const token = useSelector(selectPageReloadToken);
-  return <Page key={token} />;
+  return <Page key={token} {...props} />;
 }
 
 export default React.memo(Reloader);
