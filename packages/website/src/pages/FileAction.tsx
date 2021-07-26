@@ -19,11 +19,11 @@ import useFileMeta from '../hooks/useFileMeta';
 import responsiveStyle from '../layout/responsive.module.scss';
 import { selectDocMode, setDocMode } from '../reduxSlices/doc';
 import {
+  editable,
   extractTags,
   DocMode,
   DriveFile,
   MimeTypes,
-  shouldShowFolderChildrenSettings,
   shouldShowTagSettings,
 } from '../utils';
 import { folderPageId } from './ContentPage/FolderPage';
@@ -332,15 +332,18 @@ function FileAction() {
             <Pivot onLinkClick={switchDocMode} selectedKey={docMode}>
               <PivotItem itemKey="view" aria-label="view" itemIcon="MdiFileEdit" />
               <PivotItem itemKey="preview" aria-label="preview" itemIcon="View" />
-              <PivotItem itemKey="edit" aria-label="edit" itemIcon="Edit" />
+              {editable(rInner?.file) && (
+                <PivotItem itemKey="edit" aria-label="edit" itemIcon="Edit" />
+              )}
             </Pivot>
           </Stack.Item>
         )}
         <Stack.Item disableShrink grow={10}>
-          {(rInner?.file.mimeType === MimeTypes.GoogleFolder)
-            ? (<CommandBar items={commandBarItems.concat(commandBarOverflowItems)} />)
-            : (<CommandBar items={commandBarItems} overflowItems={commandBarOverflowItems} />)
-          }
+          {rInner?.file.mimeType === MimeTypes.GoogleFolder ? (
+            <CommandBar items={commandBarItems.concat(commandBarOverflowItems)} />
+          ) : (
+            <CommandBar items={commandBarItems} overflowItems={commandBarOverflowItems} />
+          )}
         </Stack.Item>
       </Stack>
       {revisionsEnabled && <Revisions file={rInner!.file} />}
