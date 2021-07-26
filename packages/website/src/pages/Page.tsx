@@ -1,15 +1,12 @@
 import { InlineLoading } from 'carbon-components-react';
-import { Stack } from 'office-ui-fabric-react';
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
-import { Tag } from '../components';
 import { getConfig } from '../config';
 import useFileMeta from '../hooks/useFileMeta';
 import useTitle from '../hooks/useTitle';
 import useUpdateSiderFromPath from '../hooks/useUpdateSiderFromPath';
+import { selectDocMode } from '../reduxSlices/doc';
 import { selectPageReloadToken } from '../reduxSlices/pageReload';
-import { extractTags } from '../utils';
 import ContentPage from './ContentPage';
 import FileAction from './FileAction';
 import FileBreadcrumb from './FileBreadcrumb';
@@ -19,6 +16,7 @@ import RightContainer from './RightContainer';
 function Page() {
   const id = useUpdateSiderFromPath('id');
   const { file, loading, error } = useFileMeta(id);
+  const docMode = useSelector(selectDocMode);
 
   useTitle((file) => {
     if (file && file?.id !== getConfig().REACT_APP_ROOT_ID) {
@@ -28,40 +26,11 @@ function Page() {
     }
   }, file);
 
-  const tags = useMemo(() => {
-    if (!file) {
-      return [];
-    }
-    return extractTags(file);
-  }, [file]);
-
   return (
     <RightContainer>
       <div className={styles.actionBar}>
-        <FileBreadcrumb file={file} />
+        {docMode === 'view' && <FileBreadcrumb file={file} />}
         <FileAction />
-        {tags.length > 0 && (
-          <Stack horizontal>
-            <Stack
-              verticalAlign="center"
-              horizontal
-              tokens={{ childrenGap: 4 }}
-              style={{ paddingLeft: 8, paddingTop: 8 }}
-            >
-              {tags.map((tag) => (
-                <Tag.Link key={tag} text={tag} />
-              ))}
-            </Stack>
-            <Stack
-              verticalAlign="center"
-              horizontal
-              tokens={{ childrenGap: 4 }}
-              style={{ paddingLeft: 8, paddingTop: 8 }}
-            >
-              <Link to={`/view/${file?.id}/settings`}>Add Tag</Link>
-            </Stack>
-          </Stack>
-        )}
       </div>
       {loading && <InlineLoading description="Loading file metadata..." />}
       {!loading && !!error && error}

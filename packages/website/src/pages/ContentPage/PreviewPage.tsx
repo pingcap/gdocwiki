@@ -64,7 +64,7 @@ function PreviewPage({ file, edit = false, renderStackOffset = 0 }: IPreviewPage
           width="100%"
           src={iframeSrc}
           ref={ref}
-          style={{ height: 'calc(100vh - 200px)', minHeight: 500 }}
+          style={{ height: 'calc(100vh - 120px)', minHeight: 500 }}
         />
       </div>
     </div>
