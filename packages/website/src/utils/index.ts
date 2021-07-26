@@ -6,3 +6,4 @@ export * from './icons';
 export * from './mdLink';
 export * from './showModal';
 export * from './store';
+export * from './doc';

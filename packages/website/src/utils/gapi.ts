@@ -77,7 +77,15 @@ export function extractTags(file: DriveFile): string[] {
 }
 
 export function shouldShowTagSettings(file?: DriveFile): boolean {
+  return canEdit(file);
+}
+
+export function canEdit(file?: DriveFile): boolean {
   return !!file?.capabilities?.canEdit;
+}
+
+export function canChangeSettings(file?: DriveFile): boolean {
+  return canEdit(file);
 }
 
 export function shouldShowFolderChildrenSettings(file?: DriveFile): boolean {

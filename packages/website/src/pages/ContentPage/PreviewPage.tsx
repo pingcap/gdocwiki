@@ -6,10 +6,11 @@ import { DriveFile, HalfViewPreviewMimeTypes } from '../../utils';
 
 export interface IPreviewPageProps {
   file: DriveFile;
+  edit?: boolean;
   renderStackOffset?: number;
 }
 
-function PreviewPage({ file, renderStackOffset = 0 }: IPreviewPageProps) {
+function PreviewPage({ file, edit = false, renderStackOffset = 0 }: IPreviewPageProps) {
   const [isLoading, setIsLoading] = useState(true);
   const ref = useRef<HTMLIFrameElement>(null);
 
@@ -41,20 +42,31 @@ function PreviewPage({ file, renderStackOffset = 0 }: IPreviewPageProps) {
 
   useEffect(() => {}, [file.mimeType]);
 
+  if (!file.webViewLink) {
+    return (
+      <div style={contentStyle}>
+        <p>No preview available</p>
+      </div>
+    );
+  }
+
+  const iframeSrc = file.webViewLink.replace(
+    /\/(edit|view)\?usp=drivesdk/,
+    edit === true ? '/edit' : '/preview'
+  );
+
   return (
     <div style={contentStyle}>
-      {file.webViewLink && (
-        <div>
-          {isLoading && <InlineLoading description="Loading preview..." />}
-          <iframe
-            title="Preview"
-            width="100%"
-            src={file.webViewLink.replace(/\/(edit|view)\?usp=drivesdk/, '/preview')}
-            ref={ref}
-            style={{ height: 'calc(100vh - 220px)', minHeight: 500 }}
-          />
-        </div>
-      )}
+      <div>
+        {isLoading && <InlineLoading description="Loading preview..." />}
+        <iframe
+          title="Preview"
+          width="100%"
+          src={iframeSrc}
+          ref={ref}
+          style={{ height: 'calc(100vh - 200px)', minHeight: 500 }}
+        />
+      </div>
     </div>
   );
 }
