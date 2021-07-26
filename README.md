@@ -76,7 +76,7 @@ REACT_APP_ROOT_DRIVE_ID=xxxxxxx
 
   ![](etc/root_drive_2.png)
 
-## Roadmap
+## Features
 
 - [x] User
   - [x] Sign in
@@ -95,10 +95,13 @@ REACT_APP_ROOT_DRIVE_ID=xxxxxxx
     - [x] Open Google drive external links in wiki directly
 - [x] Content Preview
   - [x] Google doc
+    - [x] View in iframe as /preview or /edit
     - [x] Rewrite links to open in wiki directly
     - [x] Support #xxx anchors in the Google doc
     - [x] Show comment threads
+    - [x] Highlight quoted comment text
     - [x] Show revision history
+    - [x] Header-based document navigation 
     - [ ] Prettify
       - [x] Pretty font families
       - [x] Pretty monospace fonts
@@ -140,12 +143,11 @@ REACT_APP_ROOT_DRIVE_ID=xxxxxxx
   - [x] List all tags
   - [x] Set tags
   - [ ] Rename a tag
-- [ ] Cache
+- [ ] Performance
+  - [x] Optimistic render of doc for faster first load
   - [x] Utilize cache to load folder content
-  - [ ] Cache preview when file is not modified
   - [ ] Update file and folder cache in background when accessing a folder or file
   - [ ] Watch changes from cached entities
-  - [ ] Improve first screen load performance
 - [x] Search
   - [x] Full text
   - [x] File name
@@ -153,8 +155,11 @@ REACT_APP_ROOT_DRIVE_ID=xxxxxxx
 - [x] Mobile Support
   - [x] Responsive Sidebar
   - [ ] Responsive settings page
-- [x] Helpers
-  - [x] A Chrome extension for checking whether the doc is in the tree: [`browser-extension`](./packages/browser-extension)
+- [x] Chrome extension
+  - [x] check whether the doc is in the tree: [`browser-extension`](./packages/browser-extension)
+  - [x] deep link to the versions page by adding a ?versions param
+  - [x] link to doc in the wiki
+  - [ ] Firefox
 
 ## Note
 
