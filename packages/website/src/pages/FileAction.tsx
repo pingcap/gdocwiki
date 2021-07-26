@@ -119,11 +119,11 @@ function FileAction() {
   }, [rInner?.file]);
 
   const settingsCommand = useCallback(
-    (file: DriveFile) => {
+    (file: DriveFile, hasTags = false) => {
       const isFolder = file.mimeType === MimeTypes.GoogleFolder;
       return {
         key: 'settings',
-        text: !isFolder ? 'Tag' : 'Settings',
+        text: !isFolder && !hasTags ? 'Tag' : 'Settings',
         iconProps: { iconName: 'Settings' },
         onClick: () => {
           history.push(`/view/${file.id}/settings`);
@@ -199,7 +199,7 @@ function FileAction() {
 
     const file = rInner?.file;
     if (file && canChangeSettings(file) && tags.length === 0) {
-      commands.push(settingsCommand(file));
+      commands.push(settingsCommand(file, false));
     }
 
     return commands;
@@ -300,7 +300,7 @@ function FileAction() {
 
     const file = rInner?.file;
     if (file && canChangeSettings(file) && tags.length > 0) {
-      commands.push(settingsCommand(file));
+      commands.push(settingsCommand(file, true));
     }
 
     return commands;
