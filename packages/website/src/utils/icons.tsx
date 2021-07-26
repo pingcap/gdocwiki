@@ -6,6 +6,7 @@ import {
   Edit16,
   Launch16,
   Link16,
+  OverflowMenuHorizontal16,
   View16,
   Settings16,
   TrashCan16,
@@ -20,6 +21,7 @@ export function registerIcons() {
   register({
     icons: {
       ArrowUp: <ArrowUp16 />,
+      More: <OverflowMenuHorizontal16 />,
       ChevronRight: <ChevronRight16 />,
       ChevronDown: <ChevronDown16 />,
       Launch: <Launch16 />,
