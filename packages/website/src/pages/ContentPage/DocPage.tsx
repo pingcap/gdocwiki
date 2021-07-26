@@ -5,6 +5,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import Avatar from 'react-avatar';
 import ReactDOM from 'react-dom';
 import { useDispatch, useSelector } from 'react-redux'
+import { withRouter } from 'react-router';
 import { useHistory } from 'react-router-dom';
 import { useManagedRenderStack } from '../../context/RenderStack';
 import { setHeaders, setComments, selectComments, setFile, setNoFile } from '../../reduxSlices/doc';
@@ -14,6 +15,9 @@ import { fromHTML, MakeTree } from '../../utils/docHeaders';
 export interface IDocPageProps {
   file: DriveFile;
   renderStackOffset?: number;
+  match: any;
+  location: any;
+  history: any;
 }
 
 function isModifiedEvent(event) {
@@ -180,7 +184,7 @@ function externallyLinkHeaders(baseEl: HTMLElement, fileId: string) {
   }
 }
 
-function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
+function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
   const [docContent, setDocContent] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const history = useHistory();
@@ -256,6 +260,47 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
       dispatch(setHeaders([]));
     };
   }, [file.id, dispatch, setDocWithPlainText, setDocWithRichContent]);
+
+  useEffect(
+    function showNameInUrl() {
+      // The DocPage can be shown without a /view or /n url.
+      // Just skip in that case. It may not be a file.
+      if (match.params.id !== file.id || !file.name) {
+        return;
+      }
+
+      var urlParams = new URLSearchParams(window.location.search);
+      const newParamName = file.name.replaceAll(' ', '_');
+      const givenParamName = urlParams.get('n');
+      if (givenParamName === newParamName) {
+        return;
+      }
+
+      const givenPathName = match.params.slug;
+      if (!givenPathName) {
+        urlParams.set('n', newParamName);
+        const urlNoParam = window.location.origin + window.location.pathname;
+        const newUrl = urlNoParam + '?' + urlParams.toString();
+        window.history.replaceState({ path: newUrl }, '', newUrl);
+        return;
+      }
+
+      let slugName = file.name
+        ?.replaceAll(/[^a-zA-Z0-9_-]/g, '_')
+        .replaceAll(/_+/g, '_')
+        .replaceAll(/_-/g, '-')
+        .replaceAll(/-_+/g, '-');
+      if (slugName === '_' || slugName === '-') {
+        slugName = '';
+      }
+
+      if ((match.params.slug ?? '') !== slugName) {
+        let path = '/n/' + slugName + '/' + match.params.id;
+        history.push(path, []);
+      }
+    },
+    [file.id, file.name, match.params, history]
+  );
 
   useEffect(() => {
     // When optimistically rendering the document, only an id is available.
@@ -447,4 +492,4 @@ function DocPage({ file, renderStackOffset = 0 }: IDocPageProps) {
   );
 }
 
-export default React.memo(DocPage);
+export default React.memo(withRouter(DocPage));
