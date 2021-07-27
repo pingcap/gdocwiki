@@ -21,10 +21,10 @@ function Page(props: PageProps) {
   const id = useUpdateSiderFromPath('id');
   const { file, loading, error } = useFileMeta(id);
   const dispatch = useDispatch();
-  if (props.docMode) {
+  const docMode = useSelector(selectDocMode);
+  if (props.docMode && props.docMode !== docMode) {
     dispatch(setDocMode(props.docMode));
   }
-  const docMode = useSelector(selectDocMode);
 
   useTitle((file) => {
     if (file && file?.id !== getConfig().REACT_APP_ROOT_ID) {

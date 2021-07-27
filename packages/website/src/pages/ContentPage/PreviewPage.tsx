@@ -71,6 +71,7 @@ function PreviewPage({ file, edit = false, renderStackOffset = 0 }: IPreviewPage
         <iframe
           title="Preview"
           width="100%"
+          key={iframeSrc} // force the iframe to be recreated
           src={iframeSrc}
           ref={ref}
           style={{ height: `calc(100vh - ${headSubtract}px)`, minHeight: 500 }}

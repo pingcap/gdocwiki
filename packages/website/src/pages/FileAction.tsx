@@ -112,7 +112,9 @@ function FileAction() {
 
   if (lastFileId !== (rInner?.file.id ?? '')) {
     setLastFileId(rInner?.file.id ?? '');
-    dispatch(setDocMode('view'));
+    if (docMode !== 'view') {
+      dispatch(setDocMode('view'));
+    }
     setRevisionsEnabled(false);
   }
 
@@ -318,9 +320,8 @@ function FileAction() {
         const modePathPiece = mode === 'view' ? '' : mode;
         history.push(`/view/${rInner?.file.id}/${modePathPiece}`);
       }
-      dispatch(setDocMode(mode as DocMode));
     },
-    [dispatch, history, rInner?.file]
+    [history, rInner?.file]
   );
 
   if (commandBarItems.length === 0 && commandBarOverflowItems.length === 0) {
