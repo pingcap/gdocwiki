@@ -21,7 +21,7 @@ export function HeaderUserMenu() {
     <NavMenu style={{ width: '16rem' }}>
       <NavMenu.Divider>Google Profile</NavMenu.Divider>
       {!isSignedIn && (
-        <NavMenu.Link href="javascript:;" onClick={signIn}>
+        <NavMenu.Link href="/auth/signin" onClick={signIn}>
           <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
             <Icon icon={googleIcon} />
             <span>Sign In with Google</span>
@@ -39,7 +39,7 @@ export function HeaderUserMenu() {
               </Stack>
             </Stack>
           </NavMenu.Link>
-          <NavMenu.Link href="javascript:;" onClick={signOut}>
+          <NavMenu.Link href="/auth/signout" onClick={signOut}>
             <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
               <Logout16 />
               <span>Sign Out</span>
