@@ -22,7 +22,6 @@ function Page(props: PageProps) {
   const id = useUpdateSiderFromPath('id');
   const { file, loading, error } = useFileMeta(id);
   const dispatch = useDispatch();
-  console.log('Page doc mode', props.docMode);
   if (props.docMode) {
     dispatch(setDocMode(props.docMode));
   }
@@ -50,7 +49,6 @@ function Page(props: PageProps) {
 }
 
 function Reloader(props: PageProps) {
-  console.log('Page doc mode', props.docMode);
   const token = useSelector(selectPageReloadToken);
   return <Page key={token} {...props} />;
 }
