@@ -59,7 +59,13 @@ export function MakeTree(headings: DocHeader[]): (TreeHeading | DocHeader)[] {
     nodes: (TreeHeading | DocHeader)[],
     headings: DocHeader[]
   ): (TreeHeading | DocHeader)[] {
-    const heading = headings.shift();
+    let heading = headings.shift();
+    // Empty text can occur for example in corner cases
+    // For example an image can be in a header by itself
+    // These cases seem like mistakes
+    while (heading && !heading.text) {
+      heading = headings.shift();
+    }
     if (typeof heading === 'undefined') {
       return nodes;
     }
