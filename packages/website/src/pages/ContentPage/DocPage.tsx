@@ -9,7 +9,7 @@ import { withRouter } from 'react-router';
 import { useHistory } from 'react-router-dom';
 import { useManagedRenderStack } from '../../context/RenderStack';
 import { setHeaders, setComments, selectComments, setFile, setNoFile } from '../../reduxSlices/doc';
-import { history, DriveFile, parseDriveLink } from '../../utils';
+import { DriveFile, parseDriveLink } from '../../utils';
 import { fromHTML, MakeTree } from '../../utils/docHeaders';
 
 export interface IDocPageProps {
@@ -24,7 +24,7 @@ function isModifiedEvent(event) {
   return !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);
 }
 
-function prettify(baseEl: HTMLElement, fileId: string) {
+function prettify(history: any, baseEl: HTMLElement, fileId: string) {
   {
     // Remove all font families, except for some monospace fonts.
     const monoFF = ['source code', 'courier', 'mono'];
@@ -66,7 +66,7 @@ function prettify(baseEl: HTMLElement, fileId: string) {
     for (const el of elements) {
       const id = parseDriveLink(el.href);
       if (id) {
-        el.href = history.createHref({ pathname: `/view/${id}` });
+        el.href = `/view/${id}`;
         el.dataset['__gdoc_history'] = `/view/${id}`;
         continue;
       }
@@ -187,9 +187,9 @@ function externallyLinkHeaders(baseEl: HTMLElement, fileId: string) {
 function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
   const [docContent, setDocContent] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const history = useHistory();
   const dispatch = useDispatch();
   const docComments = useSelector(selectComments);
+  const history = useHistory();
 
   useCallback(() => {
     if (file.name) {
@@ -220,10 +220,10 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
           MakeTree(Array.from(content.querySelectorAll('h1, h2, h3, h4, h5, h6')).map(fromHTML))
         )
       );
-      prettify(content, file.id ?? '');
+      prettify(history, content, file.id ?? '');
       setDocContent(content.innerHTML);
     },
-    [file.id, dispatch]
+    [file.id, dispatch, history]
   );
 
   useEffect(() => {
@@ -279,9 +279,9 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
       const givenPathName = match.params.slug;
       if (!givenPathName) {
         urlParams.set('n', newParamName);
-        const urlNoParam = window.location.origin + window.location.pathname;
+        const urlNoParam = window.location.pathname;
         const newUrl = urlNoParam + '?' + urlParams.toString();
-        window.history.replaceState({ path: newUrl }, '', newUrl);
+        history.replace(newUrl);
         return;
       }
 
@@ -296,7 +296,7 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
 
       if ((match.params.slug ?? '') !== slugName) {
         let path = '/n/' + slugName + '/' + match.params.id;
-        history.push(path, []);
+        history.push(path);
       }
     },
     [file.id, file.name, match.params, history]
