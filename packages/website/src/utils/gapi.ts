@@ -11,7 +11,9 @@ export function handleGapiError(e: any): Error {
 }
 
 export function parseDriveLink(url: string) {
-  let m = url.match(/^https:\/\/docs\.google\.com\/[^/]+(\/u\/\d+)?\/d\/([^/]+)\/edit/);
+  let m = url.match(
+    /^https:\/\/docs\.google\.com\/[^/]+(\/u\/\d+)?\/d\/([^/]+)(\/)?(edit|preview)?/
+  );
   if (!m) {
     m = url.match(/^https:\/\/drive\.google\.com\/[^/]+(\/u\/\d+)?\/[^/]+\/([^/]+)$/);
   }
