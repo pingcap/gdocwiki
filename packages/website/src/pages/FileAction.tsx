@@ -21,6 +21,7 @@ import { useRender } from '../context/RenderStack';
 import useFileMeta from '../hooks/useFileMeta';
 import responsiveStyle from '../layout/responsive.module.scss';
 import { selectDocMode, setDocMode } from '../reduxSlices/doc';
+import { selectSidebarOpen } from '../reduxSlices/siderTree';
 import { canChangeSettings, canEdit, extractTags, DocMode, DriveFile, MimeTypes } from '../utils';
 import { folderPageId } from './ContentPage/FolderPage';
 import { showCreateFile } from './FileAction.createFile';
@@ -101,6 +102,7 @@ function FileAction() {
   const [lastFileId, setLastFileId] = useState('');
   const dispatch = useDispatch();
   const docMode = useSelector(selectDocMode);
+  const sidebarOpen = useSelector(selectSidebarOpen);
 
   const history = useHistory();
 
@@ -329,7 +331,7 @@ function FileAction() {
     return () => <TooltipHost content={mode}>{icon}</TooltipHost>;
   }
 
-  if (!rInner?.file) {
+  if (!rInner?.file || (!sidebarOpen && docMode === 'edit')) {
     return null;
   }
 
