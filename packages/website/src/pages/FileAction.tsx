@@ -331,7 +331,7 @@ function FileAction() {
     return () => <TooltipHost content={mode}>{icon}</TooltipHost>;
   }
 
-  if (!rInner?.file || (!sidebarOpen && docMode === 'edit')) {
+  if (!rInner?.file || (!sidebarOpen && docMode !== 'view')) {
     return null;
   }
 
@@ -339,7 +339,7 @@ function FileAction() {
     <>
       <Stack horizontal>
         {rInner?.file.mimeType === MimeTypes.GoogleDocument && (
-          <Stack.Item>
+          <Stack.Item disableShrink>
             <Pivot onLinkClick={switchDocMode} selectedKey={docMode}>
               <PivotItem
                 itemKey="view"
@@ -352,8 +352,8 @@ function FileAction() {
             </Pivot>
           </Stack.Item>
         )}
-        {docMode === 'view' && (
-          <Stack.Item disableShrink grow={10}>
+        {(
+          <Stack.Item disableShrink grow={1} style={{ paddingLeft: '1em' }}>
             {rInner?.file.mimeType === MimeTypes.GoogleFolder ? (
               <CommandBar items={commandBarItems.concat(commandBarOverflowItems)} />
             ) : (
@@ -362,12 +362,12 @@ function FileAction() {
           </Stack.Item>
         )}
         {docMode !== 'view' && (
-          <Stack.Item disableShrink grow={10}>
+          <Stack.Item disableShrink grow={1}>
             <Tags tags={tags} file={rInner!.file} />
           </Stack.Item>
         )}
       </Stack>
-      {revisionsEnabled && <Revisions file={rInner!.file} />}
+      {docMode === 'view' && revisionsEnabled && <Revisions file={rInner!.file} />}
       {docMode === 'view' && <Tags tags={tags} file={rInner!.file} />}
     </>
   );

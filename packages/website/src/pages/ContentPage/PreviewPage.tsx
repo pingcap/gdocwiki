@@ -53,12 +53,16 @@ function PreviewPage({ file, edit = false, renderStackOffset = 0 }: IPreviewPage
     );
   }
 
+  let qp = `?frameborder=0`;
+  if (edit && !sidebarOpen) {
+    qp = qp + '&rm=demo';
+  }
   const iframeSrc = file.webViewLink.replace(
     /\/(edit|view)\?usp=drivesdk/,
-    edit === true ? '/edit' : '/preview'
+    edit ? `/edit${qp}` : `/preview${qp}`
   );
 
-  const headSubtract = edit === true ? (!sidebarOpen ? 70 : 100) : 120;
+  const headSubtract = sidebarOpen ? 100 : 65;
 
   return (
     <div style={contentStyle}>
