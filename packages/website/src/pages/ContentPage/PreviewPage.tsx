@@ -3,6 +3,7 @@ import { InlineLoading } from 'carbon-components-react';
 import React, { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useManagedRenderStack } from '../../context/RenderStack';
+import { selectDocMode } from '../../reduxSlices/doc';
 import { selectSidebarOpen } from '../../reduxSlices/siderTree';
 import { DriveFile, HalfViewPreviewMimeTypes } from '../../utils';
 
@@ -16,6 +17,7 @@ function PreviewPage({ file, edit = false, renderStackOffset = 0 }: IPreviewPage
   const [isLoading, setIsLoading] = useState(true);
   const ref = useRef<HTMLIFrameElement>(null);
   const sidebarOpen = useSelector(selectSidebarOpen);
+  const docMode = useSelector(selectDocMode);
 
   useManagedRenderStack({
     depth: renderStackOffset,
@@ -62,7 +64,10 @@ function PreviewPage({ file, edit = false, renderStackOffset = 0 }: IPreviewPage
     edit ? `/edit${qp}` : `/preview${qp}`
   );
 
-  const headSubtract = sidebarOpen ? 100 : 65;
+  let headSubtract = sidebarOpen ? 100 : 65;
+  if (docMode === 'view') {
+    headSubtract += 60;
+  }
 
   return (
     <div style={contentStyle}>
