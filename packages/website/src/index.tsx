@@ -1,10 +1,11 @@
+import { InlineLoading } from 'carbon-components-react';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import App from './App';
-import { loadConfig } from './config';
+import { getConfig, loadConfig } from './config';
 import './global.carbon.scss';
 import './global.index.scss';
 import { registerIcons, store } from './utils';
@@ -20,21 +21,48 @@ async function reportManifestUrl() {
 }
 
 async function main() {
-  dayjs.extend(relativeTime);
-  reportManifestUrl();
+  gapi.load('client:auth2', () => {
+    gapi.client.load('drive', 'v3', async () => {
+      try {
+        await loadConfig();
 
-  await loadConfig();
+        const initConfig = {
+          apiKey: getConfig().REACT_APP_GAPI_KEY,
+          clientId: getConfig().REACT_APP_GAPI_CLIENT_ID,
+          discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+          scope: 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/documents',
+          hosted_domain: getConfig().REACT_APP_GAPI_HOSTED_DOMAIN,
+          cookie_policy: getConfig().REACT_APP_GAPI_COOKIE_POLICY,
+        };
 
-  registerIcons();
+        await gapi.client.init(initConfig);
+
+        ReactDOM.render(
+          <React.StrictMode>
+            <Provider store={store}>
+              <App />
+            </Provider>
+          </React.StrictMode>,
+          document.getElementById('root')
+        );
+      } catch (ex) {
+        console.error(ex);
+        ReactDOM.render(
+          <InlineLoading description="Error. Please reload" />,
+          document.getElementById('root')
+        );
+      }
+    });
+  });
 
   ReactDOM.render(
-    <React.StrictMode>
-      <Provider store={store}>
-        <App />
-      </Provider>
-    </React.StrictMode>,
+    <InlineLoading description="Loading Google API..." />,
     document.getElementById('root')
   );
+
+  reportManifestUrl();
+  dayjs.extend(relativeTime);
+  registerIcons();
 }
 
 main().catch((e) => console.error(e));

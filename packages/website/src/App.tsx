@@ -1,19 +1,13 @@
 import { Add20, Close20, Menu20, Subtract20 } from '@carbon/icons-react';
-import {
-  Header,
-  HeaderGlobalAction,
-  HeaderGlobalBar,
-  InlineLoading,
-} from 'carbon-components-react';
+import { Header, HeaderGlobalAction, HeaderGlobalBar } from 'carbon-components-react';
 import Trigger from 'rc-trigger';
-import React, { useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Redirect, Router, Switch, Route } from 'react-router-dom';
 import { useLocalStorage } from 'react-use';
 import { ExtensionBanner } from './components';
 import { ExtInstallStatusProvider } from './context/ExtInstallStatus';
 import { RenderStackProvider } from './context/RenderStack';
-import useGapi from './hooks/useGapi';
 import useLoadDriveFiles from './hooks/useLoadDriveFiles';
 import {
   HeaderExtraActions,
@@ -66,7 +60,6 @@ function useExtensionBannerController() {
 
 function App() {
   const dispatch = useDispatch();
-  const { gapiLoaded } = useGapi();
   const sidebarOpen = useSelector(selectSidebarOpen);
   const mapIdToFile = useSelector(selectMapIdToFile);
 
@@ -82,10 +75,6 @@ function App() {
   const handleTreeCollapse = useCallback(() => dispatch(collapseAll()), [dispatch]);
 
   const extBannerCtrl = useExtensionBannerController();
-
-  if (!gapiLoaded) {
-    return <InlineLoading description="Loading Google API..." />;
-  }
 
   return (
     <ExtInstallStatusProvider>
