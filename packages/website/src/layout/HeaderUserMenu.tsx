@@ -56,7 +56,7 @@ export function HeaderUserMenu() {
         target="_blank"
         rel="noreferrer"
       >
-        Made by @breeswish, @Hexilee
+        Maintained by @breeswish, @gregwebs
       </NavMenu.Link>
     </NavMenu>
   );
