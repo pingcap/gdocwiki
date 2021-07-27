@@ -19,7 +19,7 @@ export function HeaderUserMenu() {
 
   return (
     <NavMenu style={{ width: '16rem' }}>
-      <NavMenu.Divider>{isSignedIn ? profile!.getEmail() : 'Account'}</NavMenu.Divider>
+      <NavMenu.Divider>Google Profile</NavMenu.Divider>
       {!isSignedIn && (
         <NavMenu.Link href="javascript:;" onClick={signIn}>
           <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
@@ -30,17 +30,15 @@ export function HeaderUserMenu() {
       )}
       {isSignedIn && (
         <>
-          <div style={{ paddingTop: 8, paddingBottom: 16 }}>
-            <Stack
-              verticalAlign="center"
-              horizontalAlign="center"
-              horizontal
-              tokens={{ childrenGap: 8 }}
-            >
+          <NavMenu.Link href="https://myaccount.google.com/profile">
+            <Stack horizontal verticalAlign="center" tokens={{ childrenGap: 8 }}>
               <Avatar name={profile!.getName()} src={profile!.getImageUrl()} size="30" round />
-              <div>{profile!.getName()}</div>
+              <Stack tokens={{ childrenGap: 8 }}>
+                <div>{profile!.getEmail()}</div>
+                <div>{profile!.getName()}</div>
+              </Stack>
             </Stack>
-          </div>
+          </NavMenu.Link>
           <NavMenu.Link href="javascript:;" onClick={signOut}>
             <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
               <Logout16 />
