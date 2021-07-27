@@ -313,7 +313,8 @@ function FileAction() {
     (item) => {
       const mode = item.props['itemKey'];
       if (rInner?.file) {
-        history.push(`/view/${rInner?.file.id}/${mode}`);
+        const modePathPiece = mode === 'view' ? '' : mode;
+        history.push(`/view/${rInner?.file.id}/${modePathPiece}`);
       }
       dispatch(setDocMode(mode as DocMode));
     },

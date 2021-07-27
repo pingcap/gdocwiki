@@ -162,7 +162,7 @@ function App() {
                   <Settings />
                 </Route>
                 <Route path="/view/:id">
-                  <Page />
+                  <Page docMode="view" />
                 </Route>
                 <Route exact path="/search/keyword/:keyword">
                   <SearchResult />
