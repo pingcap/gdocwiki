@@ -24,14 +24,23 @@ function ContentPage({ loading, file, shortCutFile, renderStackOffset = 0 }: ICo
   }
 
   if (PreviewableMimeTypes.indexOf(file?.mimeType ?? '') > -1) {
-    return <PreviewPage file={file!} renderStackOffset={renderStackOffset} />;
+    // Use key to force an unmount when the file changes
+    // This resets event handlers
+    return <PreviewPage key={file!.id!} file={file!} renderStackOffset={renderStackOffset} />;
   }
 
   switch (file?.mimeType ?? '') {
     case MimeTypes.GoogleDocument:
       if (docMode !== 'view') {
         const edit = docMode === 'edit';
-        return <PreviewPage edit={edit} file={file!} renderStackOffset={renderStackOffset} />;
+        return (
+          <PreviewPage
+            key={file!.id!}
+            edit={edit}
+            file={file!}
+            renderStackOffset={renderStackOffset}
+          />
+        );
       }
       return <DocPage file={file!} renderStackOffset={renderStackOffset} />;
     case MimeTypes.GoogleFolder:
