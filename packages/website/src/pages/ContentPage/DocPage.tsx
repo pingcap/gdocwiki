@@ -223,14 +223,14 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
       function handleTranslated(msg: string = '') {
         if (document.documentElement.className.includes('translated')) {
           console.debug('translated ' + msg);
+          const contentNode = document.getElementById('gdoc-html-content')!
+          if (!contentNode) {
+            return;
+          }
           dispatch(
             setHeaders(
               MakeTree(
-                Array.from(
-                  document
-                    .getElementById('gdoc-html-content')!
-                    .querySelectorAll('h1, h2, h3, h4, h5, h6')
-                ).map(fromHTML)
+                Array.from(contentNode.querySelectorAll('h1, h2, h3, h4, h5, h6')).map(fromHTML)
               )
             )
           );
