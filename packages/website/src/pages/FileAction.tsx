@@ -21,6 +21,7 @@ import { useRender } from '../context/RenderStack';
 import useFileMeta from '../hooks/useFileMeta';
 import responsiveStyle from '../layout/responsive.module.scss';
 import { selectDocMode, setDocMode } from '../reduxSlices/doc';
+import { selectSidebarOpen } from '../reduxSlices/siderTree';
 import { canChangeSettings, canEdit, extractTags, DocMode, DriveFile, MimeTypes } from '../utils';
 import { folderPageId } from './ContentPage/FolderPage';
 import { showCreateFile } from './FileAction.createFile';
@@ -101,6 +102,7 @@ function FileAction() {
   const [lastFileId, setLastFileId] = useState('');
   const dispatch = useDispatch();
   const docMode = useSelector(selectDocMode);
+  const sidebarOpen = useSelector(selectSidebarOpen);
 
   const history = useHistory();
 
@@ -110,7 +112,9 @@ function FileAction() {
 
   if (lastFileId !== (rInner?.file.id ?? '')) {
     setLastFileId(rInner?.file.id ?? '');
-    dispatch(setDocMode('view'));
+    if (docMode !== 'view') {
+      dispatch(setDocMode('view'));
+    }
     setRevisionsEnabled(false);
   }
 
@@ -316,9 +320,8 @@ function FileAction() {
         const modePathPiece = mode === 'view' ? '' : mode;
         history.push(`/view/${rInner?.file.id}/${modePathPiece}`);
       }
-      dispatch(setDocMode(mode as DocMode));
     },
-    [dispatch, history, rInner?.file]
+    [history, rInner?.file]
   );
 
   if (commandBarItems.length === 0 && commandBarOverflowItems.length === 0) {
@@ -329,7 +332,7 @@ function FileAction() {
     return () => <TooltipHost content={mode}>{icon}</TooltipHost>;
   }
 
-  if (!rInner?.file) {
+  if (!rInner?.file || (!sidebarOpen && docMode !== 'view')) {
     return null;
   }
 
@@ -337,7 +340,7 @@ function FileAction() {
     <>
       <Stack horizontal>
         {rInner?.file.mimeType === MimeTypes.GoogleDocument && (
-          <Stack.Item>
+          <Stack.Item disableShrink>
             <Pivot onLinkClick={switchDocMode} selectedKey={docMode}>
               <PivotItem
                 itemKey="view"
@@ -350,8 +353,8 @@ function FileAction() {
             </Pivot>
           </Stack.Item>
         )}
-        {docMode === 'view' && (
-          <Stack.Item disableShrink grow={10}>
+        {(
+          <Stack.Item disableShrink grow={1} style={{ paddingLeft: '1em' }}>
             {rInner?.file.mimeType === MimeTypes.GoogleFolder ? (
               <CommandBar items={commandBarItems.concat(commandBarOverflowItems)} />
             ) : (
@@ -360,12 +363,12 @@ function FileAction() {
           </Stack.Item>
         )}
         {docMode !== 'view' && (
-          <Stack.Item disableShrink grow={10}>
+          <Stack.Item disableShrink grow={1}>
             <Tags tags={tags} file={rInner!.file} />
           </Stack.Item>
         )}
       </Stack>
-      {revisionsEnabled && <Revisions file={rInner!.file} />}
+      {docMode === 'view' && revisionsEnabled && <Revisions file={rInner!.file} />}
       {docMode === 'view' && <Tags tags={tags} file={rInner!.file} />}
     </>
   );

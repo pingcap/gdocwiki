@@ -11,7 +11,6 @@ import { DocMode } from '../utils';
 import ContentPage from './ContentPage';
 import FileAction from './FileAction';
 import FileBreadcrumb from './FileBreadcrumb';
-import styles from './Page.module.scss';
 import RightContainer from './RightContainer';
 
 interface PageProps {
@@ -22,10 +21,10 @@ function Page(props: PageProps) {
   const id = useUpdateSiderFromPath('id');
   const { file, loading, error } = useFileMeta(id);
   const dispatch = useDispatch();
-  if (props.docMode) {
+  const docMode = useSelector(selectDocMode);
+  if (props.docMode && props.docMode !== docMode) {
     dispatch(setDocMode(props.docMode));
   }
-  const docMode = useSelector(selectDocMode);
 
   useTitle((file) => {
     if (file && file?.id !== getConfig().REACT_APP_ROOT_ID) {
@@ -37,10 +36,14 @@ function Page(props: PageProps) {
 
   return (
     <RightContainer>
-      <div className={styles.actionBar}>
-        {docMode === 'view' && <FileBreadcrumb file={file} />}
+      <>
+        {docMode === 'view' && (
+          <div style={{ paddingTop: '0.3rem' }}>
+            <FileBreadcrumb file={file} />
+          </div>
+        )}
         <FileAction />
-      </div>
+      </>
       {loading && <InlineLoading description="Loading file metadata..." />}
       {!loading && !!error && error}
       {<ContentPage loading={loading || error ? id : null} file={file} />}
