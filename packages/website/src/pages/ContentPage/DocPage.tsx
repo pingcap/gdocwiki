@@ -349,13 +349,21 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
   useEffect(
     function showNameInUrl() {
       // The DocPage can be shown without a /view or /n url.
-      // Just skip in that case. It may not be a file.
+      // Just skip in this case. It may not be a file.
       if (match.params.id !== file.id || !file.name) {
         return;
       }
 
       var urlParams = new URLSearchParams(window.location.search);
-      const newParamName = file.name.replaceAll(' ', '_');
+      // The browsers seem to be lenient with non-asci characters.
+      // But change those which do always get % encoded.
+      const newParamName = file.name
+        .replaceAll(/(\s|\(|\)|\[|\])+/g, '_')
+        .replaceAll(/_+/g, '_')
+        .replaceAll(/_-/g, '-')
+        .replaceAll(/-_+/g, '-')
+        .replace(/_+$/, '')
+        .replace(/^_+/, '');
       const givenParamName = urlParams.get('n');
       if (givenParamName === newParamName) {
         return;
@@ -370,6 +378,7 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
         return;
       }
 
+      // Be more strict with url path pieces
       let slugName = file.name
         ?.replaceAll(/[^a-zA-Z0-9_-]/g, '_')
         .replaceAll(/_+/g, '_')
@@ -379,7 +388,7 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
         slugName = '';
       }
 
-      if ((match.params.slug ?? '') !== slugName) {
+      if (givenPathName !== slugName) {
         let path = '/n/' + slugName + '/' + match.params.id;
         history.push(path);
       }
