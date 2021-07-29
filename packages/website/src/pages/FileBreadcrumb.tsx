@@ -11,7 +11,7 @@ import styles from './FileBreadcrumb.module.scss';
 
 export function CurrentFileBreadcrumbItem({ file }: { file: DriveFile }) {
   return (
-    <Stack wrap verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
+    <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
       <span>{file.name}</span>
       <DriveIcon file={file} />
       {file.mimeType === MimeTypes.GoogleShortcut && <ShortcutIcon />}
