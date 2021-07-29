@@ -83,10 +83,8 @@ REACT_APP_ROOT_DRIVE_ID=xxxxxxx
     - [x] Notify for sign in
     - [x] Error handling for unprivilege errors
   - [x] Sign out
-    - [x] A better UI for sign out
 - [x] Sidebar
-  - [x] Expand all
-  - [x] Collapse all
+  - [x] Expand/Collapse all
   - [x] Configure specific folder children to be displayed in sidebar or not
     - [x] Activate nearest displayed parent
   - [x] Activate and expand sidebar item according to current page
@@ -95,21 +93,21 @@ REACT_APP_ROOT_DRIVE_ID=xxxxxxx
     - [x] Open Google drive external links in wiki directly
 - [x] Content Preview
   - [x] Google doc
-    - [x] View in iframe as /preview or /edit
-    - [x] Rewrite links to open in wiki directly
-    - [x] Support #xxx anchors in the Google doc
-    - [x] Show comment threads
-    - [x] Highlight quoted comment text
     - [x] Show revision history
-    - [x] Header-based document navigation 
-    - [ ] Prettify
-      - [x] Pretty font families
-      - [x] Pretty monospace fonts
-      - [ ] Adjust incorrect margins and paddings
-  - [x] Google spreadsheet
-  - [x] Google presentation
-  - [x] PDF
-  - [x] MS Word / Excel files
+    - [x] View as html or in iframe as /preview or /edit
+    - [x] HTML view
+      - [x] Rewrite links to open in wiki directly
+      - [x] Support #xxx anchors in the Google doc
+      - [x] Comments
+        - [ ] Reply
+        - [x] Highlight quoted comment text
+      - [x] Header-based document navigation 
+      - [ ] Prettify
+        - [x] Pretty font families
+        - [x] Pretty monospace fonts
+        - [ ] Adjust incorrect margins and paddings
+  - [x] spreadsheet
+  - [x] presentation, PDF, MS Word / Excel files
   - [x] Shortcut
     - [x] File
     - [x] Folder
