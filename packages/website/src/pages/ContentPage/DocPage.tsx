@@ -343,6 +343,10 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
   }, [file.id, dispatch, file.name]);
 
   useEffect(() => {
+    function removeSpace(s: string): string {
+      return s.replaceAll(/\s+/g, ' ');
+    }
+
     const comments = docComments.filter((comment) => comment.resolved !== true);
     if (comments.length === 0) {
       return;
@@ -350,7 +354,7 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
 
     const commentLookup = {};
     for (const comment of comments) {
-      commentLookup[comment.content ?? ''] = comment;
+      commentLookup[removeSpace(comment.content ?? '')] = comment;
     }
     const replyLookup = {};
     let i = 0;
@@ -378,10 +382,10 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
         }
         origTextPieces.push(child.textContent || '');
       }
-      const origText = origTextPieces.join('\n');
-      const comment = commentLookup[origText];
+      const lookupText = removeSpace(origTextPieces.join('\n'));
+      const comment = commentLookup[lookupText];
       if (comment) {
-        delete commentLookup[origText];
+        delete commentLookup[lookupText];
         for (const child of parent.children) {
           parent.removeChild(child);
         }
@@ -395,16 +399,17 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
         );
         // need to delete all the replies
         for (const reply of comment.replies) {
-          replyLookup[reply.content] = reply;
+          replyLookup[removeSpace(reply.content ?? '')] = reply;
         }
-      } else if (replyLookup[origText]) {
-        delete replyLookup[origText];
+      } else if (replyLookup[lookupText]) {
+        delete replyLookup[lookupText];
         // note that we no longer link replies back to the text
         // So delete those supers as well
         document.getElementById((commentLink.getAttribute('href') ?? '').slice(1))?.remove();
         parent.remove();
       } else {
-        console.debug('did not find comment for', origText);
+        console.debug('did not find comment for', lookupText);
+        // console.debug(replyLookup);
       }
     }
 
