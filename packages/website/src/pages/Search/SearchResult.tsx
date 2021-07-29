@@ -17,7 +17,9 @@ export default function SearchResult() {
 
   return (
     <RightContainer>
-      <Typography.Title>Search: {result.value}</Typography.Title>
+      <div style={{ paddingTop: '15px' }}>
+        <Typography.Title>Search: {result.value}</Typography.Title>
+      </div>
       {(!result.loading || result.files.length > 0) && (
         <FileListTable files={result.files} openInNewWindow />
       )}
