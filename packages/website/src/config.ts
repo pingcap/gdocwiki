@@ -1,5 +1,3 @@
-import ky from 'ky';
-
 type INavMenuItem = INavMenuLink | INavMenuGroup;
 export interface INavMenuLink {
   type: 'link';
@@ -88,11 +86,19 @@ export async function loadConfig() {
   }
 }
 
+async function getJSON(url: string): Promise<any> {
+  const rsp = await fetch(url, { headers: { Accept: 'application/json' } });
+  if (!rsp.ok) {
+    throw new Error(`Fetch error ${rsp.statusText}`);
+  }
+  return rsp.json();
+}
+
 async function overwriteConfig() {
   try {
-    const url = `${process.env.PUBLIC_URL}/config.json?_=${Date.now()}`;
-    const oc = (await ky(url).json()) as Record<string, any>;
-    for (const key in oc) {
+    const url = `${window.location.origin}/config.json?_=${Date.now()}`;
+    const oc = await getJSON(url);
+    for (const key in oc as Record<string, any>) {
       if (oc[key]) {
         config[key] = oc[key];
       }
@@ -100,6 +106,7 @@ async function overwriteConfig() {
     localStorage?.setItem(configStorageKey, JSON.stringify(config));
   } catch (e) {
     if (config.REACT_APP_USE_CONFIG_FILE) {
+      console.error('overwriteConfig', e);
       throw e;
     }
   }
