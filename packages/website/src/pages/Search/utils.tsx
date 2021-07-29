@@ -34,7 +34,7 @@ export function useSearch(fieldName: string, queryBuilder: (value: string) => st
             q: queryBuilderMemo(fieldValue),
             fields: getConfig().DEFAULT_FILE_FIELDS,
           });
-          console.log(
+          console.debug(
             `SearchByQuery files.list (page #${i + 1})`,
             fieldValue,
             getConfig().REACT_APP_ROOT_DRIVE_ID,
@@ -60,11 +60,11 @@ export function useSearch(fieldName: string, queryBuilder: (value: string) => st
         }
         console.error(e);
       } finally {
-        console.log(reqRef.current, checkpoint);
+        console.debug('search', reqRef.current, checkpoint);
         if (reqRef.current !== checkpoint) {
           return;
         }
-        console.log('set not loading');
+        console.debug('search set not loading');
         setLoading(false);
       }
     }
