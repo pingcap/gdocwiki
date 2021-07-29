@@ -13,14 +13,22 @@ function HeaderSearch_() {
     : '';
 
   const [keyword, setKeyword] = useState(initKeyword);
+  let [lastKeyword, setLastKeyword] = useState('');
   const history = useHistory();
 
   const handleSearchThrottled = useDebounceFn(
     () => {
-      if (!keyword || keyword === '') {
+      if (!keyword) {
         history.replace('/');
-      } else {
-        history.replace(`${pathKey}${keyword}`);
+      } else if (keyword.length > 3) {
+        const url = `${pathKey}${keyword}`;
+        // still modifying the search
+        if (lastKeyword && (keyword.startsWith(lastKeyword) || lastKeyword.startsWith(keyword))) {
+          history.replace(url);
+        } else {
+          setLastKeyword(keyword);
+          history.push(url);
+        }
       }
     },
     { wait: 500 }
