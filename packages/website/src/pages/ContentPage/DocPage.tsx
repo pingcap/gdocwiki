@@ -87,6 +87,16 @@ function prettify(history: any, baseEl: HTMLElement, fileId: string) {
   }
 }
 
+function removeLinkStyling(style: string): string {
+  if (!style.includes('text-decoration')) {
+    style = style + ';text-decoration: none';
+  }
+  if (!style.match(/(^|[; ])color:/)) {
+    style = style + ';color: rgb(0, 0, 0);';
+  }
+  return style;
+}
+
 // Highlight commented text just as in Google Docs.
 // Link to the comment text at the bottom of the doc.
 function highlightAndLinkComments(baseEl: HTMLElement) {
@@ -119,12 +129,7 @@ function highlightAndLinkComments(baseEl: HTMLElement) {
       }
       // The linked text should not be styled like a link.
       // The highlight already indicates it is a link like in Google Docs.
-      if (!style.includes('text-decoration')) {
-        style = style + ';text-decoration: none';
-      }
-      if (!style.match(/(^|[; ])color:/)) {
-        style = style + ';color: rgb(0, 0, 0);';
-      }
+      style = removeLinkStyling(style);
       link.setAttribute('style', style);
       link.innerHTML = span.innerHTML;
       link.id = supLink.id;
@@ -159,6 +164,9 @@ function externallyLinkHeaders(baseEl: HTMLElement, fileId: string) {
         link.innerHTML = (inner as HTMLElement).innerHTML;
         for (const a of (inner as HTMLElement).attributes) {
           link.setAttribute(a.name, a.value);
+        }
+        if (!link.getAttribute('style')) {
+          link.setAttribute('style', removeLinkStyling(''));
         }
         el.appendChild(link);
         el.removeChild(inner);
