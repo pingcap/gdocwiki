@@ -94,36 +94,33 @@ function Revisions(props: { file: DriveFile }) {
 }
 
 function FileAction() {
-  // When viewing a folder and auto-displaying a README,
-  // rOuter is the folder and rInner is the README.
-  // Otherwise they are the same.
-  const { inMost: rInner, outMost: rOuter } = useRender();
   const [revisionsEnabled, setRevisionsEnabled] = useState(false);
-  const [lastFileId, setLastFileId] = useState('');
   const dispatch = useDispatch();
   const docMode = useSelector(selectDocMode);
   const sidebarOpen = useSelector(selectSidebarOpen);
-
   const history = useHistory();
 
-  const outerFolderId =
-    rOuter?.file.mimeType === MimeTypes.GoogleFolder ? rOuter?.file.id : rOuter?.file.parents?.[0];
+  // When viewing a folder and auto-displaying a README,
+  // rOuter is the folder and rInner is the README.
+  const { inMost: rInner, outMost: rOuter } = useRender();
+  const file =
+    rInner?.file.name?.toLowerCase() === 'readme' ? rOuter?.file ?? rInner?.file : rInner?.file;
+
+  const outerFolderId = file?.mimeType === MimeTypes.GoogleFolder ? file?.id : file?.parents?.[0];
   const outerFolder = useFileMeta(outerFolderId);
 
-  if (lastFileId !== (rInner?.file.id ?? '')) {
-    setLastFileId(rInner?.file.id ?? '');
-    if (docMode !== 'view') {
+  useEffect(() => {
+    return () => {
       dispatch(setDocMode('view'));
-    }
-    setRevisionsEnabled(false);
-  }
+    };
+  }, [dispatch]);
 
   const tags = useMemo(() => {
-    if (!rInner?.file) {
+    if (!file) {
       return [];
     }
-    return extractTags(rInner.file);
-  }, [rInner?.file]);
+    return extractTags(file);
+  }, [file]);
 
   const settingsCommand = useCallback(
     (file: DriveFile, hasTags = false) => {
@@ -146,13 +143,13 @@ function FileAction() {
     }
     const commands: ICommandBarItemProps[] = [];
 
-    if (rInner?.file && rInner.file.mimeType !== MimeTypes.GoogleFolder) {
-      if (rInner.file.webViewLink) {
+    if (file && file?.mimeType !== MimeTypes.GoogleFolder) {
+      if (file.webViewLink) {
         commands.push({
           key: 'launch',
           iconProps: { iconName: 'Launch' },
           onClick: () => {
-            window.open(rInner.file.webViewLink, '_blank');
+            window.open(file.webViewLink, '_blank');
           },
         });
       }
@@ -171,24 +168,23 @@ function FileAction() {
             className={styles.note}
           >
             <Avatar
-              name={rInner.file.lastModifyingUser?.displayName}
-              src={rInner.file.lastModifyingUser?.photoLink}
+              name={file.lastModifyingUser?.displayName}
+              src={file.lastModifyingUser?.photoLink}
               size="20"
               round
             />
             <span className={responsiveStyle.hideInPhone}>
-              {rInner.file.lastModifyingUser?.displayName}
+              {file.lastModifyingUser?.displayName}
               {' edited '}
-              {dayjs(rInner.file.modifiedTime).fromNow()}
+              {dayjs(file.modifiedTime).fromNow()}
             </span>
             <span className={responsiveStyle.showInPhone}>
-              {rInner.file.lastModifyingUser?.displayName}
+              {file.lastModifyingUser?.displayName}
             </span>
           </Stack>
         ) as any,
       });
-    }
-    {
+    } else {
       // Open folder command
       const folderValid =
         outerFolder.file?.mimeType === MimeTypes.GoogleFolder && outerFolder.file?.webViewLink;
@@ -204,13 +200,12 @@ function FileAction() {
       });
     }
 
-    const file = rInner?.file;
     if (file && canChangeSettings(file) && tags.length === 0) {
       commands.push(settingsCommand(file, false));
     }
 
     return commands;
-  }, [rInner?.file, outerFolder.file, tags.length, settingsCommand]);
+  }, [file, outerFolder.file, tags.length, settingsCommand]);
 
   const commandBarOverflowItems = useMemo(() => {
     const commands: ICommandBarItemProps[] = [];
@@ -268,9 +263,9 @@ function FileAction() {
         },
       });
     }
-    if (rOuter?.file) {
+    if (file) {
       let fileKind;
-      switch (rOuter.file.mimeType) {
+      switch (file.mimeType) {
         case MimeTypes.GoogleFolder:
           fileKind = 'Folder';
           break;
@@ -280,48 +275,47 @@ function FileAction() {
         default:
           fileKind = 'File';
       }
-      if (rOuter.file.capabilities?.canRename) {
+      if (file.capabilities?.canRename) {
         // Rename
         commands.push({
           key: 'rename',
           text: `Rename ${fileKind}`,
           iconProps: { iconName: 'Edit' },
           onClick: () => {
-            showRenameFile(fileKind, rOuter.file);
+            showRenameFile(fileKind, file);
           },
         });
       }
       // Do not allow trash root folder..
-      if (rOuter?.file.id !== getConfig().REACT_APP_ROOT_ID && rOuter.file.capabilities?.canTrash) {
+      if (file.id !== getConfig().REACT_APP_ROOT_ID && file.capabilities?.canTrash) {
         // Trash
         commands.push({
           key: 'trash',
           text: `Trash ${fileKind}`,
           iconProps: { iconName: 'Trash' },
           onClick: () => {
-            showTrashFile(fileKind, rOuter.file);
+            showTrashFile(fileKind, file);
           },
         });
       }
     }
 
-    const file = rInner?.file;
     if (file && canChangeSettings(file) && tags.length > 0) {
       commands.push(settingsCommand(file, true));
     }
 
     return commands;
-  }, [rInner?.file, rOuter?.file, outerFolder.file, tags.length, settingsCommand]);
+  }, [file, outerFolder.file, tags.length, settingsCommand]);
 
   const switchDocMode = useCallback(
     (item) => {
       const mode = item.props['itemKey'];
-      if (rInner?.file) {
+      if (file) {
         const modePathPiece = mode === 'view' ? '' : mode;
-        history.push(`/view/${rInner?.file.id}/${modePathPiece}`);
+        history.push(`/view/${file.id}/${modePathPiece}`);
       }
     },
-    [history, rInner?.file]
+    [history, file]
   );
 
   if (commandBarItems.length === 0 && commandBarOverflowItems.length === 0) {
@@ -332,14 +326,14 @@ function FileAction() {
     return () => <TooltipHost content={mode}>{icon}</TooltipHost>;
   }
 
-  if (!rInner?.file || (!sidebarOpen && docMode !== 'view')) {
+  if (!file || (!sidebarOpen && docMode !== 'view')) {
     return null;
   }
 
   return (
     <>
       <Stack horizontal>
-        {rInner?.file.mimeType === MimeTypes.GoogleDocument && (
+        {file.mimeType === MimeTypes.GoogleDocument && (
           <Stack.Item disableShrink>
             <Pivot onLinkClick={switchDocMode} selectedKey={docMode}>
               <PivotItem
@@ -347,7 +341,7 @@ function FileAction() {
                 onRenderItemLink={tooltip('view', <Icon icon={fileEdit} />)}
               />
               <PivotItem itemKey="preview" onRenderItemLink={tooltip('preview', <View16 />)} />
-              {canEdit(rInner?.file) && (
+              {canEdit(file) && (
                 <PivotItem itemKey="edit" onRenderItemLink={tooltip('edit', <Edit16 />)} />
               )}
             </Pivot>
@@ -355,7 +349,7 @@ function FileAction() {
         )}
         {(
           <Stack.Item disableShrink grow={1} style={{ paddingLeft: '1em' }}>
-            {rInner?.file.mimeType === MimeTypes.GoogleFolder ? (
+            {file.mimeType === MimeTypes.GoogleFolder ? (
               <CommandBar items={commandBarItems.concat(commandBarOverflowItems)} />
             ) : (
               <CommandBar items={commandBarItems} overflowItems={commandBarOverflowItems} />
@@ -364,12 +358,12 @@ function FileAction() {
         )}
         {docMode !== 'view' && (
           <Stack.Item disableShrink grow={1}>
-            <Tags tags={tags} file={rInner!.file} />
+            <Tags tags={tags} file={file} />
           </Stack.Item>
         )}
       </Stack>
-      {docMode === 'view' && revisionsEnabled && <Revisions file={rInner!.file} />}
-      {docMode === 'view' && <Tags tags={tags} file={rInner!.file} />}
+      {revisionsEnabled && <Revisions file={file} />}
+      {docMode === 'view' && <Tags tags={tags} file={file} />}
     </>
   );
 }

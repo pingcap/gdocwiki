@@ -104,19 +104,22 @@ export interface FolderChildrenDisplaySettings {
 export const FOLDER_CHILDREN_SETTINGS_PROPERTY = 'folderChildrenSettings';
 
 export function parseFolderChildrenDisplaySettings(file: DriveFile): FolderChildrenDisplaySettings {
-  const def: FolderChildrenDisplaySettings = {
+  const placeHolder: FolderChildrenDisplaySettings = {
     displayInSidebar: true,
     displayInContent: 'list',
   };
-  let parsed = {};
   const value = file.appProperties?.[FOLDER_CHILDREN_SETTINGS_PROPERTY] ?? '';
   if (value) {
-    parsed = JSON.parse(value);
+    const parsed = JSON.parse(value);
+    for (const key of Object.keys(placeHolder)) {
+      if (typeof parsed[key] === typeof placeHolder[key]) {
+        placeHolder[key] = parsed[key];
+      } else {
+        delete placeHolder[key]
+      }
+    }
   }
-  return {
-    ...def,
-    ...parsed,
-  };
+  return placeHolder;
 }
 
 export function fileIsFolderOrFolderShortcut(file: DriveFile) {

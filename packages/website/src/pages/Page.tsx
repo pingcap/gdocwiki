@@ -42,7 +42,7 @@ function Page(props: PageProps) {
             <FileBreadcrumb file={file} />
           </div>
         )}
-        <FileAction />
+        <FileAction key={file?.id} />
       </>
       {loading && <InlineLoading description="Loading file metadata..." />}
       {!loading && !!error && error}
