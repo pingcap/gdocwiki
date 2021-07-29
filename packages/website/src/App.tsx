@@ -42,10 +42,14 @@ function useExtensionBannerController() {
   const [isDismissed, setIsDismissed] = useLocalStorage('extension.banner.dismissed', false);
   const [visible, setVisible] = useState(!isDismissed);
 
-  const handleDismiss = useCallback(() => {
-    setIsDismissed(true);
-    setVisible(false);
-  }, [setIsDismissed]);
+  const handleDismiss = useCallback(
+    (ev: any) => {
+      ev?.preventDefault();
+      setIsDismissed(true);
+      setVisible(false);
+    },
+    [setIsDismissed]
+  );
 
   const showBanner = useCallback(() => {
     setVisible(true);

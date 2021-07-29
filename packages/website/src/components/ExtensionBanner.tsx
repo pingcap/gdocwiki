@@ -5,7 +5,7 @@ import image from './extension.png';
 
 export interface IExtensionBannerProps {
   visible: boolean;
-  onDismiss?: () => void;
+  onDismiss?: (ev: any) => void;
 }
 
 export function ExtensionBanner({ visible, onDismiss }: IExtensionBannerProps) {
@@ -27,7 +27,7 @@ export function ExtensionBanner({ visible, onDismiss }: IExtensionBannerProps) {
           >
             Get in Chrome Web Store
           </a>
-          <a href="javascript:;" className={styles.button} onClick={onDismiss}>
+          <a href="#" className={styles.button} onClick={onDismiss}>
             Dismiss
           </a>
         </div>
