@@ -223,6 +223,81 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
     [dispatch]
   );
 
+  useEffect(
+    // Support Google Chrome's built-in translation feature.
+    // It works when clicking on a new document
+    // However it does not work for headers
+    // Generally it has problems with small dynamic updates.
+    // Solution: re-generate the headers from the now translated content.
+    function chromeTranslateHeaders() {
+      function handleTranslated(msg: string = '') {
+        if (document.documentElement.className.includes('translated')) {
+          console.debug('translated ' + msg);
+          const contentNode = document.getElementById('gdoc-html-content')!
+          if (!contentNode) {
+            return;
+          }
+          dispatch(
+            setHeaders(
+              MakeTree(
+                Array.from(contentNode.querySelectorAll('h1, h2, h3, h4, h5, h6')).map(fromHTML)
+              )
+            )
+          );
+        }
+      }
+
+      // Translation just enabled
+      const htmlObserver = new MutationObserver(function () {
+        handleTranslated('html');
+      });
+
+      htmlObserver.observe(document.documentElement, {
+        attributes: true,
+        childList: false,
+        subtree: false,
+      });
+
+      // Translation is already enabled and now opening the doc.
+      // This is not entirely reliable because we don't know how long translation will take.
+      // We could listen for inner mutations indicating a translation update.
+      const docObserver = new MutationObserver(function (mutationList: MutationRecord[] ) {
+        for (const mutation of mutationList) {
+          if (mutation.type === 'childList') {
+            for (const node of mutation.addedNodes) {
+              if ((node as HTMLElement).id === 'gdoc-html-content') {
+                setTimeout(() => {
+                  handleTranslated('gdoc html content');
+                }, 1000);
+              }
+            }
+          }
+        }
+      });
+      docObserver.observe(document.getElementById('doc-page-outer')!, {
+        attributes: false,
+        childList: true,
+        subtree: false,
+      });
+
+      // Only the visible content is translated.
+      // So update as the document is scrolled.
+      function scrollCallback() {
+        setTimeout(() => {
+          handleTranslated('scroll');
+        }, 1000);
+      }
+      document.addEventListener('scroll', scrollCallback);
+
+      return () => {
+        htmlObserver.disconnect();
+        docObserver.disconnect();
+        document.removeEventListener('scroll', scrollCallback);
+      };
+    },
+    [dispatch]
+  );
+
   const setDocWithRichContent = useCallback(
     (content: HTMLBodyElement) => {
       dispatch(
@@ -517,11 +592,12 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
   );
 
   return (
-    <div style={{ maxWidth: '50rem' }}>
+    <div id="doc-page-outer" style={{ maxWidth: '50rem' }}>
       <hr />
       {isLoading && <InlineLoading description="Loading document content..." />}
       {!isLoading && (
         <div
+          id="gdoc-html-content"
           style={{ marginTop: '1rem', maxWidth: '50rem' }}
           dangerouslySetInnerHTML={{ __html: docContent }}
           onClick={handleDocContentClick}
