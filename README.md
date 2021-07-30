@@ -102,10 +102,10 @@ REACT_APP_ROOT_DRIVE_ID=xxxxxxx
         - [ ] Reply
         - [x] Highlight quoted comment text
       - [x] Header-based document navigation 
-      - [ ] Prettify
+      - [x] Prettify
         - [x] Pretty font families
         - [x] Pretty monospace fonts
-        - [ ] Adjust incorrect margins and paddings
+        - [x] Use mono fonts in tables: this is useful for code snippets
   - [x] spreadsheet
   - [x] presentation, PDF, MS Word / Excel files
   - [x] Shortcut
