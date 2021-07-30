@@ -1,5 +1,5 @@
 import { Accordion, AccordionItem, InlineLoading } from 'carbon-components-react';
-import { Stack } from 'office-ui-fabric-react';
+import { Stack, StackItem } from 'office-ui-fabric-react';
 import React, { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -7,14 +7,25 @@ import { DriveFileName, DriveIcon, FileListTable } from '../../components';
 import { useManagedRenderStack } from '../../context/RenderStack';
 import { useFolderFilesMeta } from '../../hooks/useFolderFilesMeta';
 import { selectMapIdToFile } from '../../reduxSlices/files';
-import { selectSidebarOpen } from '../../reduxSlices/siderTree';
-import { DriveFile, mdLink, parseFolderChildrenDisplaySettings } from '../../utils';
+import {
+  DriveFile,
+  FolderChildrenDisplayMode,
+  mdLink,
+  parseFolderChildrenDisplaySettings,
+} from '../../utils';
 import styles from './FolderPage.module.scss';
 import ContentPage from '.';
 
-interface IFolderChildrenProps {
-  files?: DriveFile[];
+interface IFolderFilesProps {
+  files: DriveFile[];
+}
+
+interface IFolderProps extends IFolderFilesProps {
   openInNewWindow: boolean;
+}
+
+interface IFolderChildrenProps extends IFolderFilesProps {
+  children: any;
 }
 
 interface IFileInList {
@@ -42,11 +53,11 @@ function FileLink({ file, openInNewWindow }: IFileInList) {
   );
 }
 
-function FolderChildrenList({ files, openInNewWindow }: IFolderChildrenProps) {
+function FolderChildrenList({ files, openInNewWindow }: IFolderProps) {
   return (
     <div className={styles.content}>
       <ul>
-        {(files ?? []).map((file: gapi.client.drive.File) => {
+        {files.map((file: gapi.client.drive.File) => {
           return (
             <li key={file.id} style={{ marginTop: '5px' }}>
               <FileLink file={file} openInNewWindow={openInNewWindow} />
@@ -58,12 +69,10 @@ function FolderChildrenList({ files, openInNewWindow }: IFolderChildrenProps) {
   );
 }
 
-function FolderChildrenHide({ files, openInNewWindow }: IFolderChildrenProps) {
+function FolderChildrenHide({ children, files }: IFolderChildrenProps) {
   return (
     <Accordion align="start">
-      <AccordionItem title={`Folder Contents (${files?.length ?? 0})`}>
-        <FolderChildrenList files={files} openInNewWindow={openInNewWindow} />
-      </AccordionItem>
+      <AccordionItem title={`Folder Contents (${files.length})`}>{children}</AccordionItem>
     </Accordion>
   );
 }
@@ -83,7 +92,6 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
     file,
   });
 
-  const sidebarOpen = useSelector(selectSidebarOpen);
   const mapIdToFile = useSelector(selectMapIdToFile);
   const openInNewWindow = useMemo(() => {
     // If current folder is not in the tree, open new window
@@ -92,11 +100,10 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
 
   const displaySettings = useMemo(() => parseFolderChildrenDisplaySettings(file), [file]);
 
-  const { files, loading, error } = useFolderFilesMeta(file.id);
+  const filesMeta = useFolderFilesMeta(file.id);
+  const { loading, error } = filesMeta;
+  const files = useMemo(() => filesMeta.files ?? [], [filesMeta]);
   const readMeFile = useMemo(() => {
-    if (!files) {
-      return undefined;
-    }
     for (const item of files) {
       if (item.name?.toLowerCase() === 'readme') {
         return item;
@@ -105,16 +112,29 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
   }, [files]);
 
   if (readMeFile) {
+    const display = displaySettings.displayInContent ?? 'list';
+    const props = {};
+    if (display === 'list') {
+      props['horizontal'] = 'horizontal';
+    }
     return (
-      <>
-        {!sidebarOpen && !loading && !error && (
-          <div style={{ maxWidth: '50rem' }}>
-            {loading && <InlineLoading description="Loading folder contents..." />}
-            <FolderChildrenHide openInNewWindow={openInNewWindow} files={files} />
-          </div>
-        )}
-        <ContentPage loading={null} file={readMeFile} renderStackOffset={renderStackOffset + 1} />
-      </>
+      <Stack {...props} tokens={{ childrenGap: 16 }}>
+        <StackItem grow={0}>
+          {!loading && !error && (
+            <ListForSettings
+              display={displaySettings.displayInContent}
+              fileList={files}
+              newWindow={openInNewWindow}
+            />
+          )}
+        </StackItem>
+        <StackItem grow={10}>
+          <p>
+            <Link to={`/view/${readMeFile.id}`}>{readMeFile.name}</Link>
+          </p>
+          <ContentPage loading={null} file={readMeFile} renderStackOffset={renderStackOffset + 1} />
+        </StackItem>
+      </Stack>
     );
   }
 
@@ -124,21 +144,38 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
       {!loading && !!error && error}
       {!loading && !error && (
         <div style={{ marginTop: 32 }}>
-          {displaySettings.displayInContent === 'table' && (
-            <FileListTable openInNewWindow={openInNewWindow} files={files} />
-          )}
-          {displaySettings.displayInContent === 'list' && (
-            <div style={{ maxWidth: '50rem' }}>
-              <FolderChildrenList openInNewWindow={openInNewWindow} files={files} />
-            </div>
-          )}
-          {displaySettings.displayInContent === 'hide' && (
-            <div style={{ maxWidth: '50rem' }}>
-              <FolderChildrenHide openInNewWindow={openInNewWindow} files={files} />
-            </div>
-          )}
+          <ListForSettings
+            display={displaySettings.displayInContent}
+            fileList={files}
+            newWindow={openInNewWindow}
+          />
         </div>
       )}
+    </div>
+  );
+}
+
+function ListForSettings(props: {
+  display?: FolderChildrenDisplayMode;
+  fileList: DriveFile[];
+  newWindow: boolean;
+}) {
+  const { display, fileList, newWindow } = props;
+  if (display === 'table') {
+    return <FileListTable openInNewWindow={newWindow} files={fileList} />;
+  }
+  if (display === 'hide') {
+    return (
+      <div style={{ maxWidth: '50rem' }}>
+        <FolderChildrenHide files={fileList} >
+          <FolderChildrenList files={fileList} openInNewWindow={newWindow} />
+        </FolderChildrenHide>
+      </div>
+    );
+  }
+  return (
+    <div style={{ maxWidth: '50rem' }}>
+      <FolderChildrenList openInNewWindow={newWindow} files={fileList} />
     </div>
   );
 }

@@ -20,7 +20,7 @@ function ContentPage({ loading, file, shortCutFile, renderStackOffset = 0 }: ICo
   // Assume a document for speed in that case.
   // We might be wrong, but that will get corrected without issue.
   if (loading !== null) {
-    return <DocPage file={{ id: loading }} renderStackOffset={renderStackOffset} />;
+    return <DocPage key={loading} file={{ id: loading }} renderStackOffset={renderStackOffset} />;
   }
 
   if (PreviewableMimeTypes.indexOf(file?.mimeType ?? '') > -1) {
@@ -42,7 +42,7 @@ function ContentPage({ loading, file, shortCutFile, renderStackOffset = 0 }: ICo
           />
         );
       }
-      return <DocPage file={file!} renderStackOffset={renderStackOffset} />;
+      return <DocPage key={file?.id} file={file!} renderStackOffset={renderStackOffset} />;
     case MimeTypes.GoogleFolder:
       return (
         <FolderPage
