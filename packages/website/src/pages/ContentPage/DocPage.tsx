@@ -25,65 +25,123 @@ function isModifiedEvent(event) {
   return !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);
 }
 
-function prettify(history: any, baseEl: HTMLElement, fileId: string) {
-  {
-    // Remove all font families, except for some monospace fonts.
-    const monoFF = ['source code', 'courier', 'mono'];
-    const elements = baseEl.getElementsByTagName('*') as HTMLCollectionOf<HTMLElement>;
-    for (const el of elements) {
-      if (el.style) {
-        const ff = el.style.fontFamily.toLowerCase();
-        let isMonoFont = false;
-        for (const f of monoFF) {
-          if (ff.indexOf(f) > -1) {
-            isMonoFont = true;
-            break;
-          }
-        }
-        el.style.fontFamily = '';
-        if (isMonoFont) {
-          el.classList.add('__gdoc_monospace');
-        }
-      }
+const monoFF = ['source code', 'courier', 'mono'];
+
+// Remove all font families, except for some monospace fonts.
+function monoFontsOnly(el: HTMLElement) {
+  const ff = el.style.fontFamily.toLowerCase();
+  let isMonoFont = false;
+  for (const f of monoFF) {
+    if (ff.indexOf(f) > -1) {
+      isMonoFont = true;
+      break;
     }
   }
-  {
-    // Rewrite `https://www.google.com/url?q=`
-    const elements = baseEl.getElementsByTagName('a');
-    for (const el of elements) {
-      if (el.href.indexOf('https://www.google.com/url') !== 0) {
-        continue;
-      }
-      const url = new URL(el.href);
-      const newHref = url.searchParams.get('q');
-      if (newHref) {
-        el.href = newHref;
-      }
-    }
+  el.style.fontFamily = '';
+  if (isMonoFont) {
+    el.classList.add('__gdoc_monospace');
   }
-  {
-    // Open Google Doc and Google Drive link inline, for other links open in new window.
-    const elements = baseEl.getElementsByTagName('a');
-    for (const el of elements) {
-      const id = parseDriveLink(el.href);
-      if (id) {
-        el.href = `/view/${id}`;
-        el.dataset['__gdoc_id'] = id;
-        el.classList.add(styles.gdocLink);
-        continue;
-      }
-      if ((el.getAttribute('href') ?? '').indexOf('#') !== 0) {
-        el.target = '_blank';
-        el.classList.add('__gdoc_external_link');
-        continue;
-      }
+}
+
+const bgColors = {
+  white: 'white',
+  '#ffffff': 'white',
+  'rgb(255, 255, 255)': 'white',
+  'rgb(255,255,255)': 'white',
+};
+
+function cleanElem(el: HTMLElement, inTable: boolean, bgColor: string): void {
+  if (inTable) {
+    monoFontsOnly(el);
+  }
+  // Remove unnecessary background colors.
+  // These can cause text above/below to be cutoff (vertically).
+  // This has been seen after running Chrome's tranlsate
+  const elBgColor = el.style.backgroundColor;
+  if (bgColor === elBgColor || bgColors[bgColor] === bgColors[elBgColor]) {
+    el.style.backgroundColor = '';
+  }
+}
+
+// For modifiers that want to forward properties of the ancestors
+function modifyDescendants(el: HTMLElement, inTable: boolean, parentBgColor: string) {
+  cleanElem(el, inTable, parentBgColor);
+
+  const childEl = el.firstElementChild as HTMLElement | null;
+  const sibling = el.nextElementSibling as HTMLElement | null;
+  if (sibling) {
+    modifyDescendants(sibling, inTable, parentBgColor);
+  }
+  if (childEl) {
+    parentBgColor = el.style.backgroundColor || parentBgColor;
+    inTable = inTable || el.nodeName === 'TABLE';
+    modifyDescendants(childEl, inTable, parentBgColor);
+  }
+}
+
+const timing = false;
+function timed(msg: string, cb: () => void) {
+  if (!timing) {
+    cb();
+    return;
+  }
+  const t0 = performance.now();
+  cb();
+  const t1 = performance.now();
+  console.log(msg + ' took ' + (t1 - t0) + ' milliseconds.');
+}
+
+function rewriteLink(el: HTMLAnchorElement): void {
+  // Rewrite `https://www.google.com/url?q=`
+  if (el.href.indexOf('https://www.google.com/url') === 0) {
+    const url = new URL(el.href);
+    const newHref = url.searchParams.get('q');
+    if (newHref) {
+      el.href = newHref;
     }
+    return;
   }
 
-  highlightAndLinkComments(baseEl);
+  // Open Google Doc and Google Drive link inline, for other links open in new window.
+  const id = parseDriveLink(el.href);
+  if (id) {
+    el.href = `/view/${id}`;
+    el.dataset['__gdoc_id'] = id;
+    el.classList.add(styles.gdocLink);
+    return;
+  }
+  if ((el.getAttribute('href') ?? '').indexOf('#') !== 0) {
+    el.target = '_blank';
+    el.classList.add('__gdoc_external_link');
+    return;
+  }
+}
+
+function prettify(baseEl: HTMLElement, fileId: string) {
+  timed('modify descendants', () => {
+    // The HTML export will not change the background color even if it is changed in the doc
+    let bgColor = 'white';
+    // The HTML export has only html elements
+    modifyDescendants(baseEl, false, bgColor);
+  });
+
+  timed('comments', () => {
+    for (const sup of baseEl.querySelectorAll('sup')) {
+      highlightAndLinkComment(sup);
+    }
+  });
+
+  timed('link rewrite', () => {
+    const elements = baseEl.getElementsByTagName('a');
+    for (const el of elements) {
+      rewriteLink(el);
+    }
+  });
 
   if (fileId) {
-    externallyLinkHeaders(baseEl, fileId);
+    timed('externally link headers', () => {
+      externallyLinkHeaders(baseEl, fileId);
+    });
   }
 }
 
@@ -99,43 +157,40 @@ function removeLinkStyling(style: string): string {
 
 // Highlight commented text just as in Google Docs.
 // Link to the comment text at the bottom of the doc.
-function highlightAndLinkComments(baseEl: HTMLElement) {
-  for (const sup of baseEl.querySelectorAll('sup')) {
-    const supLink = sup.children?.[0];
-    if (supLink.id.startsWith('cmnt_')) {
-      const span = sup.previousElementSibling;
-      if (!span || span.nodeName !== 'SPAN') {
-        if (span && span.id.startsWith('cmnt_')) {
-          // There are multiple sups next to eachother for replies
-          // This removes the replies
-          sup.remove();
-        }
-        continue;
+function highlightAndLinkComment(sup: HTMLElement){
+  const supLink = sup.children?.[0];
+  if (supLink?.id.startsWith('cmnt_')) {
+    const span = sup.previousElementSibling as HTMLElement;
+    if (!span || span.nodeName !== 'SPAN') {
+      if (span && span.id.startsWith('cmnt_')) {
+        // There are multiple sups next to eachother for replies
+        // This removes the replies
+        sup.remove();
       }
-
-      const link = document.createElement('a');
-      const href = supLink.getAttribute('href');
-      if (!href) {
-        console.error('no href for a link');
-        continue;
-      }
-      link.setAttribute('href', href);
-      for (const name of span.getAttributeNames()) {
-        link.setAttribute(name, span.getAttribute(name) ?? '');
-      }
-      let style = span.getAttribute('style') || '';
-      if (!style.includes('background-color')) {
-        style = style + ';background-color: rgb(255, 222, 173)';
-      }
-      // The linked text should not be styled like a link.
-      // The highlight already indicates it is a link like in Google Docs.
-      style = removeLinkStyling(style);
-      link.setAttribute('style', style);
-      link.innerHTML = span.innerHTML;
-      link.id = supLink.id;
-      sup.remove();
-      span.replaceWith(link);
+      return;
     }
+
+    const link = document.createElement('a');
+    const href = supLink.getAttribute('href');
+    if (!href) {
+      console.error('no href for a link');
+      return;
+    }
+    link.setAttribute('href', href);
+    for (const name of span.getAttributeNames()) {
+      link.setAttribute(name, span.getAttribute(name) ?? '');
+    }
+    if (!span.style.backgroundColor) {
+      span.style.backgroundColor = 'rgb(255, 222, 173)';
+    }
+    let style = span.getAttribute('style') || '';
+    // The linked text should not be styled like a link.
+    // The highlight already indicates it is a link like in Google Docs.
+    link.setAttribute('style', removeLinkStyling(style));
+    link.innerHTML = span.innerHTML;
+    link.id = supLink.id;
+    sup.remove();
+    span.replaceWith(link);
   }
 }
 
@@ -165,8 +220,11 @@ function externallyLinkHeaders(baseEl: HTMLElement, fileId: string) {
         for (const a of (inner as HTMLElement).attributes) {
           link.setAttribute(a.name, a.value);
         }
-        if (!link.getAttribute('style')) {
-          link.setAttribute('style', removeLinkStyling(''));
+        if (!link.style.textDecoration) {
+          link.style.textDecoration = 'none';
+        }
+        if (!link.style.color) {
+          link.style.color = 'rgb(0, 0, 0)';
         }
         el.appendChild(link);
         el.removeChild(inner);
@@ -305,10 +363,16 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
           MakeTree(Array.from(content.querySelectorAll('h1, h2, h3, h4, h5, h6')).map(fromHTML))
         )
       );
-      prettify(history, content, file.id ?? '');
+
+      // prettify could take a noticeable amount of time on a slow device.
+      // So first do a raw render and then prettify.
       setDocContent(content.innerHTML);
+      setTimeout(function () {
+        prettify(content, file.id ?? '');
+        setDocContent(content.innerHTML);
+      }, 1);
     },
-    [file.id, dispatch, history]
+    [file.id, dispatch]
   );
 
   useEffect(() => {
