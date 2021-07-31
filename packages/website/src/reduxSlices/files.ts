@@ -1,6 +1,6 @@
 import { createSlice, createSelector } from '@reduxjs/toolkit';
 import naturalCompare from 'natural-compare-lite';
-import { DriveFile, extractTagsIntoSet, fileIsFolderOrFolderShortcut } from '../utils';
+import { DriveFile, getFileSortKey, extractTagsIntoSet } from '../utils';
 
 export interface FilesState {
   isLoading: boolean;
@@ -63,19 +63,6 @@ export const selectAllTags = (state: { files: FilesState }) => {
   r.sort();
   return r;
 };
-
-function getFileSortKey(file: DriveFile) {
-  if (fileIsFolderOrFolderShortcut(file)) {
-    return 0;
-  }
-  if (file?.name?.toLowerCase() === 'readme') {
-    return 1;
-  }
-  if (file?.name?.startsWith('.')) {
-    return 99;
-  }
-  return 2;
-}
 
 // A map to lookup all childrens for a file id.
 export const selectMapIdToChildren: (state: any) => Record<string, DriveFile[]> = createSelector(
