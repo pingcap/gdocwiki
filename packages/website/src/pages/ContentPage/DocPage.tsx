@@ -3,7 +3,6 @@ import { InlineLoading } from 'carbon-components-react';
 import { Stack } from 'office-ui-fabric-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import Avatar from 'react-avatar';
-import ReactDOM from 'react-dom';
 import { useDispatch, useSelector } from 'react-redux'
 import { withRouter } from 'react-router';
 import { useHistory } from 'react-router-dom';
@@ -20,6 +19,15 @@ export interface IDocPageProps {
   location: any;
   history: any;
 }
+
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+ }
 
 function isModifiedEvent(event) {
   return !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);
@@ -180,13 +188,17 @@ function highlightAndLinkComment(sup: HTMLElement){
     for (const name of span.getAttributeNames()) {
       link.setAttribute(name, span.getAttribute(name) ?? '');
     }
-    if (!span.style.backgroundColor) {
-      span.style.backgroundColor = 'rgb(255, 222, 173)';
-    }
     let style = span.getAttribute('style') || '';
     // The linked text should not be styled like a link.
     // The highlight already indicates it is a link like in Google Docs.
     link.setAttribute('style', removeLinkStyling(style));
+    if (!link.style.backgroundColor) {
+      link.style.backgroundColor = 'rgb(255, 222, 173)';
+    }
+    if (!link.style.display) {
+      // Otherwise the highlight can obscure other content
+      link.style.display = 'inline-block';
+    }
     link.innerHTML = span.innerHTML;
     link.id = supLink.id;
     sup.remove();
@@ -252,12 +264,19 @@ function externallyLinkHeaders(baseEl: HTMLElement, fileId: string) {
   }
 }
 
+interface UpgradedComment {
+  htmlId: string;
+  topHref: string;
+  comment: gapi.client.drive.Comment;
+}
+
 function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
   const [docContent, setDocContent] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const dispatch = useDispatch();
   const docComments = useSelector(selectComments);
   const history = useHistory();
+  const [upgradedComments, setUpgradedComments] = useState([] as UpgradedComment[]);
 
   useCallback(() => {
     if (file.name) {
@@ -290,7 +309,6 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
     function chromeTranslateHeaders() {
       function handleTranslated(msg: string = '') {
         if (document.documentElement.className.includes('translated')) {
-          console.debug('translated ' + msg);
           const contentNode = document.getElementById('gdoc-html-content')!
           if (!contentNode) {
             return;
@@ -367,10 +385,10 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
       // prettify could take a noticeable amount of time on a slow device.
       // So first do a raw render and then prettify.
       setDocContent(content.innerHTML);
-      setTimeout(function () {
+      // setTimeout(function () {
         prettify(content, file.id ?? '');
         setDocContent(content.innerHTML);
-      }, 1);
+      // }, 1);
     },
     [file.id, dispatch]
   );
@@ -492,19 +510,26 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
 
   useEffect(() => {
     function removeSpace(s: string): string {
-      return s.replaceAll(/\s+/g, ' ');
+      return s.replaceAll(/\s+/g, '');
     }
 
-    const comments = docComments.filter((comment) => comment.resolved !== true);
-    if (comments.length === 0) {
+    const apiComments = docComments.filter((comment) => comment.resolved !== true);
+    if (apiComments.length === 0) {
       return;
     }
+    const newComments: UpgradedComment[] = [];
 
-    const commentLookup = {};
-    for (const comment of comments) {
-      commentLookup[removeSpace(comment.content ?? '')] = comment;
+    const commentLookup: { [text: string]: gapi.client.drive.Comment[] } = {};
+    for (const comment of apiComments) {
+      const text = removeSpace(comment.content ?? '')
+      const multi = commentLookup[text];
+      if (multi) {
+        multi.push(comment);
+      } else {
+        commentLookup[text] = [comment];
+      }
     }
-    const replyLookup = {};
+    const replyLookup: { [text: string]: gapi.client.drive.Comment[] } = {};
     let i = 0;
     while (true) {
       i += 1;
@@ -513,7 +538,7 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
       if (!commentLink) {
         // console.debug(commentLookup);
         // console.debug(replyLookup);
-        return;
+        break;
       }
       let parent = commentLink.parentElement;
       while (parent && parent.nodeName !== 'DIV') {
@@ -531,99 +556,82 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
         origTextPieces.push(child.textContent || '');
       }
       const lookupText = removeSpace(origTextPieces.join('\n'));
-      const comment = commentLookup[lookupText];
-      if (comment) {
-        delete commentLookup[lookupText];
+      const comments = commentLookup[lookupText];
+      if (comments) {
+        if (comments.length === 1) {
+          delete commentLookup[lookupText];
+        }
+        const topHref = commentLink.getAttribute('href') ?? '#';
+        // console.log(topHref);
+        // console.log(document.getElementById(topHref.slice(1)));
+        const docTextNoSpace = removeSpace(
+          escapeHtml(document.getElementById(topHref.slice(1))?.innerText ?? '')
+        );
+        let exactComment: null | gapi.client.drive.Comment = null;
+        if (docTextNoSpace) {
+          for (const comment of comments) {
+            const quotedNoSpace = removeSpace(comment.quotedFileContent?.value ?? '');
+            if (quotedNoSpace === docTextNoSpace) {
+              exactComment = comment;
+            }
+          }
+        }
+        if (!exactComment) {
+          exactComment = comments.shift()!;
+          if (comments.length > 0) {
+            console.debug(
+              'did not find exact',
+              docTextNoSpace,
+              'guessing',
+               exactComment.quotedFileContent?.value
+            );
+          }
+          for (const comment of comments) {
+            console.debug('alternative', removeSpace(comment.quotedFileContent?.value ?? ''));
+          }
+        }
+
         for (const child of parent.children) {
           parent.removeChild(child);
         }
-        ReactDOM.render(
-          ReactComment({
-            comment,
-            htmlId: commentLink.id,
-            topHref: commentLink.getAttribute('href') ?? '#',
-          }),
-          parent
-        );
-        // need to delete all the replies
-        for (const reply of comment.replies) {
-          replyLookup[removeSpace(reply.content ?? '')] = reply;
+        newComments.push({
+          comment: exactComment,
+          topHref,
+          htmlId: commentLink.id,
+        });
+
+        // Create a lookup for all the replies.
+        // This will confirm that the replies in the DOM exist in our data.
+        for (const reply of exactComment.replies ?? []) {
+          const replyNoSpace = removeSpace(reply.content ?? '');
+          const replies = replyLookup[replyNoSpace];
+          if (replies) {
+            replies.push(reply);
+          } else {
+            replyLookup[replyNoSpace] = [reply];
+          }
         }
+
+        parent.remove();
       } else if (replyLookup[lookupText]) {
-        delete replyLookup[lookupText];
+        const replies = replyLookup[lookupText];
+        // Don't bother figuring out the exact correct reply.
+        replies.shift();
+        if (replies.length === 0) {
+          delete replyLookup[lookupText];
+        }
         // note that we no longer link replies back to the text
         // So delete those supers as well
         document.getElementById((commentLink.getAttribute('href') ?? '').slice(1))?.remove();
         parent.remove();
       } else {
         console.debug('did not find comment for', lookupText);
+        // console.debug(Object.keys(commentLookup));
         // console.debug(replyLookup);
       }
     }
 
-    function ReactComment(props: {
-      htmlId: string;
-      topHref: string;
-      comment: gapi.client.drive.Comment;
-    }) {
-      const { htmlId, topHref, comment } = props;
-      return (
-        <>
-          <Stack
-            horizontal
-            style={{ paddingLeft: '10px', paddingTop: '5px' }}
-            key={topHref}
-            tokens={{ childrenGap: 12, padding: 0 }}
-          >
-            <a
-              target="_blank"
-              rel="noreferrer"
-              title="open to comment in google doc"
-              href={'https://docs.google.com/document/d/' + file.id + '/?disco=' + comment.id}
-            >
-              <Launch16 />
-            </a>
-            <span>
-              <a id={htmlId} href={topHref} style={{ textDecoration: 'none' }} title="back to text">
-                <em>{comment.quotedFileContent?.value}</em>
-              </a>
-              <a id={htmlId} href={topHref} title="back to text">
-                <ArrowUp16 />
-              </a>
-            </span>
-          </Stack>
-          <hr />
-          <Stack horizontal key={comment.id} tokens={{ childrenGap: 8, padding: 8 }}>
-            <Stack>
-              <Avatar
-                name={comment.author?.displayName}
-                src={'https://' + comment.author?.photoLink}
-                size="30"
-                round
-              />
-            </Stack>
-            <Stack>
-              <span dangerouslySetInnerHTML={{ __html: comment.htmlContent ?? '' }} />
-            </Stack>
-          </Stack>
-          {comment.replies?.map((reply) => (
-            <Stack horizontal key={reply.id} tokens={{ childrenGap: 8, padding: 8 }}>
-              <Stack>
-                <Avatar
-                  name={reply.author?.displayName}
-                  src={'https://' + reply.author?.photoLink}
-                  size="30"
-                  round
-                />
-              </Stack>
-              <Stack>
-                <span dangerouslySetInnerHTML={{ __html: reply.htmlContent ?? '' }} />
-              </Stack>
-            </Stack>
-          ))}
-        </>
-      );
-    }
+    setUpgradedComments(newComments);
   }, [docComments, isLoading, file.id]);
 
   useEffect(
@@ -669,13 +677,84 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
       <hr />
       {isLoading && <InlineLoading description="Loading document content..." />}
       {!isLoading && (
-        <div
-          id="gdoc-html-content"
-          style={{ marginTop: '1rem', maxWidth: '50rem' }}
-          dangerouslySetInnerHTML={{ __html: docContent }}
-          onClick={handleDocContentClick}
-        />
+        <div>
+          <div
+            id="gdoc-html-content"
+            style={{ marginTop: '1rem', maxWidth: '50rem' }}
+            dangerouslySetInnerHTML={{ __html: docContent }}
+            onClick={handleDocContentClick}
+          />
+          <div style={{ paddingTop: '30px' }}>
+            <hr />
+            <p>Comments</p>
+            {upgradedComments.map((comment) => (
+              <ReactComment key={comment.htmlId} fileId={file.id!} comment={comment} />
+            ))}
+          </div>
+        </div>
       )}
+    </div>
+  );
+}
+
+function ReactComment(props: { fileId: string, comment: UpgradedComment }): JSX.Element {
+  const { fileId } = props;
+  const { htmlId, topHref, comment } = props.comment;
+  return (
+    <div style={{ paddingBottom: '20px' }}>
+      <hr />
+      <Stack
+        horizontal
+        style={{ paddingLeft: '10px' }}
+        key={topHref}
+        tokens={{ childrenGap: 12, padding: 0 }}
+      >
+        <a
+          target="_blank"
+          rel="noreferrer"
+          title="open to comment in google doc"
+          href={'https://docs.google.com/document/d/' + fileId + '/?disco=' + comment.id}
+        >
+          <Launch16 />
+        </a>
+        <span>
+          <a id={htmlId} href={topHref} style={{ textDecoration: 'none' }} title="back to text">
+            <em>{comment.quotedFileContent?.value}</em>
+          </a>
+          <a id={htmlId} href={topHref} title="back to text">
+            <ArrowUp16 />
+          </a>
+        </span>
+      </Stack>
+      <hr />
+      <Stack horizontal key={comment.id} tokens={{ childrenGap: 8, padding: 8 }}>
+        <Stack>
+          <Avatar
+            name={comment.author?.displayName}
+            src={'https://' + comment.author?.photoLink}
+            size="30"
+            round
+          />
+        </Stack>
+        <Stack>
+          <span dangerouslySetInnerHTML={{ __html: comment.htmlContent ?? '' }} />
+        </Stack>
+      </Stack>
+      {comment.replies?.map((reply) => (
+        <Stack horizontal key={reply.id} tokens={{ childrenGap: 8, padding: 8 }}>
+          <Stack>
+            <Avatar
+              name={reply.author?.displayName}
+              src={'https://' + reply.author?.photoLink}
+              size="30"
+              round
+            />
+          </Stack>
+          <Stack>
+            <span dangerouslySetInnerHTML={{ __html: reply.htmlContent ?? '' }} />
+          </Stack>
+        </Stack>
+      ))}
     </div>
   );
 }
