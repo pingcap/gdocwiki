@@ -1,5 +1,6 @@
+import { Edit16 } from '@carbon/icons-react';
 import { Accordion, AccordionItem, InlineLoading } from 'carbon-components-react';
-import { Stack, StackItem } from 'office-ui-fabric-react';
+import { Stack, StackItem, TooltipHost } from 'office-ui-fabric-react';
 import React, { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -10,6 +11,7 @@ import { selectMapIdToFile } from '../../reduxSlices/files';
 import {
   DriveFile,
   FolderChildrenDisplayMode,
+  canEdit,
   mdLink,
   parseFolderChildrenDisplaySettings,
 } from '../../utils';
@@ -126,17 +128,20 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
       <Stack {...props} tokens={{ childrenGap: 16 }}>
         <StackItem grow={0}>
           {!loading && !error && (
-            <ListForSettings
-              display={display}
-              fileList={files}
-              newWindow={openInNewWindow}
-            />
+            <ListForSettings display={display} fileList={files} newWindow={openInNewWindow} />
           )}
         </StackItem>
         <StackItem grow={10}>
-          <p>
+          <Stack horizontal tokens={{ childrenGap: 8 }}>
             <Link to={`/view/${readMeFile.id}`}>{readMeFile.name}</Link>
-          </p>
+            {canEdit(readMeFile) && (
+              <TooltipHost content="edit">
+                <Link to={`/view/${readMeFile.id}/edit`}>
+                  <Edit16 />
+                </Link>
+              </TooltipHost>
+            )}
+          </Stack>
           <ContentPage loading={null} file={readMeFile} renderStackOffset={renderStackOffset + 1} />
         </StackItem>
       </Stack>
