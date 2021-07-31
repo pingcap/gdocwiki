@@ -145,7 +145,11 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
               )}
             </Stack>
             <hr />
-            <ContentPage loading={null} file={readMeFile} renderStackOffset={renderStackOffset + 1} />
+            <ContentPage
+              loading={null}
+              file={readMeFile}
+              renderStackOffset={renderStackOffset + 1}
+            />
           </StackItem>
         </Stack>
       </>
@@ -175,9 +179,6 @@ function ListForSettings(props: {
   newWindow: boolean;
 }) {
   const { display, fileList, newWindow } = props;
-  if (display === 'table') {
-    return <FileListTable openInNewWindow={newWindow} files={fileList} />;
-  }
   if (display === 'hide') {
     return (
       <div style={{ maxWidth: '50rem' }}>
@@ -187,11 +188,16 @@ function ListForSettings(props: {
       </div>
     );
   }
-  return (
-    <div style={{ maxWidth: '50rem' }}>
-      <FolderChildrenList openInNewWindow={newWindow} files={fileList} />
-    </div>
-  );
+  if (display === 'list') {
+    return (
+      <div style={{ maxWidth: '50rem' }}>
+        <FolderChildrenList openInNewWindow={newWindow} files={fileList} />
+      </div>
+    );
+  }
+
+  // table
+  return <FileListTable openInNewWindow={newWindow} files={fileList} />;
 }
 
 export default React.memo(FolderPage);
