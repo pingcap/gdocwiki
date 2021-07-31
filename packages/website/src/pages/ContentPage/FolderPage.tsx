@@ -122,7 +122,6 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
       // Still renders as a table, but hidden
       display = 'hide';
     }
-    console.log('display setting is', display);
 
     return (
       <>
