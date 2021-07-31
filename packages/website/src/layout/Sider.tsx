@@ -178,7 +178,10 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
   const id = useSelector(selectActiveId) ?? getConfig().REACT_APP_ROOT_ID;
 
   const handleToggle = useCallback(
-    (_, node: TreeNodeProps) => {
+    (ev: React.MouseEvent, node: TreeNodeProps) => {
+      // handleToggle is called before onSelect
+      // This will stop the event from getting to onSelect
+      ev.stopPropagation();
       if (node.isExpanded) {
         dispatch(expand([node.id ?? '']));
       } else {
