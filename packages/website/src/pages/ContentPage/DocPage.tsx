@@ -682,7 +682,6 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
 
   return (
     <div id="doc-page-outer" style={{ maxWidth: '50rem' }}>
-      <hr />
       <div>
         <div
           id="gdoc-html-content"

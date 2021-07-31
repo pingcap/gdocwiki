@@ -125,26 +125,30 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
     console.log('display setting is', display);
 
     return (
-      <Stack {...props} tokens={{ childrenGap: 16 }}>
-        <StackItem grow={0}>
-          {!loading && !error && (
-            <ListForSettings display={display} fileList={files} newWindow={openInNewWindow} />
-          )}
-        </StackItem>
-        <StackItem grow={10}>
-          <Stack horizontal tokens={{ childrenGap: 8 }}>
-            <Link to={`/view/${readMeFile.id}`}>{readMeFile.name}</Link>
-            {canEdit(readMeFile) && (
-              <TooltipHost content="edit">
-                <Link to={`/view/${readMeFile.id}/edit`}>
-                  <Edit16 />
-                </Link>
-              </TooltipHost>
+      <>
+        <hr style={{ paddingTop: 0, marginTop: '0.2rem', marginBottom: '1rem' }} />
+        <Stack {...props} tokens={{ childrenGap: 16 }}>
+          <StackItem grow={0}>
+            {!loading && !error && (
+              <ListForSettings display={display} fileList={files} newWindow={openInNewWindow} />
             )}
-          </Stack>
-          <ContentPage loading={null} file={readMeFile} renderStackOffset={renderStackOffset + 1} />
-        </StackItem>
-      </Stack>
+          </StackItem>
+          <StackItem grow={10}>
+            <Stack horizontal tokens={{ childrenGap: 8 }}>
+              <Link to={`/view/${readMeFile.id}`}>{readMeFile.name}</Link>
+              {canEdit(readMeFile) && (
+                <TooltipHost content="edit">
+                  <Link to={`/view/${readMeFile.id}/edit`}>
+                    <Edit16 />
+                  </Link>
+                </TooltipHost>
+              )}
+            </Stack>
+            <hr />
+            <ContentPage loading={null} file={readMeFile} renderStackOffset={renderStackOffset + 1} />
+          </StackItem>
+        </Stack>
+      </>
     );
   }
 
