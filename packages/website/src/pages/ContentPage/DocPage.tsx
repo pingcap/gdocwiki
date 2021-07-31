@@ -672,18 +672,25 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
     [history]
   );
 
+  if (isLoading) {
+    return (
+      <div id="doc-page-outer" style={{ maxWidth: '50rem' }}>
+        <InlineLoading description="Loading document content..." />
+      </div>
+    )
+  }
+
   return (
     <div id="doc-page-outer" style={{ maxWidth: '50rem' }}>
       <hr />
-      {isLoading && <InlineLoading description="Loading document content..." />}
-      {!isLoading && (
-        <div>
-          <div
-            id="gdoc-html-content"
-            style={{ marginTop: '1rem', maxWidth: '50rem' }}
-            dangerouslySetInnerHTML={{ __html: docContent }}
-            onClick={handleDocContentClick}
-          />
+      <div>
+        <div
+          id="gdoc-html-content"
+          style={{ marginTop: '1rem', maxWidth: '50rem' }}
+          dangerouslySetInnerHTML={{ __html: docContent }}
+          onClick={handleDocContentClick}
+        />
+        {upgradedComments.length > 0 && (
           <div style={{ paddingTop: '30px' }}>
             <hr />
             <p>Comments</p>
@@ -691,8 +698,8 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
               <ReactComment key={comment.htmlId} fileId={file.id!} comment={comment} />
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
