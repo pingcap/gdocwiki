@@ -1,9 +1,8 @@
-import naturalCompare from 'natural-compare-lite';
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { GapiErrorDisplay } from '../components';
 import { updateFiles } from '../reduxSlices/files';
-import { DriveFile } from '../utils';
+import { DriveFile, compareFiles } from '../utils';
 
 export interface IFolderFilesMeta {
   loading: boolean;
@@ -55,9 +54,7 @@ export function useFolderFilesMeta(id?: string) {
         }
 
         const filesArray = Object.values(files);
-        filesArray.sort((a, b) => {
-          return naturalCompare(a.name?.toLowerCase() ?? '', b.name?.toLowerCase() ?? '');
-        });
+        filesArray.sort(compareFiles);
         setData({ loading: false, files: filesArray });
       } catch (e) {
         if (reqRef.current === checkpoint) {
