@@ -112,17 +112,22 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
   }, [files]);
 
   if (readMeFile) {
-    const display = displaySettings.displayInContent ?? 'list';
+    let display = displaySettings.displayInContent ?? 'list';
     const props = {};
     if (display === 'list') {
       props['horizontal'] = 'horizontal';
+    } else if (display === 'table') {
+      // Still renders as a table, but hidden
+      display = 'hide';
     }
+    console.log('display setting is', display);
+
     return (
       <Stack {...props} tokens={{ childrenGap: 16 }}>
         <StackItem grow={0}>
           {!loading && !error && (
             <ListForSettings
-              display={displaySettings.displayInContent}
+              display={display}
               fileList={files}
               newWindow={openInNewWindow}
             />
@@ -168,7 +173,7 @@ function ListForSettings(props: {
     return (
       <div style={{ maxWidth: '50rem' }}>
         <FolderChildrenHide files={fileList} >
-          <FolderChildrenList files={fileList} openInNewWindow={newWindow} />
+          <FileListTable openInNewWindow={newWindow} files={fileList} />;
         </FolderChildrenHide>
       </div>
     );
