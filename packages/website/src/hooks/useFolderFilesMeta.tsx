@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { GapiErrorDisplay } from '../components';
-import { updateFiles } from '../reduxSlices/files';
+import { updateFiles, selectMapIdToChildren } from '../reduxSlices/files';
 import { DriveFile, compareFiles } from '../utils';
 
 export interface IFolderFilesMeta {
@@ -10,16 +10,32 @@ export interface IFolderFilesMeta {
   error?: React.ReactNode;
 }
 
+const inProgressRequests: { [fileId: string]: boolean } = {};
+
 export function useFolderFilesMeta(id?: string) {
   const dispatch = useDispatch();
   const [data, setData] = useState<IFolderFilesMeta>({ loading: true });
   const reqRef = useRef(0);
+  const mapIdToChildren = useSelector(selectMapIdToChildren);
+  if (id && data.loading && data.files === undefined) {
+    // We already have the files
+    // Still go ahead and do the API call to refresh the data
+    // But the caller can use the existing data in the mean time.
+    setData({ loading: data.loading, files: mapIdToChildren[id] });
+  }
 
   useEffect(() => {
     if (!id) {
       setData({ loading: true });
       return;
     }
+
+    // Synchronize access when there are multiple callers.
+    if (inProgressRequests[id]) {
+      console.debug('second request, bailing', id);
+      return;
+    }
+    inProgressRequests[id!] = true;
 
     async function loadFolderFilesMetadata(checkpoint: number) {
       setData({ loading: true });
@@ -62,18 +78,15 @@ export function useFolderFilesMeta(id?: string) {
           setData((d) => ({ ...d, error: <GapiErrorDisplay error={e} /> }));
         }
       } finally {
+        delete inProgressRequests[id!];
         if (reqRef.current === checkpoint) {
           setData((d) => ({ ...d, loading: false }));
         }
       }
     }
 
-    // if (mapIdToChildren?.[id] === undefined) {
     reqRef.current++;
     loadFolderFilesMetadata(reqRef.current);
-    // } else {
-    //   setData({ loading: false, files: mapIdToChildren[id] });
-    // }
   }, [id, dispatch]);
 
   return data;
