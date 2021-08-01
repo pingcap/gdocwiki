@@ -74,7 +74,7 @@ function App() {
     for (let id in mapIdToFile) {
       ids.push(id);
     }
-    dispatch(expand(ids));
+    dispatch(expand({ arg: ids, mapIdToFile }));
   }, [mapIdToFile, dispatch]);
   const handleTreeCollapse = useCallback(() => dispatch(collapseAll()), [dispatch]);
 

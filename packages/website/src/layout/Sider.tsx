@@ -1,5 +1,5 @@
 import { CollapseAll16, Launch16 } from '@carbon/icons-react';
-import { InlineLoading, SkeletonText } from 'carbon-components-react';
+import { Accordion, AccordionItem, InlineLoading, SkeletonText } from 'carbon-components-react';
 import TreeView, { TreeNode, TreeNodeProps } from 'carbon-components-react/lib/components/TreeView';
 import cx from 'classnames';
 import { Stack } from 'office-ui-fabric-react';
@@ -63,71 +63,19 @@ function renderChildren(
     }
   }
 
-  if (parentId === activeId || mapIdToFile?.[activeId]?.parents?.[0] === parentId) {
-    // When selecting something, we display all of its children at last.
-  } else {
-    // When current item is not selected, we only display children item which is a folder.
-    files = files.filter((file) => {
-      return file.mimeType === MimeTypes.GoogleFolder;
+  const showFolders: DriveFile[] = files.filter((file) => {
+    return file.mimeType === MimeTypes.GoogleFolder;
+  });
+  // When current item is not selected, we only display child folders.
+  let showFiles: DriveFile[] = []
+  if (parentId === activeId) {
+    showFiles = files.filter((file) => {
+      return file.mimeType !== MimeTypes.GoogleFolder;
     });
   }
 
-  return files.map((file) => {
-    let isChildrenHidden = false;
-    const childrenDisplaySettings = parseFolderChildrenDisplaySettings(file);
-    if (!childrenDisplaySettings.displayInSidebar && file.mimeType === MimeTypes.GoogleFolder) {
-      isChildrenHidden = true;
-    }
-
-    let itemType: 'hidden_folder' | 'folder' | 'link' | 'file';
-    let parsedLink: MarkdownLink | null = null;
-    if (fileIsFolderOrFolderShortcut(file)) {
-      if (isChildrenHidden) {
-        itemType = 'hidden_folder';
-      } else {
-        itemType = 'folder';
-      }
-    } else {
-      parsedLink = mdLink.parse(file.name);
-      if (parsedLink) {
-        itemType = 'link';
-      } else {
-        itemType = 'file';
-      }
-    }
-
-    let label: React.ReactNode = file.name;
-    switch (itemType) {
-      case 'hidden_folder':
-        label = (
-          <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
-            <CollapseAll16 />
-            <span>{file.name}</span>
-          </Stack>
-        );
-        break;
-      case 'link':
-        label = (
-          <Stack
-            verticalAlign="center"
-            horizontal
-            tokens={{ childrenGap: 8 }}
-            style={{ cursor: 'pointer' }}
-          >
-            <Launch16 />
-            <span>{parsedLink!.title}</span>
-          </Stack>
-        );
-        break;
-      case 'file':
-        label = (
-          <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
-            <DriveIcon file={file} />
-            <span>{file.name}</span>
-          </Stack>
-        );
-        break;
-    }
+  const folderViews = showFolders.map((file: DriveFile) => {
+    let label: React.ReactNode = nodeLabel(file);
 
     const childrenNode = renderChildren(
       activeId,
@@ -138,23 +86,102 @@ function renderChildren(
       handleToggle
     );
 
-    const nodeProps: TreeNodeProps = {
-      isExpanded: expanded?.has(file.id ?? ''),
-      onToggle: handleToggle,
-      label,
-      value: file.id!,
-      onSelect: selectFile(file),
-    };
     if ((childrenNode?.length ?? 0) > 0) {
+      const nodeProps: TreeNodeProps = {
+        isExpanded: expanded?.has(file.id ?? ''),
+        onToggle: handleToggle,
+        label,
+        value: file.id!,
+        onSelect: selectFile(file),
+      };
       return (
         <TreeNode key={file.id} id={file.id} {...nodeProps}>
           {childrenNode}
         </TreeNode>
       );
     } else {
+      const nodeProps: TreeNodeProps = {
+        isExpanded: false,
+        label,
+        value: file.id!,
+        onSelect: selectFile(file),
+      };
       return <TreeNode key={file.id} id={file.id} {...nodeProps} />;
     }
   });
+
+  const fileViews = showFiles.map((file: DriveFile) => {
+    let label: React.ReactNode = nodeLabel(file);
+    const nodeProps: TreeNodeProps = {
+      isExpanded: false,
+      label,
+      value: file.id!,
+      onSelect: selectFile(file),
+    };
+    return <TreeNode key={file.id} id={file.id} {...nodeProps} />;
+  });
+
+  return folderViews.concat(fileViews);
+}
+
+function nodeLabel(file: DriveFile): React.ReactNode {
+  let isChildrenHidden = false;
+  const childrenDisplaySettings = parseFolderChildrenDisplaySettings(file);
+  if (!childrenDisplaySettings.displayInSidebar && file.mimeType === MimeTypes.GoogleFolder) {
+    isChildrenHidden = true;
+  }
+
+  let itemType: 'hidden_folder' | 'folder' | 'link' | 'file';
+  let parsedLink: MarkdownLink | null = null;
+  if (fileIsFolderOrFolderShortcut(file)) {
+    if (isChildrenHidden) {
+      itemType = 'hidden_folder';
+    } else {
+      itemType = 'folder';
+    }
+  } else {
+    parsedLink = mdLink.parse(file.name);
+    if (parsedLink) {
+      itemType = 'link';
+    } else {
+      itemType = 'file';
+    }
+  }
+
+  let label: React.ReactNode = file.name;
+  switch (itemType) {
+    case 'hidden_folder':
+      label = (
+        <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
+          <CollapseAll16 />
+          <span>{file.name}</span>
+        </Stack>
+      );
+      break;
+    case 'link':
+      label = (
+        <Stack
+          verticalAlign="center"
+          horizontal
+          tokens={{ childrenGap: 8 }}
+          style={{ cursor: 'pointer' }}
+        >
+          <Launch16 />
+          <span>{parsedLink!.title}</span>
+        </Stack>
+      );
+      break;
+    case 'file':
+      label = (
+        <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
+          <DriveIcon file={file} />
+          <span>{file.name}</span>
+        </Stack>
+      );
+      break;
+  }
+
+  return label;
 }
 
 function selectFile(file: gapi.client.drive.File) {
@@ -183,17 +210,17 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
       // This will stop the event from getting to onSelect
       ev.stopPropagation();
       if (node.isExpanded) {
-        dispatch(expand([node.id ?? '']));
+        dispatch(expand({ arg: [node.id ?? ''], mapIdToFile }));
       } else {
         dispatch(collapse([node.id ?? '']));
       }
     },
-    [dispatch]
+    [dispatch, mapIdToFile]
   );
 
   useEffect(() => {
     if (mapIdToFile[id]) {
-      dispatch(activate({ id: id, mapIdToFile: mapIdToFile }));
+      dispatch(activate({ arg: id, mapIdToFile: mapIdToFile }));
     }
   }, [id, mapIdToFile, dispatch]);
 

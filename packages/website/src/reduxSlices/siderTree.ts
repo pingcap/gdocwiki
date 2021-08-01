@@ -1,5 +1,31 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { DriveFile } from '../utils';
+import { selectMapIdToFile } from './files';
+
+function ancestors(id: string, mapIdToFile: Record<string, DriveFile>): Set<string> {
+  const newExpandNodes = new Set<string>();
+
+  let currentNodeId = id;
+  while (true) {
+    if (newExpandNodes.has(currentNodeId)) {
+      // Duplicate
+      break;
+    }
+    newExpandNodes.add(currentNodeId);
+    // Try to expand parent
+    const currentNode = mapIdToFile[currentNodeId];
+    if (!currentNode) {
+      break;
+    }
+    const parents = currentNode.parents ?? [];
+    if (parents.length === 0) {
+      break;
+    }
+    currentNodeId = parents[0];
+  }
+
+  return newExpandNodes;
+}
 
 export interface TreeState {
   sidebarOpen: boolean;
@@ -14,8 +40,8 @@ const initialState: TreeState = {
   selected: [],
 };
 
-interface ActivatePayload {
-  id: string;
+interface WithMappings<T> {
+  arg: T;
   mapIdToFile: Record<string, DriveFile>;
 }
 
@@ -35,40 +61,30 @@ export const slice = createSlice({
       state.activeId = payload;
     },
 
-    activate: (state, { payload }: { payload: ActivatePayload }) => {
-      console.log(`Sidebar activate`, payload.id);
-      const newExpandNodes = new Set<string>();
-
-      let currentNodeId = payload.id;
-      while (true) {
-        if (newExpandNodes.has(currentNodeId)) {
-          // Duplicate
-          break;
-        }
-        newExpandNodes.add(currentNodeId);
-        // Try to expand parent
-        const currentNode = payload.mapIdToFile[currentNodeId];
-        if (!currentNode) {
-          break;
-        }
-        const parents = currentNode.parents ?? [];
-        if (parents.length === 0) {
-          break;
-        }
-        currentNodeId = parents[0];
-      }
+    activate: (state, { payload }: { payload: WithMappings<string> }) => {
+      const id = payload.arg;
+      console.log(`Sidebar activate`, id);
+      const newExpandNodes = ancestors(payload.arg, payload.mapIdToFile);
 
       state.selected = [...newExpandNodes];
-
-      for (const id of state.expanded) {
-        newExpandNodes.add(id);
-      }
       state.expanded = [...newExpandNodes];
     },
 
-    expand: (state, { payload }: { payload: Array<string> }) => {
-      let set = new Set([...state.expanded, ...payload]);
-      state.expanded = [...set];
+    expand: (state, { payload }: { payload: WithMappings<string[]> }) => {
+      const newExpanded = payload.arg;
+      console.log('expand', newExpanded);
+
+      let newExpandedAll: string[] = [];
+      newExpanded.forEach((id: string) => {
+        newExpandedAll = newExpandedAll.concat(...ancestors(id, payload.mapIdToFile));
+      });
+
+      // If a different node is selected
+      // Then keep the selected nodes open if they are expanded
+      const ex = new Set(state.expanded);
+      const selectedExpanded = state.selected.filter((s) => ex.has(s));
+      // TODO: also keep expanded parents
+      state.expanded = [...selectedExpanded, ...newExpandedAll];
     },
 
     collapse: (state, { payload }: { payload: Array<string> }) => {
