@@ -1,6 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { DriveFile } from '../utils';
-import { selectMapIdToFile } from './files';
 
 function ancestors(id: string, mapIdToFile: Record<string, DriveFile>): Set<string> {
   const newExpandNodes = new Set<string>();
@@ -32,12 +31,14 @@ export interface TreeState {
   activeId?: string;
   expanded: Array<string>;
   selected: Array<string>;
+  showFiles: Record<string, boolean>;
 }
 
 const initialState: TreeState = {
   sidebarOpen: window.innerWidth >= 600,
   expanded: [],
   selected: [],
+  showFiles: {},
 };
 
 interface WithMappings<T> {
@@ -49,6 +50,14 @@ export const slice = createSlice({
   name: 'tree',
   initialState,
   reducers: {
+    unsetShowFiles: (state, { payload }: { payload: string }) => {
+      delete state.showFiles[payload];
+    },
+
+    setShowFiles: (state, { payload }: { payload: string }) => {
+      state.showFiles[payload] = true;
+    },
+
     closeSidebar: (state, { payload }: { payload: undefined }) => {
       state.sidebarOpen = false;
     },
@@ -63,28 +72,24 @@ export const slice = createSlice({
 
     activate: (state, { payload }: { payload: WithMappings<string> }) => {
       const id = payload.arg;
+      if (state.selected.indexOf(id) !== -1) {
+        return;
+      }
       console.log(`Sidebar activate`, id);
       const newExpandNodes = ancestors(payload.arg, payload.mapIdToFile);
-
       state.selected = [...newExpandNodes];
       state.expanded = [...newExpandNodes];
     },
 
     expand: (state, { payload }: { payload: WithMappings<string[]> }) => {
       const newExpanded = payload.arg;
-      console.log('expand', newExpanded);
-
       let newExpandedAll: string[] = [];
       newExpanded.forEach((id: string) => {
         newExpandedAll = newExpandedAll.concat(...ancestors(id, payload.mapIdToFile));
       });
 
-      // If a different node is selected
-      // Then keep the selected nodes open if they are expanded
-      const ex = new Set(state.expanded);
-      const selectedExpanded = state.selected.filter((s) => ex.has(s));
-      // TODO: also keep expanded parents
-      state.expanded = [...selectedExpanded, ...newExpandedAll];
+      // could be duplicates here, but that should be okay
+      state.expanded = [...state.expanded, ...newExpandedAll];
     },
 
     collapse: (state, { payload }: { payload: Array<string> }) => {
@@ -102,6 +107,8 @@ export const slice = createSlice({
 });
 
 export const {
+  unsetShowFiles,
+  setShowFiles,
   closeSidebar,
   openSidebar,
   setActiveId,
@@ -119,6 +126,8 @@ export const selectActiveId = (state: { tree: TreeState }) => state.tree.activeI
 export const selectSelected = (state: { tree: TreeState }) => [...state.tree.selected];
 
 export const selectSidebarOpen = (state: { tree: TreeState }) => state.tree.sidebarOpen;
+
+export const selectShowFiles = (state: { tree: TreeState }) => state.tree.showFiles;
 
 export default slice.reducer;
 

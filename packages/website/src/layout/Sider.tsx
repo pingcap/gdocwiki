@@ -1,12 +1,13 @@
 import { CollapseAll16, Launch16 } from '@carbon/icons-react';
-import { Accordion, AccordionItem, InlineLoading, SkeletonText } from 'carbon-components-react';
+import { InlineLoading, SkeletonText } from 'carbon-components-react';
 import TreeView, { TreeNode, TreeNodeProps } from 'carbon-components-react/lib/components/TreeView';
 import cx from 'classnames';
 import { Stack } from 'office-ui-fabric-react';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { DriveIcon } from '../components';
 import { getConfig } from '../config';
+import { useFolderFilesMeta } from '../hooks/useFolderFilesMeta';
 import { selectHeaders, selectDriveFile } from '../reduxSlices/doc';
 import {
   selectError,
@@ -21,6 +22,9 @@ import {
   selectActiveId,
   selectExpanded,
   selectSelected,
+  selectShowFiles,
+  setShowFiles,
+  unsetShowFiles,
 } from '../reduxSlices/siderTree';
 import {
   DriveFile,
@@ -38,6 +42,8 @@ function renderChildren(
   activeId: string,
   mapIdToFile: Record<string, DriveFile>,
   mapIdToChildren: Record<string, DriveFile[]>,
+  onFolderShowFiles: (file: DriveFile) => void,
+  showFiles: Record<string, boolean>,
   parentId?: string,
   expanded?: ReadonlySet<string>,
   handleToggle?: (
@@ -63,36 +69,55 @@ function renderChildren(
     }
   }
 
-  const showFolders: DriveFile[] = files.filter((file) => {
+  const filesFolder: DriveFile[] = files.filter((file) => {
     return file.mimeType === MimeTypes.GoogleFolder;
   });
-  // When current item is not selected, we only display child folders.
-  let showFiles: DriveFile[] = []
-  if (parentId === activeId) {
-    showFiles = files.filter((file) => {
+  let filesNotFolder: DriveFile[] = [];
+  if (showFiles[parentId]) {
+    filesNotFolder = files.filter((file) => {
       return file.mimeType !== MimeTypes.GoogleFolder;
     });
   }
 
-  const folderViews = showFolders.map((file: DriveFile) => {
-    let label: React.ReactNode = nodeLabel(file);
-
+  const folderViews = filesFolder.map((file: DriveFile) => {
     const childrenNode = renderChildren(
       activeId,
       mapIdToFile,
       mapIdToChildren,
+      onFolderShowFiles,
+      showFiles,
       file.id,
       expanded,
       handleToggle
     );
 
+    const isExpanded = expanded?.has(file.id ?? '');
+    /* It would be nice to have ... for a leaf node
+       to show its files.
+       The problem is that to actually show the files
+       that requires making it a tree node with a triangle
+       which is a confusing UX
+    const leafFolder =
+      expanded?.has(parentId) &&
+      !!file.id && (mapIdToChildren[file.id] ?? []).filter((file) => {
+        return file.mimeType === MimeTypes.GoogleFolder;
+      }).length === 0;
+      */
+    let label: React.ReactNode = nodeLabel(file, isExpanded, onFolderShowFiles);
+
     if ((childrenNode?.length ?? 0) > 0) {
       const nodeProps: TreeNodeProps = {
-        isExpanded: expanded?.has(file.id ?? ''),
+        isExpanded: isExpanded,
         onToggle: handleToggle,
         label,
         value: file.id!,
-        onSelect: selectFile(file),
+        onSelect: () => {
+          if (file.id === activeId) {
+            onFolderShowFiles(file);
+          } else {
+            selectFile(file)();
+          }
+        },
       };
       return (
         <TreeNode key={file.id} id={file.id} {...nodeProps}>
@@ -110,7 +135,7 @@ function renderChildren(
     }
   });
 
-  const fileViews = showFiles.map((file: DriveFile) => {
+  const fileViews = filesNotFolder.map((file: DriveFile) => {
     let label: React.ReactNode = nodeLabel(file);
     const nodeProps: TreeNodeProps = {
       isExpanded: false,
@@ -124,7 +149,11 @@ function renderChildren(
   return folderViews.concat(fileViews);
 }
 
-function nodeLabel(file: DriveFile): React.ReactNode {
+function nodeLabel(
+  file: DriveFile,
+  isExpanded?: boolean,
+  onFolderShowFiles?: (file: DriveFile) => void
+): React.ReactNode {
   let isChildrenHidden = false;
   const childrenDisplaySettings = parseFolderChildrenDisplaySettings(file);
   if (!childrenDisplaySettings.displayInSidebar && file.mimeType === MimeTypes.GoogleFolder) {
@@ -148,8 +177,24 @@ function nodeLabel(file: DriveFile): React.ReactNode {
     }
   }
 
-  let label: React.ReactNode = file.name;
+  let label: JSX.Element | null = null;
   switch (itemType) {
+    case 'folder':
+      label = (
+        <a
+          href={`/view/${file.id}`}
+          style={{ textDecoration: 'none', color: 'black' }}
+          onClick={(ev) => {
+            ev.preventDefault();
+          }}
+        >
+          {file.name}
+        </a>
+      );
+      if (isExpanded) {
+        label = <ExpandedFolder file={file} label={label} onFolderShowFiles={onFolderShowFiles} />;
+      }
+      break;
     case 'hidden_folder':
       label = (
         <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
@@ -184,6 +229,34 @@ function nodeLabel(file: DriveFile): React.ReactNode {
   return label;
 }
 
+function ExpandedFolder(props: {
+  onFolderShowFiles?: (file: DriveFile) => void;
+  label: JSX.Element;
+  file: DriveFile;
+}) {
+  const { onFolderShowFiles, label, file } = props;
+  const filesMeta = useFolderFilesMeta(file.id);
+  const files = useMemo(() => filesMeta.files ?? [], [filesMeta]);
+
+  return files.length === 0 ? (
+    label
+  ) : (
+    <>
+      <a
+        style={{ cursor: 'pointer' }}
+        onClick={(ev) => {
+          ev.stopPropagation();
+          onFolderShowFiles?.(file);
+        }}
+      >
+        ...
+      </a>
+      &nbsp;
+      {label}
+    </>
+  )
+}
+
 function selectFile(file: gapi.client.drive.File) {
   return () => {
     mdLink.handleFileLinkClick(file);
@@ -201,6 +274,7 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
   const selected = useSelector(selectSelected);
   const headers = useSelector(selectHeaders);
   const file = useSelector(selectDriveFile);
+  const showFiles = useSelector(selectShowFiles);
 
   const id = useSelector(selectActiveId) ?? getConfig().REACT_APP_ROOT_ID;
 
@@ -243,6 +317,14 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
   }
   const headerTreeNodes = (headers ?? []).slice().map(toTreeElements);
 
+  function onFolderShowFiles(file: DriveFile) {
+    if (showFiles[file.id!]) {
+      dispatch(unsetShowFiles(file.id!));
+    } else {
+      dispatch(setShowFiles(file.id!));
+    }
+  }
+
   return (
     <div className={cx(styles.sider, { [styles.isExpanded]: isExpanded })}>
       <HeaderExtraActionsForMobile />
@@ -262,6 +344,8 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
             id,
             mapIdToFile,
             mapIdToChildren,
+            onFolderShowFiles,
+            showFiles,
             getConfig().REACT_APP_ROOT_ID,
             expanded,
             handleToggle
