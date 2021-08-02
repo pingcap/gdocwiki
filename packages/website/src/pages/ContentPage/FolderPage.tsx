@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { DriveFileName, DriveIcon, FileListTable } from '../../components';
 import { useManagedRenderStack } from '../../context/RenderStack';
-import { useFolderFilesMeta, IFolderFilesMeta  } from '../../hooks/useFolderFilesMeta';
+import { useFolderFilesMeta, IFolderFilesMeta } from '../../hooks/useFolderFilesMeta';
 import { selectMapIdToFile } from '../../reduxSlices/files';
 import {
   DriveFile,
@@ -179,7 +179,7 @@ function FilesView(props: IFolderFilesMeta & IFolderProps & IFolderDisplay) {
       {error}
       {!error && loading && <InlineLoading description={loadState + ' folder contents...'} />}
       {(!loading || hasFiles) && (
-        <ListForSettings display={display} files={files} openInNewWindow={openInNewWindow}/>
+        <ListForSettings display={display} files={files} openInNewWindow={openInNewWindow} />
       )}
     </div>
   );
@@ -190,7 +190,7 @@ function ListForSettings(props: IFolderProps & IFolderDisplay) {
   if (display === 'hide') {
     return (
       <div style={{ maxWidth: '50rem' }}>
-        <FolderChildrenHide files={files} >
+        <FolderChildrenHide files={files}>
           <FileListTable openInNewWindow={openInNewWindow} files={files} />;
         </FolderChildrenHide>
       </div>

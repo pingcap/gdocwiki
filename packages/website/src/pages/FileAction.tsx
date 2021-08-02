@@ -40,10 +40,10 @@ function Revisions(props: { file: DriveFile }) {
     if (file.id === folderPageId) {
       return;
     }
-    const fields = 'revisions(id, modifiedTime, lastModifyingUser, exportLinks)'
+    const fields = 'revisions(id, modifiedTime, lastModifyingUser, exportLinks)';
     async function loadRevisions() {
       try {
-        const resp = await gapi.client.drive.revisions.list({ fileId: file.id!, fields })
+        const resp = await gapi.client.drive.revisions.list({ fileId: file.id!, fields });
         setRevisions(resp.result.revisions!.reverse());
       } catch (e) {
         console.error('DocPage files.revisions', file, e);
@@ -87,7 +87,7 @@ function Revisions(props: { file: DriveFile }) {
               </span>
             </div>
           </Stack>
-        )
+        );
       })}
     </div>
   );
@@ -347,7 +347,7 @@ function FileAction() {
             </Pivot>
           </Stack.Item>
         )}
-        {(
+        {
           <Stack.Item disableShrink grow={1} style={{ paddingLeft: '1em' }}>
             {file.mimeType === MimeTypes.GoogleFolder ? (
               <CommandBar items={commandBarItems.concat(commandBarOverflowItems)} />
@@ -355,7 +355,7 @@ function FileAction() {
               <CommandBar items={commandBarItems} overflowItems={commandBarOverflowItems} />
             )}
           </Stack.Item>
-        )}
+        }
         {docMode !== 'view' && (
           <Stack.Item disableShrink grow={1}>
             <Tags tags={tags} file={file} />

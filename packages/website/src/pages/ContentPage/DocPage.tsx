@@ -3,7 +3,7 @@ import { InlineLoading } from 'carbon-components-react';
 import { Stack } from 'office-ui-fabric-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import Avatar from 'react-avatar';
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux';
 import { withRouter } from 'react-router';
 import { useHistory } from 'react-router-dom';
 import { useManagedRenderStack } from '../../context/RenderStack';
@@ -27,7 +27,7 @@ function escapeHtml(text: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
- }
+}
 
 function isModifiedEvent(event) {
   return !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);
@@ -165,7 +165,7 @@ function removeLinkStyling(style: string): string {
 
 // Highlight commented text just as in Google Docs.
 // Link to the comment text at the bottom of the doc.
-function highlightAndLinkComment(sup: HTMLElement){
+function highlightAndLinkComment(sup: HTMLElement) {
   const supLink = sup.children?.[0];
   if (supLink?.id.startsWith('cmnt_')) {
     const span = sup.previousElementSibling as HTMLElement;
@@ -309,7 +309,7 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
     function chromeTranslateHeaders() {
       function handleTranslated(msg: string = '') {
         if (document.documentElement.className.includes('translated')) {
-          const contentNode = document.getElementById('gdoc-html-content')!
+          const contentNode = document.getElementById('gdoc-html-content')!;
           if (!contentNode) {
             return;
           }
@@ -337,7 +337,7 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
       // Translation is already enabled and now opening the doc.
       // This is not entirely reliable because we don't know how long translation will take.
       // We could listen for inner mutations indicating a translation update.
-      const docObserver = new MutationObserver(function (mutationList: MutationRecord[] ) {
+      const docObserver = new MutationObserver(function (mutationList: MutationRecord[]) {
         for (const mutation of mutationList) {
           if (mutation.type === 'childList') {
             for (const node of mutation.addedNodes) {
@@ -386,15 +386,15 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
       // So first do a raw render and then prettify.
       setDocContent(content.innerHTML);
       // setTimeout(function () {
-        prettify(content, file.id ?? '');
-        setDocContent(content.innerHTML);
+      prettify(content, file.id ?? '');
+      setDocContent(content.innerHTML);
       // }, 1);
     },
     [file.id, dispatch]
   );
 
   useEffect(() => {
-    function loadHtml(body: string){
+    function loadHtml(body: string) {
       const parser = new DOMParser();
       const htmlDoc = parser.parseFromString(body, 'text/html');
       const bodyEl = htmlDoc.querySelector('body');
@@ -521,7 +521,7 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
 
     const commentLookup: { [text: string]: gapi.client.drive.Comment[] } = {};
     for (const comment of apiComments) {
-      const text = removeSpace(comment.content ?? '')
+      const text = removeSpace(comment.content ?? '');
       const multi = commentLookup[text];
       if (multi) {
         multi.push(comment);
@@ -583,7 +583,7 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
               'did not find exact',
               docTextNoSpace,
               'guessing',
-               exactComment.quotedFileContent?.value
+              exactComment.quotedFileContent?.value
             );
           }
           for (const comment of comments) {
@@ -639,7 +639,7 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
       for (const link of document.querySelectorAll('.' + styles.gdocLink)) {
         const id = (link as HTMLElement).dataset?.['__gdoc_id'];
         if (id) {
-          const req = { fileId: id, supportsAllDrives: true, fields: 'thumbnailLink' }
+          const req = { fileId: id, supportsAllDrives: true, fields: 'thumbnailLink' };
           gapi.client.drive.files.get(req).then((rsp) => {
             const imgSrc = rsp.result.thumbnailLink;
             if (!imgSrc) {
@@ -666,7 +666,7 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
       const id = (ev.target as HTMLElement).dataset?.['__gdoc_id'];
       if (id) {
         ev.preventDefault();
-        history.push( `/view/${id}`);
+        history.push(`/view/${id}`);
       }
     },
     [history]
@@ -677,7 +677,7 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
       <div id="doc-page-outer" style={{ maxWidth: '50rem' }}>
         <InlineLoading description="Loading document content..." />
       </div>
-    )
+    );
   }
 
   return (
@@ -703,7 +703,7 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
   );
 }
 
-function ReactComment(props: { fileId: string, comment: UpgradedComment }): JSX.Element {
+function ReactComment(props: { fileId: string; comment: UpgradedComment }): JSX.Element {
   const { fileId } = props;
   const { htmlId, topHref, comment } = props.comment;
   return (

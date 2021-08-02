@@ -17,7 +17,7 @@ export interface IHeaderExtraActionsProps {
 
 export function HeaderExtraActions({ onExtensionAction }) {
   return (
-    <HeaderNavigation className={responsiveStyle.hideInPhone} aria-label="navigation" >
+    <HeaderNavigation className={responsiveStyle.hideInPhone} aria-label="navigation">
       <HeaderMenuItem<LinkProps> element={Link} to="/search/tag">
         All Tags
       </HeaderMenuItem>

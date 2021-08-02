@@ -257,7 +257,7 @@ function ExpandedFolder(props: {
       &nbsp;
       {label}
     </>
-  )
+  );
 }
 
 function selectFile(file: gapi.client.drive.File) {

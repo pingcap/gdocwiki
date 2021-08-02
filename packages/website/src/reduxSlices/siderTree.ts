@@ -130,4 +130,3 @@ export const selectSidebarOpen = (state: { tree: TreeState }) => state.tree.side
 export const selectShowFiles = (state: { tree: TreeState }) => state.tree.showFiles;
 
 export default slice.reducer;
-
