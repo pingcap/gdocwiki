@@ -107,7 +107,6 @@ function rewriteLink(el: HTMLAnchorElement): void {
     if (newHref) {
       el.href = newHref;
     }
-    return;
   }
 
   // Open Google Doc and Google Drive link inline, for other links open in new window.
@@ -161,6 +160,35 @@ function removeLinkStyling(style: string): string {
     style = style + ';color: rgb(0, 0, 0);';
   }
   return style;
+}
+
+async function linkPreview(cb?: () => void) {
+  try {
+    for (const link of document.querySelectorAll('.' + styles.gdocLink)) {
+      const id = (link as HTMLElement).dataset?.['__gdoc_id'];
+      if (id) {
+        const req = { fileId: id, supportsAllDrives: true, fields: 'thumbnailLink' };
+        const rsp = await gapi.client.drive.files.get(req);
+        const imgSrc = rsp.result.thumbnailLink;
+        if (!imgSrc) {
+          console.debug('preview no thumbnail', id);
+          return;
+        }
+        let img = document.createElement('img');
+        img.src = imgSrc;
+        img.alt = 'File Icon';
+        img.classList.add(styles.gdocThumbnail);
+        img.setAttribute('style', 'border:solid;');
+        link.append(img);
+      }
+    }
+  } catch (e) {
+    console.error('linkPreview thumbnails', e);
+  } finally {
+    if (cb) {
+      cb();
+    }
+  }
 }
 
 // Highlight commented text just as in Google Docs.
@@ -385,10 +413,15 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
       // prettify could take a noticeable amount of time on a slow device.
       // So first do a raw render and then prettify.
       setDocContent(content.innerHTML);
-      // setTimeout(function () {
+      setTimeout(function () {
         prettify(content, file.id ?? '');
         setDocContent(content.innerHTML);
-      // }, 1);
+        setTimeout(function () {
+          linkPreview(() => {
+            setDocContent(content.innerHTML);
+          });
+        }, 1);
+      }, 1);
     },
     [file.id, dispatch]
   );
@@ -633,30 +666,6 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
 
     setUpgradedComments(newComments);
   }, [docComments, isLoading, file.id]);
-
-  useEffect(
-    function linkPreview() {
-      for (const link of document.querySelectorAll('.' + styles.gdocLink)) {
-        const id = (link as HTMLElement).dataset?.['__gdoc_id'];
-        if (id) {
-          const req = { fileId: id, supportsAllDrives: true, fields: 'thumbnailLink' }
-          gapi.client.drive.files.get(req).then((rsp) => {
-            const imgSrc = rsp.result.thumbnailLink;
-            if (!imgSrc) {
-              return;
-            }
-            let img = document.createElement('img');
-            img.src = imgSrc;
-            img.alt = 'File Icon';
-            img.classList.add(styles.gdocThumbnail);
-            img.setAttribute('style', 'border:solid;');
-            link.append(img);
-          });
-        }
-      }
-    },
-    [isLoading, file.id]
-  );
 
   const handleDocContentClick = useCallback(
     (ev: React.MouseEvent) => {
