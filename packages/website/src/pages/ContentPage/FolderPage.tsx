@@ -138,9 +138,9 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
     props.display = display;
 
     return (
-      <>
+      <div style={{ marginTop: '0.2rem' }}>
         {display === 'list' && (
-          <hr style={{ paddingTop: 0, marginTop: '0.2rem', marginBottom: '1rem' }} />
+          <hr style={{ paddingTop: 0, marginBottom: '1rem' }} />
         )}
         <Stack {...stackProps} tokens={{ childrenGap: 16 }}>
           <StackItem grow={0}>
@@ -165,7 +165,7 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
             />
           </StackItem>
         </Stack>
-      </>
+      </div>
     );
   }
 
