@@ -65,7 +65,7 @@ function FolderChildrenList({ files, openInNewWindow }: IFolderProps) {
       <ul>
         {files.map((file: gapi.client.drive.File) => {
           return (
-            <li key={file.id} style={{ marginTop: '5px' }}>
+            <li key={file.id} style={{ padding: '5px', listStyle: 'none' }}>
               <FileLink file={file} openInNewWindow={openInNewWindow} />
             </li>
           );
