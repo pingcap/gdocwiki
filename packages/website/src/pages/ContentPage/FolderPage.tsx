@@ -139,7 +139,9 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
 
     return (
       <>
-        <hr style={{ paddingTop: 0, marginTop: '0.2rem', marginBottom: '1rem' }} />
+        {display === 'list' && (
+          <hr style={{ paddingTop: 0, marginTop: '0.2rem', marginBottom: '1rem' }} />
+        )}
         <Stack {...stackProps} tokens={{ childrenGap: 16 }}>
           <StackItem grow={0}>
             <FilesView {...props} />
