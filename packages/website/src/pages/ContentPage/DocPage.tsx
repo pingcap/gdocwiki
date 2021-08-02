@@ -162,6 +162,7 @@ function removeLinkStyling(style: string): string {
   return style;
 }
 
+// linkPreview performs blocking API calls
 async function linkPreview(cb?: () => void) {
   try {
     for (const link of document.querySelectorAll('.' + styles.gdocLink)) {
@@ -176,7 +177,7 @@ async function linkPreview(cb?: () => void) {
         }
         let img = document.createElement('img');
         img.src = imgSrc;
-        img.alt = 'File Icon';
+        img.alt = 'Doc Preview';
         img.classList.add(styles.gdocThumbnail);
         img.setAttribute('style', 'border:solid;');
         link.append(img);
@@ -411,11 +412,13 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
       );
 
       // prettify could take a noticeable amount of time on a slow device.
+      // particularly for a large document
       // So first do a raw render and then prettify.
       setDocContent(content.innerHTML);
       setTimeout(function () {
         prettify(content, file.id ?? '');
         setDocContent(content.innerHTML);
+        // link preview makes blocking API calls
         setTimeout(function () {
           linkPreview(() => {
             setDocContent(content.innerHTML);
