@@ -236,9 +236,12 @@ function ExpandedFolder(props: {
 }) {
   const { onFolderShowFiles, label, file } = props;
   const filesMeta = useFolderFilesMeta(file.id);
-  const files = useMemo(() => filesMeta.files ?? [], [filesMeta]);
+  const nonFolderCount = useMemo(() => {
+    return (filesMeta.files ?? []).filter((file) => file.mimeType !== MimeTypes.GoogleFolder)
+      .length;
+  }, [filesMeta]);
 
-  return files.length === 0 ? (
+  return nonFolderCount === 0 ? (
     label
   ) : (
     <>
