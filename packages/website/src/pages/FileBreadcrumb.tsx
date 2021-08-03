@@ -97,9 +97,9 @@ function FileBreadcrumb({ file, extraItems }: IFileBreadcrumbProps) {
   }, [paths, extraItems]);
   if ((items.length ?? 0) > 0) {
     return (
-      <div style={{ marginLeft: '1rem'}}>
+      <div style={{ marginLeft: '1rem' }}>
         <div className={responsiveStyle.hideInPhone}>
-          <Breadcrumb items={items} />
+          <Breadcrumb items={items} style={{ marginTop: '2px', marginBottom: '0px' }} />
         </div>
         {Boolean(file) && (
           <div className={cx(responsiveStyle.showInPhone, styles.fileName)}>

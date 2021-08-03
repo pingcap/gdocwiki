@@ -37,36 +37,34 @@ function Page(props: PageProps) {
     }
   }, file);
 
-  const previewMode = useMemo(() => {
+  const previewModeNotDoc = useMemo(() => {
     return (
       !sidebarOpen &&
       file &&
-      (file.mimeType !== MimeTypes.GoogleFolder || docMode !== 'view') &&
+      file.mimeType !== MimeTypes.GoogleFolder &&
       file.mimeType !== MimeTypes.GoogleDocument
     );
   }, [sidebarOpen, file, docMode]);
 
+  const previewModeDoc = file?.mimeType === MimeTypes.GoogleDocument && docMode !== 'view';
+
   return (
     <RightContainer>
       <>
-        {previewMode ? (
+        {previewModeNotDoc || previewModeDoc ? (
           <Stack horizontal>
-            <StackItem key="breadcrumb">
+            <StackItem key="breadcrumb" grow={4}>
               <FileBreadcrumb file={file} />
             </StackItem>
-            {previewMode && (
-              <StackItem key="fileaction">
-                <FileAction file={file} key={file?.id} allOverflow={true} />
-              </StackItem>
-            )}
+            <StackItem key="fileaction" grow={8}>
+              <FileAction file={file} key={file?.id} />
+            </StackItem>
           </Stack>
         ) : (
           <>
-            {docMode === 'view' && (
-              <div style={{ paddingTop: '0.2rem' }}>
-                <FileBreadcrumb file={file} />
-              </div>
-            )}
+            <div style={{ paddingTop: '0.2rem' }}>
+              <FileBreadcrumb file={file} />
+            </div>
             <FileAction file={file} key={file?.id} />
           </>
         )}

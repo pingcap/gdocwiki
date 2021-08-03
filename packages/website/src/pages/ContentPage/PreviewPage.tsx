@@ -66,10 +66,11 @@ function PreviewPage({ file, edit = false, renderStackOffset = 0 }: IPreviewPage
     );
   }
 
-  let headSubtract = sidebarOpen ? 100 : 65;
-  if (docMode === 'view') {
-    headSubtract += 60;
+  let headSubtract = 143;
+  if (docMode !== 'view' || !sidebarOpen) {
+    headSubtract = headSubtract - 48;
   }
+  console.log('headSubtract', headSubtract);
 
   return (
     <div style={contentStyle}>
