@@ -58,32 +58,45 @@ const bgColors = {
   'rgb(255,255,255)': 'white',
 };
 
-function cleanElem(el: HTMLElement, inTable: boolean, bgColor: string): void {
-  if (inTable) {
+function cleanElem(el: HTMLElement, inherit: AncestorContext): void {
+  if (inherit.inTable && !inherit.inList) {
     monoFontsOnly(el);
   }
   // Remove unnecessary background colors.
   // These can cause text above/below to be cutoff (vertically).
   // This has been seen after running Chrome's tranlsate
   const elBgColor = el.style.backgroundColor;
-  if (bgColor === elBgColor || bgColors[bgColor] === bgColors[elBgColor]) {
+  if (
+    inherit.parentBgColor === elBgColor ||
+    bgColors[inherit.parentBgColor] === bgColors[elBgColor]
+  ) {
     el.style.backgroundColor = '';
   }
 }
 
+type AncestorContext = {
+  inTable: boolean;
+  inList: boolean;
+  parentBgColor: string;
+};
+
 // For modifiers that want to forward properties of the ancestors
-function modifyDescendants(el: HTMLElement, inTable: boolean, parentBgColor: string) {
-  cleanElem(el, inTable, parentBgColor);
+function modifyDescendants(el: HTMLElement, inherit: AncestorContext) {
+  cleanElem(el, inherit);
 
   const childEl = el.firstElementChild as HTMLElement | null;
+  if (childEl) {
+    const childInherit = {
+      parentBgColor: el.style.backgroundColor || inherit.parentBgColor,
+      inTable: inherit.inTable || el.nodeName === 'TABLE',
+      inList: inherit.inList || el.nodeName === 'LI',
+    };
+    modifyDescendants(childEl, childInherit);
+  }
+
   const sibling = el.nextElementSibling as HTMLElement | null;
   if (sibling) {
-    modifyDescendants(sibling, inTable, parentBgColor);
-  }
-  if (childEl) {
-    parentBgColor = el.style.backgroundColor || parentBgColor;
-    inTable = inTable || el.nodeName === 'TABLE';
-    modifyDescendants(childEl, inTable, parentBgColor);
+    modifyDescendants(sibling, inherit);
   }
 }
 
@@ -127,9 +140,9 @@ function rewriteLink(el: HTMLAnchorElement): void {
 function prettify(baseEl: HTMLElement, fileId: string) {
   timed('modify descendants', () => {
     // The HTML export will not change the background color even if it is changed in the doc
-    let bgColor = 'white';
+    let parentBgColor = 'white';
     // The HTML export has only html elements
-    modifyDescendants(baseEl, false, bgColor);
+    modifyDescendants(baseEl, { inList: false, inTable: false, parentBgColor });
   });
 
   timed('comments', () => {
