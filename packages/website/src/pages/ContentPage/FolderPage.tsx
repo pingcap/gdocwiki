@@ -173,13 +173,15 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
 function FilesView(props: IFolderFilesMeta & IFolderProps & IFolderDisplay) {
   const { error, loading, files, openInNewWindow, display } = props;
   const hasFiles = files.length > 0;
-  const loadState = hasFiles ? 'Refreshing' : 'Loading';
   return (
     <div>
       {error}
-      {!error && loading && <InlineLoading description={loadState + ' folder contents...'} />}
+      {!error && loading && !hasFiles && <InlineLoading description="Loading folder contents..." />}
       {(!loading || hasFiles) && (
-        <ListForSettings display={display} files={files} openInNewWindow={openInNewWindow}/>
+        <ListForSettings display={display} files={files} openInNewWindow={openInNewWindow} />
+      )}
+      {!error && loading && hasFiles && (
+        <InlineLoading description="Refreshing folder contents..." />
       )}
     </div>
   );
