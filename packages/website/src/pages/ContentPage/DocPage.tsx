@@ -693,11 +693,11 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
   }
 
   return (
-    <div id="doc-page-outer" style={{ maxWidth: '50rem' }}>
+    <div id="doc-page-outer" style={{ maxWidth: '50rem', }}>
       <div>
         <div
           id="gdoc-html-content"
-          style={{ marginTop: '1rem', maxWidth: '50rem' }}
+          style={{ marginTop: '1rem', maxWidth: '50rem', marginLeft: '1rem' }}
           dangerouslySetInnerHTML={{ __html: docContent }}
           onClick={handleDocContentClick}
         />

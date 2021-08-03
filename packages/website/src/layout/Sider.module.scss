@@ -14,7 +14,8 @@ $sider-width: 300px;
   bottom: 0;
 
   overflow-y: auto;
-  padding: 1rem 0;
+  padding-top: 1rem;
+  padding-left: 0rem;
   background-color: $ui-01;
 
   z-index: 7999;
@@ -63,6 +64,6 @@ $sider-width: 300px;
 
 @include for-size(phone-up) {
   .content.isExpanded {
-    margin-left: $sider-width;
+    margin-left: $sider-width + 10px;
   }
 }

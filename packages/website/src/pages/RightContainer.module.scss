@@ -1,9 +1,1 @@
 @import '../mixin.scss';
-
-.container {
-  padding-left: 1rem;
-
-  @include for-size(phone-and-tablet) {
-    padding-left: 1rem;
-  }
-}
