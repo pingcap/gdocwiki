@@ -44,7 +44,7 @@ function Page(props: PageProps) {
       file.mimeType !== MimeTypes.GoogleFolder &&
       file.mimeType !== MimeTypes.GoogleDocument
     );
-  }, [sidebarOpen, file, docMode]);
+  }, [sidebarOpen, file]);
 
   const previewModeDoc = file?.mimeType === MimeTypes.GoogleDocument && docMode !== 'view';
 
