@@ -241,9 +241,10 @@ function ExpandedFolder(props: {
       .length;
   }, [filesMeta]);
 
-  return nonFolderCount === 0 ? (
-    label
-  ) : (
+  if (!filesMeta.loading && nonFolderCount === 0) {
+    return <>&nbsp;&nbsp;&nbsp;&nbsp;{label} </>;
+  }
+  return (
     <>
       <a
         style={{ cursor: 'pointer' }}
