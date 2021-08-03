@@ -46,7 +46,6 @@ function Page(props: PageProps) {
     );
   }, [sidebarOpen, file, docMode]);
 
-  console.log('previewMode', previewMode, docMode);
   return (
     <RightContainer>
       <>
