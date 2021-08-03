@@ -173,6 +173,16 @@ function prettify(baseEl: HTMLElement, fileId: string) {
 
 const sourceSansPro = '"Source Sans Pro"';
 
+function isFontFamily(fontFamily, fontFamily2) {
+  if (fontFamily[0] !== '"') {
+    fontFamily = '"' + fontFamily + '"';
+  }
+  if (fontFamily2[0] !== '"') {
+    fontFamily2 = '"' + fontFamily2 + '"';
+  }
+  return fontFamily === fontFamily2;
+}
+
 // In these specific case enormous padding gets added to both the top and bottom of a list
 // Do a lot of specific checks to avoid altering other docs where this is not a problem
 function fixPaddingLi(li: HTMLLIElement): void {
@@ -190,8 +200,12 @@ function fixPaddingLi(li: HTMLLIElement): void {
     // There is little logic here.
     // This works well when tested with some specific examples.
     const arialChildPro =
-      child.style.fontFamily === sourceSansPro && li.style.fontFamily === 'Arial';
-    if (child.nodeName === 'SPAN' && (arialChildPro || li.style.fontFamily === sourceSansPro)) {
+      isFontFamily(sourceSansPro, child.style.fontFamily) && isFontFamily('Arial', li.style.fontFamily);
+    console.log(li.style.fontFamily, li.textContent);
+    if (
+      child.nodeName === 'SPAN' &&
+      (arialChildPro || isFontFamily(sourceSansPro, li.style.fontFamily))
+    ) {
       // Although there is too much padding, there is not enough line spacing
       // 1.5 is already recommended for accessibility
       if (parseInt(li.style.lineHeight) < 1.5) {
