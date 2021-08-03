@@ -145,10 +145,56 @@ function prettify(baseEl: HTMLElement, fileId: string) {
     }
   });
 
+  timed('padding fixes', () => {
+    for (const li of baseEl.querySelectorAll('li')) {
+      fixPaddingLi(li as HTMLLIElement);
+    }
+  });
+
   if (fileId) {
     timed('externally link headers', () => {
       externallyLinkHeaders(baseEl, fileId);
     });
+  }
+}
+
+const sourceSansPro = '"Source Sans Pro"';
+
+// In these specific case enormous padding gets added to both the top and bottom of a list
+// Do a lot of specific checks to avoid altering other docs where this is not a problem
+function fixPaddingLi(li: HTMLLIElement): void {
+  // The indent of the second line of the bullet point
+  // should match the first
+  li.style.textIndent = '-1em';
+  li.style.listStylePosition = 'inside';
+
+  if (li.style.paddingTop && li.style.paddingBottom) {
+    const child = li.firstElementChild as HTMLElement | null;
+    if (!child) {
+      return;
+    }
+
+    // There is little logic here.
+    // This works well when tested with some specific examples.
+    const arialChildPro =
+      child.style.fontFamily === sourceSansPro && li.style.fontFamily === 'Arial';
+    if (child.nodeName === 'SPAN' && (arialChildPro || li.style.fontFamily === sourceSansPro)) {
+      // Although there is too much padding, there is not enough line spacing
+      // 1.5 is already recommended for accessibility
+      if (parseInt(li.style.lineHeight) < 1.5) {
+        li.style.lineHeight = '1.5';
+      }
+      if (parseInt(li.style.fontSize) > parseInt(child.style.fontSize)) {
+        child.style.fontSize = '';
+      }
+      if (arialChildPro || li.parentElement?.nodeName === 'OL') {
+        li.style.paddingTop = '0pt';
+        li.style.paddingBottom = '0pt';
+      } else {
+        li.style.paddingTop = '4pt';
+        li.style.paddingBottom = '5pt';
+      }
+    }
   }
 }
 
