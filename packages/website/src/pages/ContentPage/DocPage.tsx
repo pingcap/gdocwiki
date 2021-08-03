@@ -183,46 +183,62 @@ function isFontFamily(fontFamily, fontFamily2) {
   return fontFamily === fontFamily2;
 }
 
-// In these specific case enormous padding gets added to both the top and bottom of a list
+// In some specific cases enormous padding gets added to both the top and bottom of a list
+// In other specific cases some spacing is missing
 // Do a lot of specific checks to avoid altering other docs where this is not a problem
-function fixPaddingLi(li: HTMLLIElement): void {
+function fixPaddingLi(li: HTMLLIElement): boolean {
   // The indent of the second line of the bullet point
   // should match the first
   li.style.textIndent = '-1em';
   li.style.listStylePosition = 'inside';
 
-  if (li.style.paddingTop && li.style.paddingBottom) {
-    const child = li.firstElementChild as HTMLElement | null;
-    if (!child) {
-      return;
-    }
+  const child = li.firstElementChild as HTMLElement | null;
+  if (!child || child.nodeName !== 'SPAN') {
+    return false;
+  }
 
-    // There is little logic here.
-    // This works well when tested with some specific examples.
-    const arialChildPro =
-      isFontFamily(sourceSansPro, child.style.fontFamily) && isFontFamily('Arial', li.style.fontFamily);
-    console.log(li.style.fontFamily, li.textContent);
-    if (
-      child.nodeName === 'SPAN' &&
-      (arialChildPro || isFontFamily(sourceSansPro, li.style.fontFamily))
-    ) {
-      // Although there is too much padding, there is not enough line spacing
-      // 1.5 is already recommended for accessibility
-      if (parseInt(li.style.lineHeight) < 1.5) {
-        li.style.lineHeight = '1.5';
-      }
-      if (parseInt(li.style.fontSize) > parseInt(child.style.fontSize)) {
-        child.style.fontSize = '';
-      }
-      if (arialChildPro || li.parentElement?.nodeName === 'OL') {
-        li.style.paddingTop = '0pt';
-        li.style.paddingBottom = '0pt';
-      } else {
-        li.style.paddingTop = '4pt';
-        li.style.paddingBottom = '5pt';
+  // There is not much logic here.
+  // This works well based on testing specific examples.
+  const isArial = isFontFamily('Arial', li.style.fontFamily);
+  const arialChildPro = isFontFamily(sourceSansPro, child.style.fontFamily) && isArial;
+  const hasPadding = li.style.paddingTop && li.style.paddingBottom;
+  let shouldAddSpace = hasPadding && (isFontFamily(sourceSansPro, li.style.fontFamily) || arialChildPro);
+
+  if (!shouldAddSpace && isArial) {
+    const grandChild = child.firstElementChild;
+    // Add a little spacing to links with underlines
+    if (grandChild && grandChild.nodeName === 'A') {
+      if ((grandChild as HTMLAnchorElement).style.textDecoration === 'inherit') {
+        if (parseInt(li.style.lineHeight) === 1) {
+          li.style.lineHeight = '1.3';
+          return true;
+        }
       }
     }
   }
+
+  if (!shouldAddSpace) {
+    return false;
+  }
+
+  // Although there is too much padding, there is not enough line spacing
+  // 1.5 is already recommended for accessibility
+  if (parseInt(li.style.lineHeight) < 1.5) {
+    li.style.lineHeight = '1.5';
+  }
+  if (parseInt(li.style.fontSize) > parseInt(child.style.fontSize)) {
+    child.style.fontSize = '';
+  }
+  if (hasPadding) {
+    if (arialChildPro || li.parentElement?.nodeName === 'OL') {
+      li.style.paddingTop = '0pt';
+      li.style.paddingBottom = '0pt';
+    } else {
+      li.style.paddingTop = '4pt';
+      li.style.paddingBottom = '5pt';
+    }
+  }
+  return true;
 }
 
 function removeLinkStyling(style: string): string {
