@@ -1,5 +1,6 @@
 import { InlineLoading } from 'carbon-components-react';
-import React from 'react';
+import { Stack, StackItem } from 'office-ui-fabric-react';
+import React, { useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getConfig } from '../config';
 import useFileMeta from '../hooks/useFileMeta';
@@ -7,7 +8,8 @@ import useTitle from '../hooks/useTitle';
 import useUpdateSiderFromPath from '../hooks/useUpdateSiderFromPath';
 import { selectDocMode, setDocMode } from '../reduxSlices/doc';
 import { selectPageReloadToken } from '../reduxSlices/pageReload';
-import { DocMode } from '../utils';
+import { selectSidebarOpen } from '../reduxSlices/siderTree';
+import { DocMode, MimeTypes } from '../utils';
 import ContentPage from './ContentPage';
 import FileAction from './FileAction';
 import FileBreadcrumb from './FileBreadcrumb';
@@ -22,6 +24,7 @@ function Page(props: PageProps) {
   const { file, loading, error } = useFileMeta(id);
   const dispatch = useDispatch();
   const docMode = useSelector(selectDocMode);
+  const sidebarOpen = useSelector(selectSidebarOpen);
   if (props.docMode && props.docMode !== docMode) {
     dispatch(setDocMode(props.docMode));
   }
@@ -34,15 +37,40 @@ function Page(props: PageProps) {
     }
   }, file);
 
+  const previewMode = useMemo(() => {
+    return (
+      !sidebarOpen &&
+      file &&
+      (file.mimeType !== MimeTypes.GoogleFolder || docMode !== 'view') &&
+      file.mimeType !== MimeTypes.GoogleDocument
+    );
+  }, [sidebarOpen, file, docMode]);
+
+  console.log('previewMode', previewMode, docMode);
   return (
     <RightContainer>
       <>
-        {docMode === 'view' && (
-          <div style={{ paddingTop: '0.3rem' }}>
-            <FileBreadcrumb file={file} />
-          </div>
+        {previewMode ? (
+          <Stack horizontal>
+            <StackItem key="breadcrumb">
+              <FileBreadcrumb file={file} />
+            </StackItem>
+            {previewMode && (
+              <StackItem key="fileaction">
+                <FileAction file={file} key={file?.id} allOverflow={true} />
+              </StackItem>
+            )}
+          </Stack>
+        ) : (
+          <>
+            {docMode === 'view' && (
+              <div style={{ paddingTop: '0.2rem' }}>
+                <FileBreadcrumb file={file} />
+              </div>
+            )}
+            <FileAction file={file} key={file?.id} />
+          </>
         )}
-        <FileAction key={file?.id} />
       </>
       {loading && <InlineLoading description="Loading file metadata..." />}
       {!loading && !!error && error}

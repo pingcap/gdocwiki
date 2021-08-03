@@ -97,7 +97,7 @@ function FileBreadcrumb({ file, extraItems }: IFileBreadcrumbProps) {
   }, [paths, extraItems]);
   if ((items.length ?? 0) > 0) {
     return (
-      <>
+      <div style={{ marginLeft: '1rem'}}>
         <div className={responsiveStyle.hideInPhone}>
           <Breadcrumb items={items} />
         </div>
@@ -106,7 +106,7 @@ function FileBreadcrumb({ file, extraItems }: IFileBreadcrumbProps) {
             <CurrentFileBreadcrumbItem file={file!} />
           </div>
         )}
-      </>
+      </div>
     );
   } else {
     return null;

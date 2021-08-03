@@ -21,7 +21,6 @@ import { useRender } from '../context/RenderStack';
 import useFileMeta from '../hooks/useFileMeta';
 import responsiveStyle from '../layout/responsive.module.scss';
 import { selectDocMode, setDocMode } from '../reduxSlices/doc';
-import { selectSidebarOpen } from '../reduxSlices/siderTree';
 import { canChangeSettings, canEdit, extractTags, DocMode, DriveFile, MimeTypes } from '../utils';
 import { folderPageId } from './ContentPage/FolderPage';
 import { showCreateFile } from './FileAction.createFile';
@@ -93,18 +92,19 @@ function Revisions(props: { file: DriveFile }) {
   );
 }
 
-function FileAction() {
+function FileAction(props: { file?: DriveFile, allOverflow?: boolean }) {
   const [revisionsEnabled, setRevisionsEnabled] = useState(false);
   const dispatch = useDispatch();
   const docMode = useSelector(selectDocMode);
-  const sidebarOpen = useSelector(selectSidebarOpen);
   const history = useHistory();
 
   // When viewing a folder and auto-displaying a README,
   // rOuter is the folder and rInner is the README.
   const { inMost: rInner, outMost: rOuter } = useRender();
   const file =
-    rInner?.file.name?.toLowerCase() === 'readme' ? rOuter?.file ?? rInner?.file : rInner?.file;
+    rInner?.file.name?.toLowerCase() === 'readme'
+      ? rOuter?.file ?? rInner?.file
+      : rInner?.file ?? props.file;
 
   const outerFolderId = file?.mimeType === MimeTypes.GoogleFolder ? file?.id : file?.parents?.[0];
   const outerFolder = useFileMeta(outerFolderId);
@@ -147,6 +147,7 @@ function FileAction() {
       if (file.webViewLink) {
         commands.push({
           key: 'launch',
+          text: props.allOverflow ? 'Open in Google' : undefined,
           iconProps: { iconName: 'Launch' },
           onClick: () => {
             window.open(file.webViewLink, '_blank');
@@ -319,6 +320,7 @@ function FileAction() {
   );
 
   if (commandBarItems.length === 0 && commandBarOverflowItems.length === 0) {
+    console.log('no command bar items, return null');
     return null;
   }
 
@@ -326,12 +328,13 @@ function FileAction() {
     return () => <TooltipHost content={mode}>{icon}</TooltipHost>;
   }
 
-  if (!file || (!sidebarOpen && docMode !== 'view')) {
+  if (!file) {
+    console.log('no file, return null');
     return null;
   }
 
   return (
-    <>
+    <div style={{ marginLeft: '1rem' }}>
       <Stack horizontal>
         {file.mimeType === MimeTypes.GoogleDocument && (
           <Stack.Item disableShrink>
@@ -347,15 +350,18 @@ function FileAction() {
             </Pivot>
           </Stack.Item>
         )}
-        {(
-          <Stack.Item disableShrink grow={1} style={{ paddingLeft: '1em' }}>
-            {file.mimeType === MimeTypes.GoogleFolder ? (
-              <CommandBar items={commandBarItems.concat(commandBarOverflowItems)} />
-            ) : (
-              <CommandBar items={commandBarItems} overflowItems={commandBarOverflowItems} />
-            )}
-          </Stack.Item>
-        )}
+        <Stack.Item disableShrink grow={1} style={{ paddingLeft: '1em' }}>
+          {file.mimeType === MimeTypes.GoogleFolder ? (
+            <CommandBar items={commandBarItems.concat(commandBarOverflowItems)} />
+          ) : props.allOverflow ? (
+            <CommandBar
+              items={[]}
+              overflowItems={commandBarItems.concat(commandBarOverflowItems)}
+            />
+          ) : (
+            <CommandBar items={commandBarItems} overflowItems={commandBarOverflowItems} />
+          )}
+        </Stack.Item>
         {docMode !== 'view' && (
           <Stack.Item disableShrink grow={1}>
             <Tags tags={tags} file={file} />
@@ -364,7 +370,7 @@ function FileAction() {
       </Stack>
       {revisionsEnabled && <Revisions file={file} />}
       {docMode === 'view' && <Tags tags={tags} file={file} />}
-    </>
+    </div>
   );
 }
 
