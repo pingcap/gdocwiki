@@ -82,16 +82,16 @@ type AncestorContext = {
 
 // For modifiers that want to forward properties of the ancestors
 function modifyDescendants(el: HTMLElement, inherit: AncestorContext) {
-  cleanElem(el, inherit);
+  const current = {
+    parentBgColor: el.style.backgroundColor || inherit.parentBgColor,
+    inTable: inherit.inTable || el.nodeName === 'TABLE',
+    inList: inherit.inList || el.nodeName === 'LI',
+  };
+  cleanElem(el, current);
 
   const childEl = el.firstElementChild as HTMLElement | null;
   if (childEl) {
-    const childInherit = {
-      parentBgColor: el.style.backgroundColor || inherit.parentBgColor,
-      inTable: inherit.inTable || el.nodeName === 'TABLE',
-      inList: inherit.inList || el.nodeName === 'LI',
-    };
-    modifyDescendants(childEl, childInherit);
+    modifyDescendants(childEl, current);
   }
 
   const sibling = el.nextElementSibling as HTMLElement | null;
