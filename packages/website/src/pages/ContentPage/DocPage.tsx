@@ -1,14 +1,14 @@
 import { ArrowUp16, Launch16 } from '@carbon/icons-react';
 import { InlineLoading } from 'carbon-components-react';
 import { Stack } from 'office-ui-fabric-react';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Avatar from 'react-avatar';
 import { useDispatch, useSelector } from 'react-redux'
 import { withRouter } from 'react-router';
 import { useHistory } from 'react-router-dom';
 import { useManagedRenderStack } from '../../context/RenderStack';
 import { setHeaders, setComments, selectComments, setFile, setNoFile } from '../../reduxSlices/doc';
-import { DriveFile, parseDriveLink } from '../../utils';
+import { DriveFile, canEdit, parseDriveLink } from '../../utils';
 import { fromHTML, MakeTree } from '../../utils/docHeaders';
 import styles from './FolderPage.module.scss';
 
@@ -137,12 +137,18 @@ function rewriteLink(el: HTMLAnchorElement): void {
   }
 }
 
-function prettify(baseEl: HTMLElement, fileId: string) {
+function prettify(baseEl: HTMLElement, file?: DriveFile) {
   timed('modify descendants', () => {
     // The HTML export will not change the background color even if it is changed in the doc
     let parentBgColor = 'white';
     // The HTML export has only html elements
     modifyDescendants(baseEl, { inList: false, inTable: false, parentBgColor });
+  });
+
+  timed('padding fixes', () => {
+    for (const li of baseEl.querySelectorAll('li')) {
+      fixPaddingLi(li as HTMLLIElement);
+    }
   });
 
   timed('comments', () => {
@@ -158,15 +164,9 @@ function prettify(baseEl: HTMLElement, fileId: string) {
     }
   });
 
-  timed('padding fixes', () => {
-    for (const li of baseEl.querySelectorAll('li')) {
-      fixPaddingLi(li as HTMLLIElement);
-    }
-  });
-
-  if (fileId) {
+  if (file) {
     timed('externally link headers', () => {
-      externallyLinkHeaders(baseEl, fileId);
+      externallyLinkHeaders(baseEl, file);
     });
   }
 }
@@ -313,8 +313,11 @@ function highlightAndLinkComment(sup: HTMLElement){
     if (!link.style.backgroundColor) {
       link.style.backgroundColor = 'rgb(255, 222, 173)';
     }
-    if (!link.style.display) {
-      // Otherwise the highlight can obscure other content
+    // The highlight can obscure other content
+    // inline-block fixes this.
+    // We apply a textIndent fix to bulleted lists elsewhere
+    // This does not play nicely with inline-block. so skip those
+    if (!link.style.display && !span.parentElement?.style.textIndent) {
       link.style.display = 'inline-block';
     }
     link.innerHTML = span.innerHTML;
@@ -324,12 +327,15 @@ function highlightAndLinkComment(sup: HTMLElement){
   }
 }
 
-function externallyLinkHeaders(baseEl: HTMLElement, fileId: string) {
-  function headerLink(fileId: string, headerId: string): HTMLAnchorElement {
+function externallyLinkHeaders(baseEl: HTMLElement, file: DriveFile) {
+  const fileId = file.id!;
+  const editable = canEdit(file);
+  function headerLink(headerId: string): HTMLAnchorElement {
     let link = document.createElement('a');
-    link.target = '_blank';
-    link.classList.add('__gdoc_external_link');
-    link.href = 'https://docs.google.com/document/d/' + fileId + '/edit#heading=' + headerId;
+    const path = editable ? 'edit' : 'preview';
+    const href = `/view/${fileId}/${path}#heading=${headerId}`;
+    link.href = href;
+    link.dataset['__gdoc_id'] = fileId;
     return link;
   }
 
@@ -345,7 +351,7 @@ function externallyLinkHeaders(baseEl: HTMLElement, fileId: string) {
         if (!style) {
           style = (inner as HTMLElement).getAttribute('style');
         }
-        let link = headerLink(fileId, el.id);
+        let link = headerLink(el.id);
         link.innerHTML = (inner as HTMLElement).innerHTML;
         for (const a of (inner as HTMLElement).attributes) {
           link.setAttribute(a.name, a.value);
@@ -373,7 +379,7 @@ function externallyLinkHeaders(baseEl: HTMLElement, fileId: string) {
       // A header may already be linked, for example if there is a comment
       // In this case ignore the header
     } else if (children.every((n) => n.nodeName !== 'A')) {
-      const link = headerLink(fileId, el.id);
+      const link = headerLink(el.id);
       el.appendChild(link);
       for (const inner of children) {
         link.appendChild(inner);
@@ -505,7 +511,7 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
       // So first do a raw render and then prettify.
       setDocContent(content.innerHTML);
       setTimeout(function () {
-        prettify(content, file.id ?? '');
+        prettify(content, file);
         setDocContent(content.innerHTML);
         // link preview makes blocking API calls
         setTimeout(function () {
@@ -515,7 +521,7 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
         }, 1);
       }, 1);
     },
-    [file.id, dispatch]
+    [file, dispatch]
   );
 
   useEffect(() => {
@@ -655,6 +661,7 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
       }
     }
     const replyLookup: { [text: string]: gapi.client.drive.Comment[] } = {};
+    const removals: any[] = []
     let i = 0;
     while (true) {
       i += 1;
@@ -737,7 +744,7 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
           }
         }
 
-        parent.remove();
+        removals.push(parent);
       } else if (replyLookup[lookupText]) {
         const replies = replyLookup[lookupText];
         // Don't bother figuring out the exact correct reply.
@@ -748,7 +755,7 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
         // note that we no longer link replies back to the text
         // So delete those supers as well
         document.getElementById((commentLink.getAttribute('href') ?? '').slice(1))?.remove();
-        parent.remove();
+        removals.push(parent);
       } else {
         console.debug('did not find comment for', lookupText);
         // console.debug(Object.keys(commentLookup));
@@ -757,6 +764,15 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
     }
 
     setUpgradedComments(newComments);
+
+    // We incrementally upgrade the html
+    // So we need to make sure those are done first
+    // This is a hacky and unreliable way to achieve that
+    setTimeout(function () {
+      for (const parent of removals) {
+        parent?.remove();
+      }
+    }, 5000);
   }, [docComments, isLoading, file.id]);
 
   const handleDocContentClick = useCallback(
@@ -764,10 +780,24 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
       if (isModifiedEvent(ev)) {
         return;
       }
-      const id = (ev.target as HTMLElement).dataset?.['__gdoc_id'];
+      // Find the target href
+      // An individual onclick handler would have been easier
+      let target = ev.target as HTMLElement;
+      if (target.nodeName !== 'A' && target.parentElement) {
+        target = target.parentElement;
+        while (['SVG', 'PATH'].includes(target.nodeName) && target.parentElement) {
+          target = target.parentElement;
+        }
+      }
+      const id = target.dataset?.['__gdoc_id'];
       if (id) {
         ev.preventDefault();
-        history.push( `/view/${id}`);
+        if ((target as HTMLElement).nodeName === 'A') {
+          const u = new URL((target as HTMLAnchorElement).href);
+          history.push(u.pathname + u.search + u.hash);
+        } else {
+          history.push(`/view/${id}`);
+        }
       }
     },
     [history]
@@ -782,24 +812,25 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
   }
 
   return (
-    <div id="doc-page-outer" style={{ maxWidth: '50rem', }}>
-      <div>
-        <div
-          id="gdoc-html-content"
-          style={{ marginTop: '1rem', maxWidth: '50rem', marginLeft: '1rem' }}
-          dangerouslySetInnerHTML={{ __html: docContent }}
-          onClick={handleDocContentClick}
-        />
-        {upgradedComments.length > 0 && (
-          <div style={{ paddingTop: '30px' }}>
-            <hr />
-            <p>Comments</p>
-            {upgradedComments.map((comment) => (
-              <ReactComment key={comment.htmlId} fileId={file.id!} comment={comment} />
-            ))}
-          </div>
-        )}
-      </div>
+    <div
+      id="doc-page-outer"
+      style={{ maxWidth: '50rem', marginLeft: '1rem' }}
+      onClick={handleDocContentClick}
+    >
+      <div
+        id="gdoc-html-content"
+        style={{ marginTop: '1rem', maxWidth: '50rem' }}
+        dangerouslySetInnerHTML={{ __html: docContent }}
+      />
+      {upgradedComments.length > 0 && (
+        <div style={{ paddingTop: '30px' }}>
+          <hr />
+          <p>Comments</p>
+          {upgradedComments.map((comment) => (
+            <ReactComment key={comment.htmlId} fileId={file.id!} comment={comment} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -816,20 +847,17 @@ function ReactComment(props: { fileId: string, comment: UpgradedComment }): JSX.
         key={topHref}
         tokens={{ childrenGap: 12, padding: 0 }}
       >
-        <a
-          target="_blank"
-          rel="noreferrer"
-          title="open to comment in google doc"
-          href={'https://docs.google.com/document/d/' + fileId + '/?disco=' + comment.id}
-        >
-          <Launch16 />
+        <a href={topHref} title="back to text">
+          <ArrowUp16 />
         </a>
         <span>
-          <a id={htmlId} href={topHref} style={{ textDecoration: 'none' }} title="back to text">
+          <a
+            id={htmlId}
+            data-__gdoc_id={fileId}
+            href={`/view/${fileId}/edit/?disco=${comment.id}`}
+            style={{ textDecoration: 'none' }}
+            title="view in doc">
             <em>{comment.quotedFileContent?.value}</em>
-          </a>
-          <a id={htmlId} href={topHref} title="back to text">
-            <ArrowUp16 />
           </a>
         </span>
       </Stack>
