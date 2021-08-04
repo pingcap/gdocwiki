@@ -193,7 +193,7 @@ function ListForSettings(props: IFolderProps & IFolderDisplay) {
     return (
       <div style={{ maxWidth: '50rem' }}>
         <FolderChildrenHide files={files} >
-          <FileListTable openInNewWindow={openInNewWindow} files={files} />;
+          <FileListTable openInNewWindow={openInNewWindow} files={files} />
         </FolderChildrenHide>
       </div>
     );
