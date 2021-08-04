@@ -1,6 +1,7 @@
 import { InlineLoading } from 'carbon-components-react';
 import React, { CSSProperties, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { useLocation } from 'react-router-dom';
 import { useManagedRenderStack } from '../../context/RenderStack';
 import { selectDocMode } from '../../reduxSlices/doc';
 import { selectSidebarOpen } from '../../reduxSlices/siderTree';
@@ -17,6 +18,7 @@ function PreviewPage({ file, edit = false, renderStackOffset = 0 }: IPreviewPage
   const ref = useRef<HTMLIFrameElement>(null);
   const sidebarOpen = useSelector(selectSidebarOpen);
   const docMode = useSelector(selectDocMode);
+  const location = useLocation();
 
   useManagedRenderStack({
     depth: renderStackOffset,
@@ -37,11 +39,23 @@ function PreviewPage({ file, edit = false, renderStackOffset = 0 }: IPreviewPage
     if (edit && !sidebarOpen) {
       qp = qp + '&rm=demo';
     }
+    const params = new URLSearchParams(location.search);
+    const disco = params.get('disco');
+    if (disco) {
+      console.log('disco', disco);
+      qp = qp + `&disco=${disco}`;
+    }
+    if (location.hash) {
+      const url = new URL(location.hash);
+      if (url.hash) {
+        qp = qp + url.hash;
+      }
+    }
     return file.webViewLink?.replace(
       /\/(edit|view)\?usp=drivesdk/,
       edit ? `/edit${qp}` : `/preview${qp}`
     );
-  }, [edit, sidebarOpen, file.webViewLink]);
+  }, [edit, sidebarOpen, file.webViewLink, location]);
 
   useLayoutEffect(() => {
     setIsLoading(true);
@@ -70,7 +84,6 @@ function PreviewPage({ file, edit = false, renderStackOffset = 0 }: IPreviewPage
   if (docMode !== 'view' || !sidebarOpen) {
     headSubtract = headSubtract - 48;
   }
-  console.log('headSubtract', headSubtract);
 
   return (
     <div style={contentStyle}>
