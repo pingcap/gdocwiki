@@ -107,22 +107,24 @@ function renderChildren(
       isActive: file.id === activeId,
       isExpanded,
       isLeafFolder: leafFolder,
+      filesShown: file.id ? showFiles[file.id] : false,
       onFolderShowFiles,
     });
 
+    const onSelect = () => {
+      if (file.id === activeId) {
+        onFolderShowFiles(file);
+      } else {
+        selectFile(file)();
+      }
+    };
     if ((childrenNode?.length ?? 0) > 0) {
       const nodeProps: TreeNodeProps = {
         isExpanded: isExpanded,
         onToggle: handleToggle,
         label,
         value: file.id!,
-        onSelect: () => {
-          if (file.id === activeId) {
-            onFolderShowFiles(file);
-          } else {
-            selectFile(file)();
-          }
-        },
+        onSelect: onSelect,
       };
       return (
         <TreeNode key={file.id} id={file.id} {...nodeProps}>
@@ -134,7 +136,7 @@ function renderChildren(
         isExpanded: false,
         label,
         value: file.id!,
-        onSelect: selectFile(file),
+        onSelect: onSelect,
       };
       return <TreeNode key={file.id} id={file.id} {...nodeProps} />;
     }
@@ -159,6 +161,7 @@ function nodeLabel(props: {
   isLeafFolder?: boolean;
   isExpanded?: boolean;
   isActive?: boolean;
+  filesShown?: boolean;
   onFolderShowFiles?: (file: DriveFile) => void
 }): React.ReactNode {
   const { file } = props;
@@ -243,6 +246,7 @@ function ExpandedFolder(props: {
   isLeafFolder?: boolean;
   isExpanded?: boolean;
   isActive?: boolean;
+  filesShown?: boolean;
   onFolderShowFiles?: (file: DriveFile) => void;
 }) {
   const { file } = props;
@@ -251,25 +255,31 @@ function ExpandedFolder(props: {
     return (filesMeta.files ?? []).filter((file) => file.mimeType !== MimeTypes.GoogleFolder)
       .length;
   }, [filesMeta]);
-  const noFilesEver = !filesMeta.loading && nonFolderCount === 0
+  const noFilesEver = !filesMeta.loading && nonFolderCount === 0;
+
+  if (noFilesEver) {
+    const style = {};
+    if (!(filesMeta.files?.length !== 0)) {
+      style['textIndent'] = '-.2em';
+      style['list-style-position'] = 'inside';
+      style['list-style-type'] = 'disc';
+    }
+    return (
+      <ul>
+        <li style={style}>{props.label}</li>
+      </ul>
+    );
+  }
 
   const style = {};
   if (props.isLeafFolder) {
-    if (noFilesEver) {
-      style['paddingLeft'] = '1.2em';
+    if ((props.isExpanded && props.isActive && filesMeta.loading) || props.filesShown) {
+      style['textIndent'] = '-1.1em';
     } else {
-      if (props.isExpanded) {
-        style['textIndent'] = '-1.1em';
-      } else {
-        style['paddingLeft'] = '0.1em';
-      }
+      style['paddingLeft'] = '0.1em';
     }
-  } else if (props.isExpanded && !noFilesEver) {
+  } else if (props.isExpanded) {
     style['textIndent'] = '-1.1em';
-  }
-
-  if (noFilesEver) {
-    return <div style={style}>{props.label}</div>;
   }
 
   return (
@@ -322,12 +332,10 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
         dispatch(expand({ arg: [node.id], mapIdToFile }));
       } else {
         dispatch(collapse([node.id]));
-        if (isLeafFolder(mapIdToFile[node.id], mapIdToChildren)) {
-          dispatch(unsetShowFiles(node.id));
-        }
+        dispatch(unsetShowFiles(node.id));
       }
     },
-    [dispatch, mapIdToFile, mapIdToChildren]
+    [dispatch, mapIdToFile]
   );
 
   useEffect(() => {
@@ -356,15 +364,20 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
   const headerTreeNodes = (headers ?? []).slice().map(toTreeElements);
 
   function onFolderShowFiles(file: DriveFile) {
+    console.log('onFolderShowFiles');
     if (!file.id) {
       return;
     }
     if (showFiles[file.id]) {
       dispatch(unsetShowFiles(file.id));
-      dispatch(collapse([file.id]));
+      if (isLeafFolder(mapIdToFile[file.id], mapIdToChildren)) {
+        dispatch(collapse([file.id]));
+      }
     } else {
       dispatch(setShowFiles(file.id));
-      dispatch(expand({ arg: [file.id], mapIdToFile }));
+      if (isLeafFolder(mapIdToFile[file.id], mapIdToChildren)) {
+        dispatch(expand({ arg: [file.id], mapIdToFile }));
+      }
     }
   }
 
