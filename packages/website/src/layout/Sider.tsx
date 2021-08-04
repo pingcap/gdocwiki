@@ -38,6 +38,15 @@ import { DocHeader, TreeHeading, isTreeHeading } from '../utils/docHeaders';
 import styles from './Sider.module.scss';
 import { HeaderExtraActionsForMobile } from '.';
 
+function isLeafFolder(file: DriveFile, mapIdToChildren: Record<string, DriveFile[]>): boolean {
+  return (
+    !!file.id &&
+    (mapIdToChildren[file.id] ?? []).filter((file) => {
+      return file.mimeType === MimeTypes.GoogleFolder;
+    }).length === 0
+  );
+}
+
 function renderChildren(
   activeId: string,
   mapIdToFile: Record<string, DriveFile>,
@@ -92,18 +101,14 @@ function renderChildren(
     );
 
     const isExpanded = expanded?.has(file.id ?? '');
-    /* It would be nice to have ... for a leaf node
-       to show its files.
-       The problem is that to actually show the files
-       that requires making it a tree node with a triangle
-       which is a confusing UX
-    const leafFolder =
-      expanded?.has(parentId) &&
-      !!file.id && (mapIdToChildren[file.id] ?? []).filter((file) => {
-        return file.mimeType === MimeTypes.GoogleFolder;
-      }).length === 0;
-      */
-    let label: React.ReactNode = nodeLabel(file, isExpanded, onFolderShowFiles);
+    const leafFolder = isLeafFolder(file, mapIdToChildren);
+    let label: React.ReactNode = nodeLabel({
+      file,
+      isActive: file.id === activeId,
+      isExpanded,
+      isLeafFolder: leafFolder,
+      onFolderShowFiles,
+    });
 
     if ((childrenNode?.length ?? 0) > 0) {
       const nodeProps: TreeNodeProps = {
@@ -136,7 +141,7 @@ function renderChildren(
   });
 
   const fileViews = filesNotFolder.map((file: DriveFile) => {
-    let label: React.ReactNode = nodeLabel(file);
+    let label: React.ReactNode = nodeLabel({ file });
     const nodeProps: TreeNodeProps = {
       isExpanded: false,
       label,
@@ -149,11 +154,14 @@ function renderChildren(
   return folderViews.concat(fileViews);
 }
 
-function nodeLabel(
-  file: DriveFile,
-  isExpanded?: boolean,
+function nodeLabel(props: {
+  file: DriveFile;
+  isLeafFolder?: boolean;
+  isExpanded?: boolean;
+  isActive?: boolean;
   onFolderShowFiles?: (file: DriveFile) => void
-): React.ReactNode {
+}): React.ReactNode {
+  const { file } = props;
   let isChildrenHidden = false;
   const childrenDisplaySettings = parseFolderChildrenDisplaySettings(file);
   if (!childrenDisplaySettings.displayInSidebar && file.mimeType === MimeTypes.GoogleFolder) {
@@ -191,8 +199,8 @@ function nodeLabel(
           {file.name}
         </a>
       );
-      if (isExpanded) {
-        label = <ExpandedFolder file={file} label={label} onFolderShowFiles={onFolderShowFiles} />;
+      if ((props.isExpanded || props.isLeafFolder) && props.onFolderShowFiles) {
+        label = <ExpandedFolder {...props} label={label} />;
       }
       break;
     case 'hidden_folder':
@@ -230,35 +238,55 @@ function nodeLabel(
 }
 
 function ExpandedFolder(props: {
-  onFolderShowFiles?: (file: DriveFile) => void;
   label: JSX.Element;
   file: DriveFile;
+  isLeafFolder?: boolean;
+  isExpanded?: boolean;
+  isActive?: boolean;
+  onFolderShowFiles?: (file: DriveFile) => void;
 }) {
-  const { onFolderShowFiles, label, file } = props;
+  const { file } = props;
   const filesMeta = useFolderFilesMeta(file.id);
   const nonFolderCount = useMemo(() => {
     return (filesMeta.files ?? []).filter((file) => file.mimeType !== MimeTypes.GoogleFolder)
       .length;
   }, [filesMeta]);
+  const noFilesEver = !filesMeta.loading && nonFolderCount === 0
 
-  if (!filesMeta.loading && nonFolderCount === 0) {
-    return <>&nbsp;&nbsp;&nbsp;&nbsp;{label} </>;
+  const style = {};
+  if (props.isLeafFolder) {
+    if (noFilesEver) {
+      style['paddingLeft'] = '1.2em';
+    } else {
+      if (props.isExpanded) {
+        style['textIndent'] = '-1.1em';
+      } else {
+        style['paddingLeft'] = '0.1em';
+      }
+    }
+  } else if (props.isExpanded && !noFilesEver) {
+    style['textIndent'] = '-1.1em';
   }
+
+  if (noFilesEver) {
+    return <div style={style}>{props.label}</div>;
+  }
+
   return (
-    <>
+    <div style={style}>
       <a
         style={{ cursor: 'pointer' }}
         onClick={(ev) => {
           ev.stopPropagation();
-          onFolderShowFiles?.(file);
+          props.onFolderShowFiles?.(file);
         }}
       >
         ...
       </a>
       &nbsp;
-      {label}
-    </>
-  )
+      {props.label}
+    </div>
+  );
 }
 
 function selectFile(file: gapi.client.drive.File) {
@@ -287,13 +315,19 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
       // handleToggle is called before onSelect
       // This will stop the event from getting to onSelect
       ev.stopPropagation();
+      if (!node.id) {
+        return;
+      }
       if (node.isExpanded) {
-        dispatch(expand({ arg: [node.id ?? ''], mapIdToFile }));
+        dispatch(expand({ arg: [node.id], mapIdToFile }));
       } else {
-        dispatch(collapse([node.id ?? '']));
+        dispatch(collapse([node.id]));
+        if (isLeafFolder(mapIdToFile[node.id], mapIdToChildren)) {
+          dispatch(unsetShowFiles(node.id));
+        }
       }
     },
-    [dispatch, mapIdToFile]
+    [dispatch, mapIdToFile, mapIdToChildren]
   );
 
   useEffect(() => {
@@ -322,10 +356,15 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
   const headerTreeNodes = (headers ?? []).slice().map(toTreeElements);
 
   function onFolderShowFiles(file: DriveFile) {
-    if (showFiles[file.id!]) {
-      dispatch(unsetShowFiles(file.id!));
+    if (!file.id) {
+      return;
+    }
+    if (showFiles[file.id]) {
+      dispatch(unsetShowFiles(file.id));
+      dispatch(collapse([file.id]));
     } else {
-      dispatch(setShowFiles(file.id!));
+      dispatch(setShowFiles(file.id));
+      dispatch(expand({ arg: [file.id], mapIdToFile }));
     }
   }
 
