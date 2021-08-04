@@ -24,6 +24,9 @@ $sider-width: 300px;
     .bx--label {
       padding-left: 1rem;
     }
+    .bx--tree .bx--tree-leaf-node {
+      padding-left: 1.5rem;
+    }
     @include for-size(phone-up) {
       .bx--label {
         display: none;
@@ -43,6 +46,7 @@ $sider-width: 300px;
     transform: scaleY(0.8);
   }
 }
+
 
 .sider.isExpanded {
   opacity: 1;
