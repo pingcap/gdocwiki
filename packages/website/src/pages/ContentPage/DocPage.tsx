@@ -339,12 +339,31 @@ function externallyLinkHeaders(baseEl: HTMLElement, file: DriveFile) {
     return link;
   }
 
+  function childrenArray(el: HTMLElement) {
+    return Array.from(el.childNodes) as HTMLElement[];
+  }
+  function everyNodeNamed(els: HTMLElement[], nodeName: string) {
+    return els.every((n) => n.nodeName === nodeName);
+  }
+
   // Link from headers into the GDoc
   const headers = Array.from(
     baseEl.querySelectorAll('h1, h2, h3, h4, h5, h6')
   ) as HTMLHeadingElement[];
   for (const el of headers) {
-    let children = Array.from(el.childNodes);
+    let children = childrenArray(el);
+
+    // If a header is all links or spans with links, it is already a link, ignore it
+    if (
+      children.every(
+        (n) =>
+          n.nodeName === 'A' ||
+          (n.nodeName === 'SPAN' && everyNodeNamed(childrenArray(n as HTMLElement), 'A'))
+      )
+    ) {
+      continue;
+    }
+
     if (children.every((n) => n.nodeName === 'SPAN')) {
       let style: string | null = null;
       for (const inner of children) {
@@ -375,10 +394,7 @@ function externallyLinkHeaders(baseEl: HTMLElement, file: DriveFile) {
           }
         }
       }
-
-      // A header may already be linked, for example if there is a comment
-      // In this case ignore the header
-    } else if (children.every((n) => n.nodeName !== 'A')) {
+    } else {
       const link = headerLink(el.id);
       el.appendChild(link);
       for (const inner of children) {
