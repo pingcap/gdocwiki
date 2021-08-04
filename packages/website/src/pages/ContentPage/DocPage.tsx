@@ -1,7 +1,7 @@
 import { ArrowUp16, Launch16 } from '@carbon/icons-react';
 import { InlineLoading } from 'carbon-components-react';
 import { Stack } from 'office-ui-fabric-react';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Avatar from 'react-avatar';
 import { useDispatch, useSelector } from 'react-redux'
 import { withRouter } from 'react-router';

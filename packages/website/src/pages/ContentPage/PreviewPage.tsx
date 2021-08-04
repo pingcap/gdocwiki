@@ -46,10 +46,7 @@ function PreviewPage({ file, edit = false, renderStackOffset = 0 }: IPreviewPage
       qp = qp + `&disco=${disco}`;
     }
     if (location.hash) {
-      const url = new URL(location.hash);
-      if (url.hash) {
-        qp = qp + url.hash;
-      }
+      qp = qp + location.hash;
     }
     return file.webViewLink?.replace(
       /\/(edit|view)\?usp=drivesdk/,
