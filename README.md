@@ -4,11 +4,11 @@ A wiki based on Google Doc / Drive.
 
 ## User Guide
 
-gdocwiki combines a folder tree view in a sidebar with a document preview in the main panel.
-This helps browse through content without opening lots of new tabs and also to understand the hierarchical relationship of content.
+Gdocwiki combines a folder tree view in a sidebar with a document viewer in the main panel. Documents can be browsed and edited without opening lots of new tabs.
 
-An outline of headers are shown in the sidebar. Clicking on them will navigate to the header of the document shown in gdocwiki.
-The headers in the document preview are linked out to the Google doc at the location of the header. These can be clicked on to edit/suggest/comment on the doc.
+You can stay in flow and stay organized. README files are automatically rendered to give an overview of a directory. Tags are more prominently available.
+
+Gdocwiki defaults to a mobile-friendly HTML preview with comments. Switch to edit mode to start writing.
 
 The following file name conventions are used:
 
