@@ -53,11 +53,11 @@ function Page(props: PageProps) {
       <>
         {previewModeNotDoc || previewModeDoc ? (
           <Stack horizontal>
-            <StackItem key="breadcrumb" grow={4}>
-              <FileBreadcrumb file={file} />
+            <StackItem key="fileaction" grow={1}>
+              <FileAction file={file} key={file?.id} allOverflow={true} />
             </StackItem>
-            <StackItem key="fileaction" grow={8}>
-              <FileAction file={file} key={file?.id} />
+            <StackItem key="breadcrumb" grow={11}>
+              <FileBreadcrumb file={file} />
             </StackItem>
           </Stack>
         ) : (
