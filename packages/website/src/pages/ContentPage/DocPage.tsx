@@ -35,6 +35,19 @@ function isModifiedEvent(event) {
 
 const monoFF = ['source code', 'courier', 'mono', 'consolas', 'inconsolata'];
 
+function removeUnsupportedFonts(el: HTMLElement) {
+  const ff = el.style.fontFamily;
+  if (ff) {
+    const fonts = (document as any).fonts;
+    const fs = el.style.fontSize || '11pt';
+    var font = `${fs} ${ff}`;
+    if (fonts && fonts.check && !fonts.check(font)) {
+      // console.log('removing unsupported font', font, el, el.textContent);
+      el.style.fontFamily = '';
+    }
+  }
+}
+
 // Remove all font families, except for some monospace fonts.
 function monoFontsOnly(el: HTMLElement) {
   const ff = el.style.fontFamily.toLowerCase();
@@ -45,6 +58,7 @@ function monoFontsOnly(el: HTMLElement) {
       break;
     }
   }
+
   el.style.fontFamily = '';
   if (isMonoFont) {
     el.classList.add('__gdoc_monospace');
@@ -62,6 +76,7 @@ function cleanElem(el: HTMLElement, inherit: AncestorContext): void {
   if (inherit.inTable && !inherit.inList) {
     monoFontsOnly(el);
   }
+  removeUnsupportedFonts(el);
   // Remove unnecessary background colors.
   // These can cause text above/below to be cutoff (vertically).
   // This has been seen after running Chrome's tranlsate
@@ -138,17 +153,17 @@ function rewriteLink(el: HTMLAnchorElement): void {
 }
 
 function prettify(baseEl: HTMLElement, file?: DriveFile) {
+  timed('padding fixes', () => {
+    for (const li of baseEl.querySelectorAll('li')) {
+      fixPaddingLi(li as HTMLLIElement);
+    }
+  });
+
   timed('modify descendants', () => {
     // The HTML export will not change the background color even if it is changed in the doc
     let parentBgColor = 'white';
     // The HTML export has only html elements
     modifyDescendants(baseEl, { inList: false, inTable: false, parentBgColor });
-  });
-
-  timed('padding fixes', () => {
-    for (const li of baseEl.querySelectorAll('li')) {
-      fixPaddingLi(li as HTMLLIElement);
-    }
   });
 
   timed('comments', () => {
