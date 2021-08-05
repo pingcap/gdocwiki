@@ -47,6 +47,29 @@ async function loadFileInfo(fileId: string, token: Token): Promise<FileInfo | un
     fields: '*',
     supportsAllDrives: true,
   });
+
+  // Put the document name in the URL
+  // Then when we send the link to others they will see the title
+  try {
+    var urlParams = new URLSearchParams(window.location.search);
+    if (file.name && !urlParams.get('n')) {
+      // Change invalid characters to '_' but don't show 2 of those next to each other
+      // Change '_-_' to '-'
+      const paramValue = encodeURIComponent(file.name.replaceAll('%', '_'))
+        .replaceAll(/%../g, '_')
+        .replaceAll(/_+/g, '_')
+        .replaceAll(/_-/g, '-')
+        .replaceAll(/-_+/g, '-')
+        .replace(/_+$/, '')
+        .replace(/^_+/, '');
+      urlParams.set('n', paramValue);
+      const newUrl = window.location.origin + window.location.pathname + '?' + urlParams.toString();
+      window.history.replaceState({path: newUrl}, "", newUrl);
+    }
+  } catch (e) {
+    console.warn("error trying to add doc name to parameters ", e);
+  }
+
   log.info('File metadata', file);
   if (file.trashed) {
     log.info('Skipped the file since it is trashed');
@@ -296,7 +319,7 @@ function App(props: { id: string }) {
 }
 
 export async function runDocs(id: string) {
-  // Add ?versions to the url params to deep-link to the versions page
+  // Users can add ?versions to the url params to deep-link to the versions page
   var urlParams = new URLSearchParams(window.location.search);
   if (urlParams.has('versions')) {
     console.debug('wait to click on versions link');
