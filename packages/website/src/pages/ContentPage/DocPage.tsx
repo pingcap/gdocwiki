@@ -599,41 +599,35 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
       }
 
       var urlParams = new URLSearchParams(window.location.search);
-      // The browsers seem to be lenient with non-asci characters.
-      // But change those which do always get % encoded.
-      const newParamName = file.name
-        .replaceAll(/(\s|\(|\)|\[|\])+/g, '_')
+      // Change invalid characters to '_' but don't show 2 of those next to each other
+      // Change '_-_' to '-'
+      let newSlugName = encodeURIComponent(file.name.replaceAll('%', '_'))
+        .replaceAll(/%../g, '_')
         .replaceAll(/_+/g, '_')
         .replaceAll(/_-/g, '-')
         .replaceAll(/-_+/g, '-')
         .replace(/_+$/, '')
         .replace(/^_+/, '');
       const givenParamName = urlParams.get('n');
-      if (givenParamName === newParamName) {
+      if (givenParamName === newSlugName) {
         return;
       }
 
       const givenPathName = match.params.slug;
       if (!givenPathName) {
-        urlParams.set('n', newParamName);
+        urlParams.set('n', newSlugName);
         const urlNoParam = window.location.pathname;
         const newUrl = urlNoParam + '?' + urlParams.toString();
         history.replace(newUrl);
         return;
       }
 
-      // Be more strict with url path pieces
-      let slugName = file.name
-        ?.replaceAll(/[^a-zA-Z0-9_-]/g, '_')
-        .replaceAll(/_+/g, '_')
-        .replaceAll(/_-/g, '-')
-        .replaceAll(/-_+/g, '-');
-      if (slugName === '_' || slugName === '-') {
-        slugName = '';
+      if (newSlugName === '_' || newSlugName === '-') {
+        newSlugName = '';
       }
 
-      if (givenPathName !== slugName) {
-        let path = '/n/' + slugName + '/' + match.params.id;
+      if (givenPathName !== newSlugName) {
+        let path = '/n/' + newSlugName + '/' + match.params.id;
         history.push(path);
       }
     },

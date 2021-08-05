@@ -53,7 +53,16 @@ async function loadFileInfo(fileId: string, token: Token): Promise<FileInfo | un
   try {
     var urlParams = new URLSearchParams(window.location.search);
     if (file.name && !urlParams.get('n')) {
-      urlParams.set('n', file.name.replaceAll(' ', '_'));
+      // Change invalid characters to '_' but don't show 2 of those next to each other
+      // Change '_-_' to '-'
+      const paramValue = encodeURIComponent(file.name.replaceAll('%', '_'))
+        .replaceAll(/%../g, '_')
+        .replaceAll(/_+/g, '_')
+        .replaceAll(/_-/g, '-')
+        .replaceAll(/-_+/g, '-')
+        .replace(/_+$/, '')
+        .replace(/^_+/, '');
+      urlParams.set('n', paramValue);
       const newUrl = window.location.origin + window.location.pathname + '?' + urlParams.toString();
       window.history.replaceState({path: newUrl}, "", newUrl);
     }
