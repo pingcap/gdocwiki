@@ -206,7 +206,7 @@ function FileAction(props: { file?: DriveFile, allOverflow?: boolean }) {
     }
 
     return commands;
-  }, [file, outerFolder.file, tags.length, settingsCommand]);
+  }, [file, outerFolder.file, tags.length, settingsCommand, props.allOverflow]);
 
   const commandBarOverflowItems = useMemo(() => {
     const commands: ICommandBarItemProps[] = [];

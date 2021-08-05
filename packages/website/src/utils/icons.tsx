@@ -6,6 +6,7 @@ import {
   Edit16,
   Launch16,
   Link16,
+  Maximize16,
   OverflowMenuHorizontal16,
   View16,
   Settings16,
@@ -34,6 +35,7 @@ export function registerIcons() {
       StackedMove: <WatsonHealthStackedMove16 />,
       ColorGoogleDrive: <Icon icon={googleDrive} />,
       MdiFileEdit: <Icon icon={fileEdit} />,
+      Maximize: <Maximize16 />,
     },
   });
 }

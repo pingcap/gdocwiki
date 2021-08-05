@@ -9,8 +9,8 @@
   }
 
   ul {
-    margin-left: 1.3em;
-    list-style: disc;
+    margin-left: 0.3em;
+    list-style: none;
   }
 
   ol {
@@ -26,6 +26,13 @@
 
   li ul {
     list-style: circle;
+  }
+
+  ul:first-child {
+    padding-top: 0;
+  }
+  li {
+    padding-top: 0.4em;
   }
 }
 
