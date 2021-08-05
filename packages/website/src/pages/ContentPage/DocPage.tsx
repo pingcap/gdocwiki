@@ -628,7 +628,7 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
 
       if (givenPathName !== newSlugName) {
         let path = '/n/' + newSlugName + '/' + match.params.id;
-        history.push(path);
+        history.replace(path);
       }
     },
     [file.id, file.name, match.params, history]
