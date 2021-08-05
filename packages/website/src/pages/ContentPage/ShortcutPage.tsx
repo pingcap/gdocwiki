@@ -8,9 +8,11 @@ import ContentPage from '.';
 export interface IShortcutPageProps {
   file: DriveFile;
   renderStackOffset?: number;
+  splitWithFileListing?: boolean;
 }
 
-function ShortcutPage({ file, renderStackOffset = 0 }: IShortcutPageProps) {
+function ShortcutPage(props: IShortcutPageProps) {
+  const { file, splitWithFileListing = false, renderStackOffset = 0 } = props;
   useManagedRenderStack({
     depth: renderStackOffset,
     id: 'ShortcutPage',
@@ -27,6 +29,7 @@ function ShortcutPage({ file, renderStackOffset = 0 }: IShortcutPageProps) {
           loading={null}
           file={pointingFile}
           shortCutFile={file}
+          splitWithFileListing={splitWithFileListing}
           renderStackOffset={renderStackOffset + 1}
         />
       )}

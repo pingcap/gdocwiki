@@ -141,10 +141,10 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
       <div style={{ marginTop: '0.2rem' }}>
         {display === 'list' && <hr style={{ paddingTop: '0', marginBottom: '1rem' }} />}
         <Stack {...stackProps} tokens={{ childrenGap: 16 }}>
-          <StackItem grow={0}>
+          <Stack grow={0}>
             <FilesView {...props} />
-          </StackItem>
-          <StackItem grow={10}>
+          </Stack>
+          <Stack grow={10}>
             <Stack horizontal tokens={{ childrenGap: 8 }}>
               <Link to={`/view/${readMeFile.id}`}>{readMeFile.name}</Link>
               {canEdit(readMeFile) && (
@@ -155,13 +155,13 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
                 </TooltipHost>
               )}
             </Stack>
-            <hr />
             <ContentPage
               loading={null}
+              splitWithFileListing={display === 'list'}
               file={readMeFile}
               renderStackOffset={renderStackOffset + 1}
             />
-          </StackItem>
+          </Stack>
         </Stack>
       </div>
     );
