@@ -655,6 +655,10 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
     };
   }, [file.id, dispatch, file.name]);
 
+  // upgrade comments
+  // TODO: when using Google translate the comments could already be translated
+  // We need to use the pre-inserted HTML
+  // In this case we need to fallback to using the quoted value and position
   useEffect(() => {
     function removeSpace(s: string): string {
       return s.replaceAll(/\s+/g, '');
