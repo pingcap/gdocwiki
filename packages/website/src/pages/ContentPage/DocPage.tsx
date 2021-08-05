@@ -33,7 +33,7 @@ function isModifiedEvent(event) {
   return !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);
 }
 
-const monoFF = ['source code', 'courier', 'mono'];
+const monoFF = ['source code', 'courier', 'mono', 'consolas', 'inconsolata'];
 
 // Remove all font families, except for some monospace fonts.
 function monoFontsOnly(el: HTMLElement) {
