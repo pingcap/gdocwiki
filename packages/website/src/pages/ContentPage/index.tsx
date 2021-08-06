@@ -17,7 +17,7 @@ export interface IContentPageProps {
 
 interface PageProps {
   renderStackOffset: number;
-  key: string,
+  key: string;
   file: { id?: string };
 }
 

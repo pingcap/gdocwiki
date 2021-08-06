@@ -332,6 +332,7 @@ function highlightAndLinkComment(sup: HTMLElement){
     // inline-block fixes this.
     // We apply a textIndent fix to bulleted lists elsewhere
     // This does not play nicely with inline-block. so skip those
+    // TODO: we could try increasing the line-height
     if (!link.style.display && !span.parentElement?.style.textIndent) {
       link.style.display = 'inline-block';
     }
