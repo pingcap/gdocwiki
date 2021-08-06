@@ -5,12 +5,13 @@ import { ShortcutIcon } from '.';
 
 function DriveFileName_({ file }: { file: DriveFile }) {
   const link = mdLink.parse(file.name);
+  const style = { textDecoration: 'underline', color: '#0f62fe' };
   if (link) {
-    return <span>{link.title}</span>;
+    return <span style={style}>{link.title}</span>;
   } else {
     return (
       <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
-        <span>{file.name}</span>
+        <span style={style}>{file.name}</span>
         {file.mimeType === MimeTypes.GoogleShortcut && <ShortcutIcon />}
       </Stack>
     );
