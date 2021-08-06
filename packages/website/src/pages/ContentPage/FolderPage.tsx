@@ -151,9 +151,11 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
         setExpandReadmeList(true);
       };
       listToTable = (
-        <a href="#" onClick={clickExpand} style={{ marginLeft: "0.3em" }}>
-          <Maximize16 />
-        </a>
+        <TooltipHost content="expand" style={{ alignSelf: 'center' }}>
+          <a href="#" title="expand" onClick={clickExpand} style={{ marginLeft: '0.3em' }}>
+            <Maximize16 />
+          </a>
+        </TooltipHost>
       );
     }
 
