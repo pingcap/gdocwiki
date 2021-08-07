@@ -36,6 +36,14 @@
   }
 }
 
+.accordion {
+  :global {
+    .bx--accordion__content {
+      padding-right: 0;
+    }
+  }
+}
+
 .gdocLink {
   .gdocThumbnail {
     z-index: 0;

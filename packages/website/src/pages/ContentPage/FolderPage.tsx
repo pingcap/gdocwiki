@@ -80,7 +80,13 @@ function FolderChildrenList({ files, openInNewWindow }: IFolderProps) {
 function FolderChildrenHide({ children, files, open }: IFolderChildrenProps) {
   return (
     <Accordion align="start">
-      <AccordionItem open={open} title={`Folder Contents (${files.length})`}>{children}</AccordionItem>
+      <AccordionItem
+        className={styles.accordion}
+        open={open}
+        title={`Folder Contents (${files.length})`}
+      >
+        {children}
+      </AccordionItem>
     </Accordion>
   );
 }
@@ -170,7 +176,7 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
             </Stack>
           </Stack>
           <Stack grow={10}>
-            <Stack horizontal tokens={{ childrenGap: 8 }}>
+            <Stack horizontal style={{ marginLeft: '1rem' }} tokens={{ childrenGap: 8 }}>
               <Link to={`/view/${readMeFile.id}`}>{readMeFile.name}</Link>
               {canEdit(readMeFile) && (
                 <TooltipHost content="edit">
