@@ -2,7 +2,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { selectDocMode } from '../../reduxSlices/doc';
 import { DriveFile, MimeTypes, PreviewableMimeTypes } from '../../utils';
-import DocPage, { IDocPageProps } from './DocPage';
+import DocPage from './DocPage';
 import FolderPage from './FolderPage';
 import PreviewPage from './PreviewPage';
 import ShortcutPage from './ShortcutPage';
