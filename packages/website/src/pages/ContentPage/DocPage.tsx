@@ -272,11 +272,13 @@ async function linkPreview(cb?: () => void) {
     for (const link of document.querySelectorAll('.' + styles.gdocLink)) {
       const id = (link as HTMLElement).dataset?.['__gdoc_id'];
       if (id) {
-        const req = { fileId: id, supportsAllDrives: true, fields: 'thumbnailLink' };
+        const req = { fileId: id, supportsAllDrives: true, fields: 'thumbnailLink,mimeType' };
         const rsp = await gapi.client.drive.files.get(req);
         const imgSrc = rsp.result.thumbnailLink;
         if (!imgSrc) {
-          console.debug('preview no thumbnail', id);
+          if (rsp.result.mimeType !== MimeTypes.GoogleFolder) {
+            console.debug('preview no thumbnail', id);
+          }
           return;
         }
         let img = document.createElement('img');
