@@ -17,7 +17,7 @@ function PreviewPage({ file, edit = false, renderStackOffset = 0 }: IPreviewPage
   const [isLoading, setIsLoading] = useState(true);
   const ref = useRef<HTMLIFrameElement>(null);
   const sidebarOpen = useSelector(selectSidebarOpen);
-  const docMode = useSelector(selectDocMode);
+  const docMode = useSelector(selectDocMode(file.mimeType ?? ''));
   const location = useLocation();
 
   useManagedRenderStack({

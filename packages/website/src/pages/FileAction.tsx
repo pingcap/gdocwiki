@@ -20,8 +20,17 @@ import { getConfig } from '../config';
 import { useRender } from '../context/RenderStack';
 import useFileMeta from '../hooks/useFileMeta';
 import responsiveStyle from '../layout/responsive.module.scss';
-import { selectDocMode, setDocMode } from '../reduxSlices/doc';
-import { canChangeSettings, canEdit, extractTags, DocMode, DriveFile, MimeTypes } from '../utils';
+import { selectDocMode, setDocMode, resetDocMode } from '../reduxSlices/doc';
+import {
+  canChangeSettings,
+  canEdit,
+  extractTags,
+  inlineEditable,
+  viewable,
+  DocMode,
+  DriveFile,
+  MimeTypes,
+} from '../utils';
 import { folderPageId } from './ContentPage/FolderPage';
 import { showCreateFile } from './FileAction.createFile';
 import { showCreateLink } from './FileAction.createLink';
@@ -95,7 +104,6 @@ function Revisions(props: { file: DriveFile }) {
 function FileAction(props: { file?: DriveFile, allOverflow?: boolean }) {
   const [revisionsEnabled, setRevisionsEnabled] = useState(false);
   const dispatch = useDispatch();
-  const docMode = useSelector(selectDocMode);
   const history = useHistory();
 
   // When viewing a folder and auto-displaying a README,
@@ -108,12 +116,16 @@ function FileAction(props: { file?: DriveFile, allOverflow?: boolean }) {
 
   const outerFolderId = file?.mimeType === MimeTypes.GoogleFolder ? file?.id : file?.parents?.[0];
   const outerFolder = useFileMeta(outerFolderId);
+  const docMode = useSelector(selectDocMode(file?.mimeType ?? ''));
 
   useEffect(() => {
     return () => {
-      dispatch(setDocMode('view'));
+      if (!file?.mimeType) {
+        return;
+      }
+      dispatch(resetDocMode(file.mimeType));
     };
-  }, [dispatch]);
+  }, [dispatch, file]);
 
   const tags = useMemo(() => {
     if (!file) {
@@ -148,6 +160,7 @@ function FileAction(props: { file?: DriveFile, allOverflow?: boolean }) {
         commands.push({
           key: 'launch',
           text: props.allOverflow ? 'Open in Google' : undefined,
+          title: props.allOverflow ? undefined : 'Open in Google',
           iconProps: { iconName: 'Launch' },
           onClick: () => {
             window.open(file.webViewLink, '_blank');
@@ -264,6 +277,11 @@ function FileAction(props: { file?: DriveFile, allOverflow?: boolean }) {
         },
       });
     }
+
+    if (file && canChangeSettings(file) && tags.length > 0) {
+      commands.push(settingsCommand(file, true));
+    }
+
     if (file) {
       let fileKind;
       switch (file.mimeType) {
@@ -287,6 +305,19 @@ function FileAction(props: { file?: DriveFile, allOverflow?: boolean }) {
           },
         });
       }
+
+      if (file?.mimeType !== MimeTypes.GoogleFolder && file?.webViewLink) {
+        commands.push({
+          key: 'launch_preview',
+          text: 'Preview in Google',
+          iconProps: { iconName: 'DocumentView' },
+          onClick: () => {
+            const link = file.webViewLink?.replace(/\/(edit|view)\?usp=drivesdk/, '/preview');
+            window.open(link, '_blank');
+          },
+        });
+      }
+
       // Do not allow trash root folder..
       if (file.id !== getConfig().REACT_APP_ROOT_ID && file.capabilities?.canTrash) {
         // Trash
@@ -301,10 +332,6 @@ function FileAction(props: { file?: DriveFile, allOverflow?: boolean }) {
       }
     }
 
-    if (file && canChangeSettings(file) && tags.length > 0) {
-      commands.push(settingsCommand(file, true));
-    }
-
     return commands;
   }, [file, outerFolder.file, tags.length, settingsCommand]);
 
@@ -312,8 +339,7 @@ function FileAction(props: { file?: DriveFile, allOverflow?: boolean }) {
     (item) => {
       const mode = item.props['itemKey'];
       if (file) {
-        const modePathPiece = mode === 'view' ? '' : mode;
-        history.push(`/view/${file.id}/${modePathPiece}`);
+        history.push(`/view/${file.id}/${mode}`);
       }
     },
     [history, file]
@@ -336,7 +362,7 @@ function FileAction(props: { file?: DriveFile, allOverflow?: boolean }) {
   return (
     <div style={{ marginLeft: '1rem' }}>
       <Stack horizontal>
-        {file.mimeType === MimeTypes.GoogleDocument && (
+        {viewable(file.mimeType ?? '') && (
           <Stack.Item disableShrink>
             <Pivot onLinkClick={switchDocMode} selectedKey={docMode}>
               <PivotItem
@@ -344,7 +370,7 @@ function FileAction(props: { file?: DriveFile, allOverflow?: boolean }) {
                 onRenderItemLink={tooltip('view', <Icon icon={fileEdit} />)}
               />
               <PivotItem itemKey="preview" onRenderItemLink={tooltip('preview', <View16 />)} />
-              {canEdit(file) && (
+              {inlineEditable(file.mimeType ?? '') && canEdit(file) && (
                 <PivotItem itemKey="edit" onRenderItemLink={tooltip('edit', <Edit16 />)} />
               )}
             </Pivot>

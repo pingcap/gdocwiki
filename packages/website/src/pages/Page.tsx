@@ -6,7 +6,7 @@ import { getConfig } from '../config';
 import useFileMeta from '../hooks/useFileMeta';
 import useTitle from '../hooks/useTitle';
 import useUpdateSiderFromPath from '../hooks/useUpdateSiderFromPath';
-import { selectDocMode, setDocMode } from '../reduxSlices/doc';
+import { selectDocMode, setDocMode, resetDocMode  } from '../reduxSlices/doc';
 import { selectPageReloadToken } from '../reduxSlices/pageReload';
 import { selectSidebarOpen } from '../reduxSlices/siderTree';
 import { DocMode, MimeTypes } from '../utils';
@@ -23,10 +23,16 @@ function Page(props: PageProps) {
   const id = useUpdateSiderFromPath('id');
   const { file, loading, error } = useFileMeta(id);
   const dispatch = useDispatch();
-  const docMode = useSelector(selectDocMode);
+  const docMode = useSelector(selectDocMode(file?.mimeType ?? ''));
   const sidebarOpen = useSelector(selectSidebarOpen);
-  if (props.docMode && props.docMode !== docMode) {
-    dispatch(setDocMode(props.docMode));
+  if (file?.mimeType && props.docMode !== docMode) {
+    if (!props.docMode) {
+      dispatch(resetDocMode(file.mimeType));
+    } else {
+      const newModes = {};
+      newModes[file!.mimeType!] = props.docMode;
+      dispatch(setDocMode(newModes));
+    }
   }
 
   useTitle((file) => {
