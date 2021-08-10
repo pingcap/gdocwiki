@@ -28,7 +28,7 @@ function ContentPage({
   splitWithFileListing = false,
   renderStackOffset = 0,
 }: IContentPageProps) {
-  const docMode = useSelector(selectDocMode);
+  const docMode = useSelector(selectDocMode(file?.mimeType ?? ''));
   function docPage(props: PageProps) {
     const style = {};
     if (!splitWithFileListing) {
@@ -57,6 +57,14 @@ function ContentPage({
     file: file!,
   };
 
+  if (docMode) {
+    if (docMode !== 'view') {
+      const edit = docMode === 'edit';
+      return <PreviewPage {...pageProps} edit={edit} />;
+    }
+    return docPage(pageProps);
+  }
+
   if (PreviewableMimeTypes.indexOf(file?.mimeType ?? '') > -1) {
     // Use key to force an unmount when the file changes
     // This resets event handlers
@@ -64,12 +72,6 @@ function ContentPage({
   }
 
   switch (file?.mimeType ?? '') {
-    case MimeTypes.GoogleDocument:
-      if (docMode !== 'view') {
-        const edit = docMode === 'edit';
-        return <PreviewPage {...pageProps} edit={edit} />;
-      }
-      return docPage(pageProps);
     case MimeTypes.GoogleFolder:
       return <FolderPage {...pageProps} shortCutFile={shortCutFile} />;
     case MimeTypes.GoogleShortcut:

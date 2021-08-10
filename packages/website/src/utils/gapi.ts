@@ -41,8 +41,20 @@ export const MimeTypes = {
   VideoMKV: 'video/x-matroska',
 };
 
+// Support a view mode (html) in addition to preview
+const ViewableMimeTypes = [MimeTypes.GoogleDocument, MimeTypes.GoogleSpreadsheet]
+export function viewable(mimeType: string) {
+  return ViewableMimeTypes.indexOf(mimeType) > -1;
+}
+
+const EditableMimeTypes = [MimeTypes.GoogleDocument, MimeTypes.GoogleSpreadsheet]
+export function inlineEditable(mimeType: string) {
+  return EditableMimeTypes.indexOf(mimeType) > -1;
+}
+
 export const PreviewableMimeTypes = [
   MimeTypes.GoogleSpreadsheet,
+  MimeTypes.GoogleDocument,
   MimeTypes.GooglePresentation,
   MimeTypes.GoogleDrawing,
   MimeTypes.MSOpenWord,

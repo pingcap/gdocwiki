@@ -1,5 +1,6 @@
-import { ArrowUp16, Launch16 } from '@carbon/icons-react';
+import { ArrowUp16 } from '@carbon/icons-react';
 import { InlineLoading } from 'carbon-components-react';
+import { unzipSync, strFromU8 } from 'fflate';
 import { Stack } from 'office-ui-fabric-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import Avatar from 'react-avatar';
@@ -18,6 +19,15 @@ export interface IDocPageProps {
   match: any;
   location: any;
   history: any;
+}
+
+function strToUint8Array(binary_string: string): Uint8Array {
+  var len = binary_string.length;
+  var bytes = new Uint8Array(len);
+  for (var i = 0; i < len; i++) {
+    bytes[i] = binary_string.charCodeAt(i);
+  }
+  return bytes;
 }
 
 function escapeHtml(text: string): string {
@@ -533,65 +543,90 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
   );
 
   const setDocWithRichContent = useCallback(
-    (content: HTMLBodyElement) => {
+    (content: HTMLBodyElement, pretty: boolean) => {
       dispatch(
         setHeaders(
           MakeTree(Array.from(content.querySelectorAll('h1, h2, h3, h4, h5, h6')).map(fromHTML))
         )
       );
 
-      // prettify could take a noticeable amount of time on a slow device.
-      // particularly for a large document
-      // So first do a raw render and then prettify.
       setDocContent(content.innerHTML);
-      setTimeout(function () {
-        prettify(content, file);
-        setDocContent(content.innerHTML);
-        // link preview makes blocking API calls
+      if (pretty) {
+        // prettify could take a noticeable amount of time on a slow device.
+        // particularly for a large document
+        // So first do a raw render and then prettify.
         setTimeout(function () {
-          linkPreview(() => {
-            setDocContent(content.innerHTML);
-          });
+          prettify(content, file);
+          setDocContent(content.innerHTML);
+          // link preview makes blocking API calls
+          setTimeout(function () {
+            linkPreview(() => {
+              setDocContent(content.innerHTML);
+            });
+          }, 1);
         }, 1);
-      }, 1);
+      }
     },
     [file, dispatch]
   );
 
   useEffect(() => {
-    function loadHtml(body: string){
+    function loadHtmlBody(body: string, pretty: boolean = true): void {
       const parser = new DOMParser();
       const htmlDoc = parser.parseFromString(body, 'text/html');
       const bodyEl = htmlDoc.querySelector('body');
       if (bodyEl) {
         const styleEls = htmlDoc.querySelectorAll('style');
         styleEls.forEach((el) => bodyEl.appendChild(el));
-        setDocWithRichContent(bodyEl);
+        setDocWithRichContent(bodyEl, pretty);
       } else {
         setDocWithPlainText('Error?');
       }
     }
 
-    async function loadPreview() {
+    async function loadHtmlView() {
       setIsLoading(true);
       setDocWithPlainText('');
 
       try {
-        const resp = await gapi.client.drive.files.export({
-          fileId: file.id!,
-          mimeType: 'text/html',
-        });
-        console.log('DocPage files.export', file.id);
-        loadHtml(resp.body);
+        if (file.mimeType === MimeTypes.GoogleSpreadsheet) {
+          const resp = await gapi.client.drive.files.export({
+            alt: 'media',
+            fileId: file.id!,
+            mimeType: 'application/zip',
+          });
+          const decompressed = unzipSync(strToUint8Array(resp.body), {})
+          console.log('DocPage files.export zip', file.id, Object.keys(decompressed));
+          let html = '';
+          let css = '';
+          for (const k in decompressed) {
+            // TODO: multiple sheets
+            if (!html && k.endsWith('.html')) {
+              html = strFromU8(decompressed[k]);
+            } else if (k.endsWith('.css')) {
+              // An iframe would probably be better
+              // But this seems to fix visible issues
+              css = strFromU8(decompressed[k]).replaceAll(/(a[{:])/g, '#gdoc-html-content $1');
+            }
+          }
+          loadHtmlBody(html + '<style>' + css + '</style>', false);
+        } else {
+          const resp = await gapi.client.drive.files.export({
+            fileId: file.id!,
+            mimeType: 'text/html',
+          });
+          console.log('DocPage files.export', file.id);
+          loadHtmlBody(resp.body, true);
+        }
       } finally {
         setIsLoading(false);
       }
     }
-    loadPreview();
+    loadHtmlView();
     return function () {
       dispatch(setHeaders([]));
     };
-  }, [file.id, dispatch, setDocWithPlainText, setDocWithRichContent]);
+  }, [file.id, file.mimeType, dispatch, setDocWithPlainText, setDocWithRichContent]);
 
   useEffect(
     function showNameInUrl() {
@@ -840,14 +875,15 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
       <div id="doc-page-outer" style={{ maxWidth: '50rem' }}>
         <InlineLoading description="Loading document content..." />
       </div>
-    )
+    );
   }
 
+  const style = {}; // { maxWidth: '50rem' };
   return (
-    <div id="doc-page-outer" style={{ maxWidth: '50rem' }} onClick={handleDocContentClick}>
+    <div id="doc-page-outer" style={style} onClick={handleDocContentClick}>
       <div
         id="gdoc-html-content"
-        style={{ marginTop: '1rem', maxWidth: '50rem' }}
+        style={{ marginTop: '1rem' }}
         dangerouslySetInnerHTML={{ __html: docContent }}
       />
       {upgradedComments.length > 0 && (

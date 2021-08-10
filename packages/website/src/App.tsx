@@ -151,11 +151,14 @@ function App() {
                 <Route path="/view/:id/preview">
                   <Page docMode="preview" />
                 </Route>
+                <Route exact path="/view/:id/view">
+                  <Page docMode="view" />
+                </Route>
                 <Route exact path="/view/:id/settings">
                   <Settings />
                 </Route>
                 <Route path="/view/:id">
-                  <Page docMode="view" />
+                  <Page />
                 </Route>
                 <Route exact path="/search/keyword/:keyword">
                   <SearchResult />
