@@ -104,6 +104,7 @@ export interface IFolderPageProps {
 }
 
 export const folderPageId = 'FolderPage';
+const folderDisplayStorageKey = 'preferredFolderDisplay';
 
 function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPageProps) {
   useManagedRenderStack({
@@ -118,17 +119,18 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
     return !mapIdToFile?.[file?.id ?? ''] && shortCutFile;
   }, [mapIdToFile, file, shortCutFile]);
 
-  const display = 
-    (localStorage.getItem('preferredFolderDisplay') as FolderChildrenDisplayMode) || 'list';
-  const [preferredDisplay, setpreferredDisplay] = useState(display);
-
   const filesMeta = useFolderFilesMeta(file.id);
   const { loading, error } = filesMeta;
   const files = useMemo(() => filesMeta.files ?? [], [filesMeta]);
 
+  const defaultDisplay =
+    (localStorage.getItem(folderDisplayStorageKey) as FolderChildrenDisplayMode) || 'list';
+  const [preferredDisplay, setpreferredDisplay] = useState(defaultDisplay);
+
   const readMeFile = useMemo(() => {
     for (const item of files) {
       if (item.name?.toLowerCase() === 'readme') {
+        setpreferredDisplay('list');
         return item;
       }
     }
@@ -137,13 +139,17 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
   const clickExpandToTable = (ev) => {
     ev.preventDefault();
     setpreferredDisplay('table');
-    localStorage.setItem('preferredFolderDisplay', 'table');
+    if (!readMeFile) {
+      localStorage.setItem(folderDisplayStorageKey, 'table');
+    }
   };
 
   const clickShrinkToList = (ev) => {
     ev.preventDefault();
     setpreferredDisplay('list');
-    localStorage.setItem('preferredFolderDisplay', 'list');
+    if (!readMeFile) {
+      localStorage.setItem(folderDisplayStorageKey, 'list');
+    }
   };
 
   const props = {
@@ -158,6 +164,7 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
 
   if (readMeFile) {
     const stackProps = {};
+    props.display = 'list';
     if (preferredDisplay === 'table') {
       // Still renders as a table, but hidden
       props.display = 'hide';
@@ -168,7 +175,7 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
 
     return (
       <div style={{ marginTop: '0.2rem' }}>
-        {display === 'list' && <hr style={{ paddingTop: '0', marginBottom: '1rem' }} />}
+        {props.display === 'list' && <hr style={{ paddingTop: '0', marginBottom: '1rem' }} />}
         <Stack {...stackProps} tokens={{ childrenGap: 16 }}>
           <Stack grow={0}>
             <Stack>
@@ -188,7 +195,7 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
             </Stack>
             <ContentPage
               loading={null}
-              splitWithFileListing={display === 'list'}
+              splitWithFileListing={props.display === 'list'}
               file={readMeFile}
               renderStackOffset={renderStackOffset + 1}
             />
