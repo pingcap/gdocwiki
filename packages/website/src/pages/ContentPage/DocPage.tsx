@@ -8,7 +8,7 @@ import { withRouter } from 'react-router';
 import { useHistory } from 'react-router-dom';
 import { useManagedRenderStack } from '../../context/RenderStack';
 import { setHeaders, setComments, selectComments, setFile, setNoFile } from '../../reduxSlices/doc';
-import { DriveFile, canEdit, parseDriveLink } from '../../utils';
+import { DriveFile, canEdit, parseDriveLink, MimeTypes } from '../../utils';
 import { fromHTML, MakeTree } from '../../utils/docHeaders';
 import styles from './FolderPage.module.scss';
 
