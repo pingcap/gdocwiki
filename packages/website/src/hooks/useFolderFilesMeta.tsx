@@ -53,15 +53,16 @@ export function useFolderFilesMeta(id?: string) {
             fields: '*',
             pageSize: 1000,
           });
-          console.debug(`loadFolderFilesMetadata files.list (page #${i + 1})`, id, resp);
+          const newFiles = resp.result.files ?? [];
+          console.debug(`loadFolderFilesMetadata files.list (page #${i + 1})`, id, newFiles.length);
 
           if (reqRef.current !== checkpoint) {
             break;
           }
-          for (const file of resp.result.files ?? []) {
+          for (const file of newFiles) {
             files[file.id ?? ''] = file;
           }
-          dispatch(updateFiles(resp.result.files ?? []));
+          dispatch(updateFiles(newFiles));
           if (resp.result.nextPageToken) {
             pageToken = resp.result.nextPageToken;
           } else {

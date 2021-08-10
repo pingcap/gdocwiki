@@ -44,6 +44,14 @@
   }
 }
 
+.tableView {
+  :global {
+    .ms-DetailsHeader {
+      padding-top: 0px;
+    }
+  }
+}
+
 .gdocLink {
   .gdocThumbnail {
     z-index: 0;
