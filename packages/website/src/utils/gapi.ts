@@ -47,8 +47,9 @@ export function viewable(mimeType: string) {
   return ViewableMimeTypes.indexOf(mimeType) > -1;
 }
 
+const EditableMimeTypes = [MimeTypes.GoogleDocument, MimeTypes.GoogleSpreadsheet]
 export function inlineEditable(mimeType: string) {
-  return mimeType === MimeTypes.GoogleDocument;
+  return EditableMimeTypes.indexOf(mimeType) > -1;
 }
 
 export const PreviewableMimeTypes = [
