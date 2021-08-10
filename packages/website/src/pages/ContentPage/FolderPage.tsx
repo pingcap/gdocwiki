@@ -1,20 +1,14 @@
-import { Edit16, Maximize16 } from '@carbon/icons-react';
+import { Edit16, Maximize16, Minimize16 } from '@carbon/icons-react';
 import { Accordion, AccordionItem, InlineLoading } from 'carbon-components-react';
 import { Stack, TooltipHost } from 'office-ui-fabric-react';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, MouseEventHandler } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { DriveFileName, DriveIcon, FileListTable } from '../../components';
+import { DriveFileName, DriveIcon, FileListTable, IFileListTableProps } from '../../components';
 import { useManagedRenderStack } from '../../context/RenderStack';
 import { useFolderFilesMeta, IFolderFilesMeta  } from '../../hooks/useFolderFilesMeta';
 import { selectMapIdToFile } from '../../reduxSlices/files';
-import {
-  DriveFile,
-  FolderChildrenDisplayMode,
-  canEdit,
-  mdLink,
-  parseFolderChildrenDisplaySettings,
-} from '../../utils';
+import { DriveFile, FolderChildrenDisplayMode, canEdit, mdLink, } from '../../utils';
 import styles from './FolderPage.module.scss';
 import ContentPage from '.';
 
@@ -22,8 +16,9 @@ interface IFolderFilesProps {
   files: DriveFile[];
 }
 
-interface IFolderProps extends IFolderFilesProps {
+interface IFolderListProps extends IFolderFilesProps {
   openInNewWindow: boolean;
+  clickExpandToTable: MouseEventHandler;
 }
 
 interface IFolderDisplay extends IFolderFilesProps {
@@ -31,7 +26,13 @@ interface IFolderDisplay extends IFolderFilesProps {
   open?: boolean;
 }
 
-interface IFolderChildrenProps extends IFolderFilesProps {
+interface ITableShrinkToList extends IFileListTableProps {
+  clickShrinkToList?: MouseEventHandler;
+}
+
+type AllFolderViewProps = IFolderListProps & IFolderDisplay & ITableShrinkToList;
+
+interface IFolderAccordionProps extends IFolderFilesProps {
   children: any;
   open: boolean;
 }
@@ -61,9 +62,14 @@ function FileLink({ file, openInNewWindow }: IFileInList) {
   );
 }
 
-function FolderChildrenList({ files, openInNewWindow }: IFolderProps) {
+function FolderChildrenList({ files, openInNewWindow, clickExpandToTable }: IFolderListProps) {
   return (
     <div className={styles.content}>
+      <TooltipHost content="expand to table view" styles={{ root: { alignSelf: 'center' } }}>
+        <a href="#" title="expand" onClick={clickExpandToTable} style={{ marginLeft: '0.3em' }}>
+          <Maximize16 />
+        </a>
+      </TooltipHost>
       <ul>
         {files.map((file: gapi.client.drive.File) => {
           return (
@@ -77,7 +83,7 @@ function FolderChildrenList({ files, openInNewWindow }: IFolderProps) {
   );
 }
 
-function FolderChildrenHide({ children, files, open }: IFolderChildrenProps) {
+function FolderChildrenHide({ children, files, open }: IFolderAccordionProps) {
   return (
     <Accordion align="start">
       <AccordionItem
@@ -100,7 +106,6 @@ export interface IFolderPageProps {
 export const folderPageId = 'FolderPage';
 
 function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPageProps) {
-  const [expandReadmeList, setExpandReadmeList] = useState(false);
   useManagedRenderStack({
     depth: renderStackOffset,
     id: folderPageId,
@@ -113,7 +118,9 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
     return !mapIdToFile?.[file?.id ?? ''] && shortCutFile;
   }, [mapIdToFile, file, shortCutFile]);
 
-  const displaySettings = useMemo(() => parseFolderChildrenDisplaySettings(file), [file]);
+  const display = 
+    (localStorage.getItem('preferredFolderDisplay') as FolderChildrenDisplayMode) || 'list';
+  const [preferredDisplay, setpreferredDisplay] = useState(display);
 
   const filesMeta = useFolderFilesMeta(file.id);
   const { loading, error } = filesMeta;
@@ -127,42 +134,36 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
     }
   }, [files]);
 
+  const clickExpandToTable = (ev) => {
+    ev.preventDefault();
+    setpreferredDisplay('table');
+    localStorage.setItem('preferredFolderDisplay', 'table');
+  };
+
+  const clickShrinkToList = (ev) => {
+    ev.preventDefault();
+    setpreferredDisplay('list');
+    localStorage.setItem('preferredFolderDisplay', 'list');
+  };
+
   const props = {
     loading,
     error,
     files,
     openInNewWindow,
-    display: displaySettings.displayInContent,
+    display: preferredDisplay,
+    clickExpandToTable,
+    clickShrinkToList,
   };
 
   if (readMeFile) {
-    let display = displaySettings.displayInContent ?? 'list';
     const stackProps = {};
-    if (expandReadmeList) {
-      display = 'hide';
-    }
-    if (display === 'list') {
-      stackProps['horizontal'] = 'horizontal';
-    } else if (display === 'table') {
+    if (preferredDisplay === 'table') {
       // Still renders as a table, but hidden
-      display = 'hide';
+      props.display = 'hide';
     }
-    props.display = display;
-    console.log('expandReadmeList', expandReadmeList);
-
-    let listToTable: React.ReactNode | null = null;
-    if (display === 'list' && !expandReadmeList) {
-      const clickExpand = (ev) => {
-        ev.preventDefault();
-        setExpandReadmeList(true);
-      };
-      listToTable = (
-        <TooltipHost content="expand" styles={{ root: { alignSelf: 'center' } }}>
-          <a href="#" title="expand" onClick={clickExpand} style={{ marginLeft: '0.3em' }}>
-            <Maximize16 />
-          </a>
-        </TooltipHost>
-      );
+    if (preferredDisplay === 'list') {
+      stackProps['horizontal'] = 'horizontal';
     }
 
     return (
@@ -171,8 +172,7 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
         <Stack {...stackProps} tokens={{ childrenGap: 16 }}>
           <Stack grow={0}>
             <Stack>
-              {listToTable}
-              <FilesView {...props} open={expandReadmeList} />
+              <FilesView {...props} open={true} />
             </Stack>
           </Stack>
           <Stack grow={10}>
@@ -201,7 +201,7 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
   return <FilesView {...props} />;
 }
 
-function FilesView(props: IFolderFilesMeta & IFolderProps & IFolderDisplay) {
+function FilesView(props: IFolderFilesMeta & AllFolderViewProps) {
   const { error, loading } = props;
   const hasFiles = props.files.length > 0;
   return (
@@ -216,27 +216,45 @@ function FilesView(props: IFolderFilesMeta & IFolderProps & IFolderDisplay) {
   );
 }
 
-function ListForSettings(props: IFolderProps & IFolderDisplay) {
-  const { display, files, open, openInNewWindow } = props;
+function ListForSettings(props: AllFolderViewProps) {
+  const { display, files, open, openInNewWindow, clickExpandToTable } = props;
+  const listProps = { files, openInNewWindow };
   if (display === 'hide') {
     return (
       <div style={{ maxWidth: '50rem' }}>
         <FolderChildrenHide open={!!open} files={files}>
-          <FileListTable openInNewWindow={openInNewWindow} files={files} />
+          <FileListTable {...listProps} />
         </FolderChildrenHide>
       </div>
     );
   }
-  if (display === 'list') {
-    return (
-      <div style={{ maxWidth: '50rem' }}>
-        <FolderChildrenList openInNewWindow={openInNewWindow} files={files} />
-      </div>
-    );
+
+  if (display === 'table') {
+    return <FileListTableShrinkable {...listProps} clickShrinkToList={props.clickShrinkToList} />;
   }
 
-  // table
-  return <FileListTable openInNewWindow={openInNewWindow} files={files} />;
+  // default to list
+  return (
+    <div style={{ maxWidth: '50rem' }}>
+      <FolderChildrenList {...listProps} clickExpandToTable={clickExpandToTable} />
+    </div>
+  );
+}
+
+function FileListTableShrinkable(props: ITableShrinkToList & IFileListTableProps) {
+  const { clickShrinkToList } = props;
+  return (
+    <div className={styles.tableView}>
+      {clickShrinkToList && (
+        <TooltipHost content="shrink to list view" styles={{ root: { alignSelf: 'center' } }}>
+          <a href="#" title="expand" onClick={clickShrinkToList} style={{ marginLeft: '0.3em' }}>
+            <Minimize16 />
+          </a>
+        </TooltipHost>
+      )}
+      <FileListTable {...props} />
+    </div>
+  );
 }
 
 export default React.memo(FolderPage);

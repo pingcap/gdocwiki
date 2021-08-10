@@ -5,7 +5,7 @@ import { DriveFile, mdLink } from '../utils';
 import { DriveFileName, DriveIcon, Table } from '.';
 
 export interface IFileListTableProps {
-  files?: DriveFile[];
+  files: DriveFile[];
   openInNewWindow: boolean;
 }
 

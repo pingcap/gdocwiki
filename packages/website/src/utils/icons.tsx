@@ -7,6 +7,7 @@ import {
   Launch16,
   Link16,
   Maximize16,
+  Minimize16,
   OverflowMenuHorizontal16,
   View16,
   Settings16,
@@ -36,6 +37,7 @@ export function registerIcons() {
       ColorGoogleDrive: <Icon icon={googleDrive} />,
       MdiFileEdit: <Icon icon={fileEdit} />,
       Maximize: <Maximize16 />,
+      Minimize: <Minimize16 />,
     },
   });
 }
