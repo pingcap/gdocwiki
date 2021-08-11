@@ -261,8 +261,8 @@ function ExpandedFolder(props: {
     const style = {};
     if (!(filesMeta.files?.length !== 0)) {
       style['textIndent'] = '-.2em';
-      style['list-style-position'] = 'inside';
-      style['list-style-type'] = 'disc';
+      style['listStylePosition'] = 'inside';
+      style['listStyleType'] = 'disc';
     }
     return (
       <ul>
