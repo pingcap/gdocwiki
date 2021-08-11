@@ -277,9 +277,9 @@ function removeLinkStyling(style: string): string {
 }
 
 // linkPreview performs blocking API calls
-async function linkPreview(cb?: () => void) {
+async function linkPreview(baseEl: HTMLElement, cb?: () => void) {
   try {
-    for (const link of document.querySelectorAll('.' + styles.gdocLink)) {
+    for (const link of baseEl.querySelectorAll('.' + styles.gdocLink)) {
       const id = (link as HTMLElement).dataset?.['__gdoc_id'];
       if (id) {
         const req = { fileId: id, supportsAllDrives: true, fields: 'thumbnailLink,mimeType' };
@@ -477,7 +477,7 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
     function chromeTranslateHeaders() {
       function handleTranslated(msg: string = '') {
         if (document.documentElement.className.includes('translated')) {
-          const contentNode = document.getElementById('gdoc-html-content')!
+          const contentNode = document.getElementById('gdoc-html-content')!;
           if (!contentNode) {
             return;
           }
@@ -542,6 +542,10 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
     [dispatch]
   );
 
+  const [docHtmlChangesFinished, setDocHtmlChangesFinished] = useState(
+    null as null | HTMLBodyElement
+  );
+
   const setDocWithRichContent = useCallback(
     (content: HTMLBodyElement, pretty: boolean) => {
       dispatch(
@@ -554,14 +558,17 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
       if (pretty) {
         // prettify could take a noticeable amount of time on a slow device.
         // particularly for a large document
-        // So first do a raw render and then prettify.
+        // Using setTimeout gives an opportunity to do an initial render
+        // before running the code
         setTimeout(function () {
           prettify(content, file);
           setDocContent(content.innerHTML);
+
           // link preview makes blocking API calls
           setTimeout(function () {
-            linkPreview(() => {
+            linkPreview(content, function () {
               setDocContent(content.innerHTML);
+              setDocHtmlChangesFinished(content);
             });
           }, 1);
         }, 1);
@@ -570,63 +577,66 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
     [file, dispatch]
   );
 
-  useEffect(() => {
-    function loadHtmlBody(body: string, pretty: boolean = true): void {
-      const parser = new DOMParser();
-      const htmlDoc = parser.parseFromString(body, 'text/html');
-      const bodyEl = htmlDoc.querySelector('body');
-      if (bodyEl) {
-        const styleEls = htmlDoc.querySelectorAll('style');
-        styleEls.forEach((el) => bodyEl.appendChild(el));
-        setDocWithRichContent(bodyEl, pretty);
-      } else {
-        setDocWithPlainText('Error?');
-      }
-    }
-
-    async function loadHtmlView() {
-      setIsLoading(true);
-      setDocWithPlainText('');
-
-      try {
-        if (file.mimeType === MimeTypes.GoogleSpreadsheet) {
-          const resp = await gapi.client.drive.files.export({
-            alt: 'media',
-            fileId: file.id!,
-            mimeType: 'application/zip',
-          });
-          const decompressed = unzipSync(strToUint8Array(resp.body), {})
-          console.log('DocPage files.export zip', file.id, Object.keys(decompressed));
-          let html = '';
-          let css = '';
-          for (const k in decompressed) {
-            // TODO: multiple sheets
-            if (!html && k.endsWith('.html')) {
-              html = strFromU8(decompressed[k]);
-            } else if (k.endsWith('.css')) {
-              // An iframe would probably be better
-              // But this seems to fix visible issues
-              css = strFromU8(decompressed[k]).replaceAll(/(a[{:])/g, '#gdoc-html-content $1');
-            }
-          }
-          loadHtmlBody(html + '<style>' + css + '</style>', false);
+  useEffect(
+    function loadDoc() {
+      function loadHtmlBody(body: string, pretty: boolean = true): void {
+        const parser = new DOMParser();
+        const htmlDoc = parser.parseFromString(body, 'text/html');
+        const bodyEl = htmlDoc.querySelector('body');
+        if (bodyEl) {
+          const styleEls = htmlDoc.querySelectorAll('style');
+          styleEls.forEach((el) => bodyEl.appendChild(el));
+          setDocWithRichContent(bodyEl, pretty);
         } else {
-          const resp = await gapi.client.drive.files.export({
-            fileId: file.id!,
-            mimeType: 'text/html',
-          });
-          console.log('DocPage files.export', file.id);
-          loadHtmlBody(resp.body, true);
+          setDocWithPlainText('Error?');
         }
-      } finally {
-        setIsLoading(false);
       }
-    }
-    loadHtmlView();
-    return function () {
-      dispatch(setHeaders([]));
-    };
-  }, [file.id, file.mimeType, dispatch, setDocWithPlainText, setDocWithRichContent]);
+
+      async function loadHtmlView() {
+        setIsLoading(true);
+        setDocWithPlainText('');
+
+        try {
+          if (file.mimeType === MimeTypes.GoogleSpreadsheet) {
+            const resp = await gapi.client.drive.files.export({
+              alt: 'media',
+              fileId: file.id!,
+              mimeType: 'application/zip',
+            });
+            const decompressed = unzipSync(strToUint8Array(resp.body), {})
+            console.log('DocPage files.export zip', file.id, Object.keys(decompressed));
+            let html = '';
+            let css = '';
+            for (const k in decompressed) {
+              // TODO: multiple sheets
+              if (!html && k.endsWith('.html')) {
+                html = strFromU8(decompressed[k]);
+              } else if (k.endsWith('.css')) {
+                // An iframe would probably be better
+                // But this seems to fix visible issues
+                css = strFromU8(decompressed[k]).replaceAll(/(a[{:])/g, '#gdoc-html-content $1');
+              }
+            }
+            loadHtmlBody(html + '<style>' + css + '</style>', false);
+          } else {
+            const resp = await gapi.client.drive.files.export({
+              fileId: file.id!,
+              mimeType: 'text/html',
+            });
+            console.log('DocPage files.export', file.id);
+            loadHtmlBody(resp.body, true);
+          }
+        } finally {
+          setIsLoading(false);
+        }
+      }
+      loadHtmlView();
+      return function () {
+        dispatch(setHeaders([]));
+      };
+    },
+    [file.id, file.mimeType, dispatch, setDocWithPlainText, setDocWithRichContent]
+  );
 
   useEffect(
     function showNameInUrl() {
@@ -702,145 +712,162 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
     };
   }, [file.id, dispatch, file.name]);
 
-  // upgrade comments
   // TODO: when using Google translate the comments could already be translated
   // We need to use the pre-inserted HTML
   // In this case we need to fallback to using the quoted value and position
-  useEffect(() => {
-    function removeSpace(s: string): string {
-      return s.replaceAll(/\s+/g, '');
-    }
+  //
+  // TODO:
+  // We do not get the comments from the API for a re-opened comment thread.
+  // AS per above should have a fallback, at least do not remove superscript links from text.
+  useEffect(
+    function upgradeComments(): void {
+      function removeSpace(s: string): string {
+        return s.replaceAll(/\s+/g, '');
+      }
 
-    const apiComments = docComments.filter((comment) => comment.resolved !== true);
-    if (apiComments.length === 0) {
-      return;
-    }
-    const newComments: UpgradedComment[] = [];
+      function replyText(reply: gapi.client.drive.Reply): string {
+        if (reply.action === 'resolve' && !reply.content?.startsWith('_Marked as done_')) {
+          return '_Marked as done_ ' + (reply.content ?? '');
+        }
+        return reply.content ?? '';
+      }
 
-    const commentLookup: { [text: string]: gapi.client.drive.Comment[] } = {};
-    for (const comment of apiComments) {
-      const text = removeSpace(comment.content ?? '')
-      const multi = commentLookup[text];
-      if (multi) {
-        multi.push(comment);
-      } else {
-        commentLookup[text] = [comment];
+      // wait for all other HTML alterations to complete
+      if (!docHtmlChangesFinished) {
+        return;
       }
-    }
-    const replyLookup: { [text: string]: gapi.client.drive.Comment[] } = {};
-    const removals: any[] = []
-    let i = 0;
-    while (true) {
-      i += 1;
-      const domId = 'cmnt' + i.toString();
-      const commentLink = document.getElementById(domId);
-      if (!commentLink) {
-        // console.debug(commentLookup);
-        // console.debug(replyLookup);
-        break;
+      const body = docHtmlChangesFinished;
+
+      // We would like to filter out resolve comments
+      // However, once a comment thread is resolved it may stay marked resolved
+      // Even after being re-opened
+      // We also won't see the replies after it is re-opened
+      const apiComments = docComments; // .filter((comment) => comment.resolved !== true);
+      if (apiComments.length === 0) {
+        return;
       }
-      let parent = commentLink.parentElement;
-      while (parent && parent.nodeName !== 'DIV') {
-        parent = parent.parentElement;
+
+      const newComments: UpgradedComment[] = [];
+
+      const commentLookup: { [text: string]: gapi.client.drive.Comment[] } = {};
+      for (const comment of apiComments) {
+        const text = removeSpace(comment.content ?? '')
+        const multi = commentLookup[text];
+        if (multi) {
+          multi.push(comment);
+        } else {
+          commentLookup[text] = [comment];
+        }
       }
-      if (!parent) {
-        console.error('no parent for comment');
-        continue;
-      }
-      let origTextPieces = [commentLink.nextElementSibling?.textContent ?? ''];
-      for (const child of Array.from(parent.children).slice(1)) {
-        if (child.textContent?.startsWith('_Assigned to')) {
+      const replyLookup: { [text: string]: gapi.client.drive.Comment[] } = {};
+      let i = 0;
+      while (true) {
+        i += 1;
+        const domId = '#cmnt' + i.toString();
+        const commentLink = body.querySelector(domId);
+        if (!commentLink) {
+          // console.debug(commentLookup);
+          // console.debug(replyLookup);
+          break;
+        }
+        let parent = commentLink.parentElement;
+        while (parent && parent.nodeName !== 'DIV') {
+          parent = parent.parentElement;
+        }
+        if (!parent) {
+          console.error('no parent for comment');
           continue;
         }
-        origTextPieces.push(child.textContent || '');
-      }
-      const lookupText = removeSpace(origTextPieces.join('\n'));
-      const comments = commentLookup[lookupText];
-      if (comments) {
-        if (comments.length === 1) {
-          delete commentLookup[lookupText];
+        let origTextPieces = [commentLink.nextElementSibling?.textContent ?? ''];
+        for (const child of Array.from(parent.children).slice(1)) {
+          if (child.textContent?.startsWith('_Assigned to')) {
+            continue;
+          }
+          origTextPieces.push(child.textContent || '');
         }
-        const topHref = commentLink.getAttribute('href') ?? '#';
-        // console.log(topHref);
-        // console.log(document.getElementById(topHref.slice(1)));
-        const docTextNoSpace = removeSpace(
-          escapeHtml(document.getElementById(topHref.slice(1))?.innerText ?? '')
-        );
-        let exactComment: null | gapi.client.drive.Comment = null;
-        if (docTextNoSpace) {
-          for (const comment of comments) {
-            const quotedNoSpace = removeSpace(comment.quotedFileContent?.value ?? '');
-            if (quotedNoSpace === docTextNoSpace) {
-              exactComment = comment;
+        const lookupText = removeSpace(origTextPieces.join('\n'));
+        const comments = commentLookup[lookupText];
+        if (comments) {
+          if (comments.length === 1) {
+            delete commentLookup[lookupText];
+          }
+          const topHref = commentLink.getAttribute('href') ?? '#';
+          // console.log(topHref);
+          // console.log(body.querySelector(topHref));
+          const docTextNoSpace = removeSpace(
+            escapeHtml((body.querySelector(topHref) as HTMLElement | null)?.innerText ?? '')
+          );
+          let exactComment: null | gapi.client.drive.Comment = null;
+          if (docTextNoSpace) {
+            for (const comment of comments) {
+              const quotedNoSpace = removeSpace(comment.quotedFileContent?.value ?? '');
+              if (quotedNoSpace === docTextNoSpace) {
+                exactComment = comment;
+              }
             }
           }
-        }
-        if (!exactComment) {
-          exactComment = comments.shift()!;
-          if (comments.length > 0) {
-            console.debug(
-              'did not find exact',
-              docTextNoSpace,
-              'guessing',
-               exactComment.quotedFileContent?.value
-            );
+          if (!exactComment) {
+            exactComment = comments.shift()!;
+            if (comments.length > 0) {
+              console.debug(
+                'did not find exact',
+                docTextNoSpace,
+                'guessing',
+                exactComment.quotedFileContent?.value
+              );
+            }
+            for (const comment of comments) {
+              console.debug('alternative', removeSpace(comment.quotedFileContent?.value ?? ''));
+            }
           }
-          for (const comment of comments) {
-            console.debug('alternative', removeSpace(comment.quotedFileContent?.value ?? ''));
+
+          for (const child of parent.children) {
+            parent.removeChild(child);
           }
-        }
+          newComments.push({
+            comment: exactComment,
+            topHref,
+            htmlId: commentLink.id,
+          });
 
-        for (const child of parent.children) {
-          parent.removeChild(child);
-        }
-        newComments.push({
-          comment: exactComment,
-          topHref,
-          htmlId: commentLink.id,
-        });
-
-        // Create a lookup for all the replies.
-        // This will confirm that the replies in the DOM exist in our data.
-        for (const reply of exactComment.replies ?? []) {
-          const replyNoSpace = removeSpace(reply.content ?? '');
-          const replies = replyLookup[replyNoSpace];
-          if (replies) {
-            replies.push(reply);
-          } else {
-            replyLookup[replyNoSpace] = [reply];
+          // Create a lookup for all the replies.
+          // This will confirm that the replies in the DOM exist in our data.
+          for (const reply of exactComment.replies ?? []) {
+            const replyNoSpace = removeSpace(replyText(reply));
+            const replies = replyLookup[replyNoSpace];
+            if (replies) {
+              replies.push(reply);
+            } else {
+              replyLookup[replyNoSpace] = [reply];
+            }
           }
-        }
 
-        removals.push(parent);
-      } else if (replyLookup[lookupText]) {
-        const replies = replyLookup[lookupText];
-        // Don't bother figuring out the exact correct reply.
-        replies.shift();
-        if (replies.length === 0) {
-          delete replyLookup[lookupText];
+          parent.remove();
+        } else if (replyLookup[lookupText]) {
+          const replies = replyLookup[lookupText];
+          // Don't bother figuring out the exact correct reply.
+          replies.shift();
+          if (replies.length === 0) {
+            delete replyLookup[lookupText];
+          }
+          // note that we no longer link replies back to the text
+          // So delete those supers as well
+          (body.querySelector(
+            commentLink.getAttribute('href') ?? ''
+          ) as HTMLElement | null)?.remove();
+          parent.remove();
+        } else {
+          console.debug('did not find comment for', lookupText);
+          // console.debug(Object.keys(commentLookup));
+          // console.debug(replyLookup);
         }
-        // note that we no longer link replies back to the text
-        // So delete those supers as well
-        document.getElementById((commentLink.getAttribute('href') ?? '').slice(1))?.remove();
-        removals.push(parent);
-      } else {
-        console.debug('did not find comment for', lookupText);
-        // console.debug(Object.keys(commentLookup));
-        // console.debug(replyLookup);
       }
-    }
 
-    setUpgradedComments(newComments);
-
-    // We incrementally upgrade the html
-    // So we need to make sure those are done first
-    // This is a hacky and unreliable way to achieve that
-    setTimeout(function () {
-      for (const parent of removals) {
-        parent?.remove();
-      }
-    }, 5000);
-  }, [docComments, isLoading, file.id]);
+      setDocContent(body.innerHTML);
+      setUpgradedComments(newComments);
+    },
+    [docComments, isLoading, file.id, docHtmlChangesFinished]
+  );
 
   const handleDocContentClick = useCallback(
     (ev: React.MouseEvent) => {
