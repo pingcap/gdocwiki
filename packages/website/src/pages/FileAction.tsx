@@ -20,7 +20,7 @@ import { getConfig } from '../config';
 import { useRender } from '../context/RenderStack';
 import useFileMeta from '../hooks/useFileMeta';
 import responsiveStyle from '../layout/responsive.module.scss';
-import { selectDocMode, setDocMode, resetDocMode } from '../reduxSlices/doc';
+import { selectDocMode, resetDocMode } from '../reduxSlices/doc';
 import {
   canChangeSettings,
   canEdit,
@@ -116,7 +116,7 @@ function FileAction(props: { file?: DriveFile, allOverflow?: boolean }) {
 
   const outerFolderId = file?.mimeType === MimeTypes.GoogleFolder ? file?.id : file?.parents?.[0];
   const outerFolder = useFileMeta(outerFolderId);
-  const docMode = useSelector(selectDocMode(file?.mimeType ?? ''));
+  const docMode = useSelector(selectDocMode(file?.mimeType ?? '')) || 'view';
 
   useEffect(() => {
     return () => {
