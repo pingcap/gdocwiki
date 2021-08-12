@@ -8,7 +8,16 @@ import { useDispatch, useSelector } from 'react-redux'
 import { withRouter } from 'react-router';
 import { useHistory } from 'react-router-dom';
 import { useManagedRenderStack } from '../../context/RenderStack';
-import { setHeaders, setComments, selectComments, setFile, setNoFile } from '../../reduxSlices/doc';
+import {
+  setHeaders,
+  selectDriveLinks,
+  setDriveLinks,
+  setComments,
+  selectComments,
+  setFile,
+  setNoFile,
+  DriveLink,
+} from '../../reduxSlices/doc';
 import { DriveFile, canEdit, parseDriveLink, MimeTypes } from '../../utils';
 import { fromHTML, MakeTree } from '../../utils/docHeaders';
 import styles from './FolderPage.module.scss';
@@ -137,7 +146,7 @@ function timed(msg: string, cb: () => void) {
   console.log(msg + ' took ' + (t1 - t0) + ' milliseconds.');
 }
 
-function rewriteLink(el: HTMLAnchorElement): void {
+function rewriteLink(el: HTMLAnchorElement): DriveLink | null {
   // Rewrite `https://www.google.com/url?q=`
   if (el.href.indexOf('https://www.google.com/url') === 0) {
     const url = new URL(el.href);
@@ -148,21 +157,28 @@ function rewriteLink(el: HTMLAnchorElement): void {
   }
 
   // Open Google Doc and Google Drive link inline, for other links open in new window.
-  const id = parseDriveLink(el.href);
+  const href = el.href;
+  const id = parseDriveLink(href);
   if (id) {
-    el.href = `/view/${id}`;
+    const wikiHref = `/view/${id}`;
+    el.href = wikiHref
     el.dataset['__gdoc_id'] = id;
     el.classList.add(styles.gdocLink);
-    return;
+    return {
+      wikiLink: wikiHref,
+      driveLink: href,
+      linkText: el.innerText,
+      id: id,
+    };
   }
   if ((el.getAttribute('href') ?? '').indexOf('#') !== 0) {
     el.target = '_blank';
     el.classList.add('__gdoc_external_link');
-    return;
   }
+  return null;
 }
 
-function prettify(baseEl: HTMLElement, file?: DriveFile) {
+function prettify(baseEl: HTMLElement, file?: DriveFile): DriveLink[] {
   timed('padding fixes', () => {
     for (const li of baseEl.querySelectorAll('li')) {
       fixPaddingLi(li as HTMLLIElement);
@@ -182,10 +198,14 @@ function prettify(baseEl: HTMLElement, file?: DriveFile) {
     }
   });
 
+  let links = [] as DriveLink[];
   timed('link rewrite', () => {
     const elements = baseEl.getElementsByTagName('a');
     for (const el of elements) {
-      rewriteLink(el);
+      const l = rewriteLink(el);
+      if (l) {
+        links.push(l);
+      }
     }
   });
 
@@ -194,6 +214,8 @@ function prettify(baseEl: HTMLElement, file?: DriveFile) {
       externallyLinkHeaders(baseEl, file);
     });
   }
+
+  return links;
 }
 
 const sourceSansPro = '"Source Sans Pro"';
@@ -277,19 +299,25 @@ function removeLinkStyling(style: string): string {
 }
 
 // linkPreview performs blocking API calls
-async function linkPreview(baseEl: HTMLElement, cb?: () => void) {
+async function linkPreview(
+  baseEl: HTMLElement,
+  cb?: (files: DriveFile[]) => void
+): Promise<DriveFile[]> {
+  const files = [] as DriveFile[];
   try {
     for (const link of baseEl.querySelectorAll('.' + styles.gdocLink)) {
       const id = (link as HTMLElement).dataset?.['__gdoc_id'];
       if (id) {
-        const req = { fileId: id, supportsAllDrives: true, fields: 'thumbnailLink,mimeType' };
+        const fields = 'id,name,thumbnailLink,mimeType,iconLink';
+        const req = { fileId: id, supportsAllDrives: true, fields };
         const rsp = await gapi.client.drive.files.get(req);
+        files.push(rsp.result);
         const imgSrc = rsp.result.thumbnailLink;
         if (!imgSrc) {
           if (rsp.result.mimeType !== MimeTypes.GoogleFolder) {
             console.debug('preview no thumbnail', id);
           }
-          return;
+          continue;
         }
         let img = document.createElement('img');
         img.src = imgSrc;
@@ -303,9 +331,10 @@ async function linkPreview(baseEl: HTMLElement, cb?: () => void) {
     console.error('linkPreview thumbnails', e);
   } finally {
     if (cb) {
-      cb();
+      cb(files);
     }
   }
+  return files;
 }
 
 // Highlight commented text just as in Google Docs.
@@ -445,6 +474,7 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
   const docComments = useSelector(selectComments);
   const history = useHistory();
   const [upgradedComments, setUpgradedComments] = useState([] as UpgradedComment[]);
+  const driveLinks = useSelector(selectDriveLinks);
 
   useCallback(() => {
     if (file.name) {
@@ -556,19 +586,32 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
 
       setDocContent(content.innerHTML);
       if (pretty) {
-        // prettify could take a noticeable amount of time on a slow device.
-        // particularly for a large document
-        // Using setTimeout gives an opportunity to do an initial render
-        // before running the code
+        // prettify could take a noticeable amount of time for a large doc on a slow device.
+        // Using setTimeout gives an opportunity to do an initial render before running the code
         setTimeout(function () {
-          prettify(content, file);
+          const links = prettify(content, file);
+          dispatch(setDriveLinks(links));
           setDocContent(content.innerHTML);
 
           // link preview makes blocking API calls
           setTimeout(function () {
-            linkPreview(content, function () {
+            linkPreview(content, function (files) {
               setDocContent(content.innerHTML);
               setDocHtmlChangesFinished(content);
+              const fileLookup = {};
+              for (const file of files) {
+                fileLookup[file.id ?? ''] = file;
+              }
+              const newLinks = links.map((link) => {
+                const file = fileLookup[link.id];
+                if (!file) {
+                  console.log('file not found for link', link);
+                  return link;
+                } else {
+                  return Object.assign({ file }, link);
+                }
+              });
+              dispatch(setDriveLinks(newLinks));
             });
           }, 1);
         }, 1);

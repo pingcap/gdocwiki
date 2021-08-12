@@ -142,7 +142,7 @@ function HeaderExtraActionsForMobile_() {
     return items;
   }, []);
 
-  return (
+  return treeItems.length === 0 ? null : (
     <div className={cx(styles.actionTree, responsiveStyle.showInPhone)}>
       <TreeView label="Navigation" selected={[]}>
         {renderTreeNode(treeItems)}

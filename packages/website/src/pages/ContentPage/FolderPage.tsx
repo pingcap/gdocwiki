@@ -1,25 +1,22 @@
-import { Edit16, Maximize16, Minimize16 } from '@carbon/icons-react';
+import { Edit16, Minimize16 } from '@carbon/icons-react';
 import { Accordion, AccordionItem, InlineLoading } from 'carbon-components-react';
 import { Stack, TooltipHost } from 'office-ui-fabric-react';
 import React, { useMemo, useState, MouseEventHandler } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { FileWithIcon, FileLink, FileListTable, IFileListTableProps } from '../../components';
+import {
+  FileListTable,
+  FolderChildrenList,
+  IFileListTableProps,
+  IFolderFilesProps,
+  IFolderListProps,
+} from '../../components';
 import { useManagedRenderStack } from '../../context/RenderStack';
 import { useFolderFilesMeta, IFolderFilesMeta  } from '../../hooks/useFolderFilesMeta';
 import { selectMapIdToFile } from '../../reduxSlices/files';
 import { DriveFile, FolderChildrenDisplayMode, canEdit } from '../../utils';
 import styles from './FolderPage.module.scss';
 import ContentPage from '.';
-
-interface IFolderFilesProps {
-  files: DriveFile[];
-}
-
-interface IFolderListProps extends IFolderFilesProps {
-  openInNewWindow: boolean;
-  clickExpandToTable: MouseEventHandler;
-}
 
 interface IFolderDisplay extends IFolderFilesProps {
   display?: FolderChildrenDisplayMode;
@@ -35,29 +32,6 @@ type AllFolderViewProps = IFolderListProps & IFolderDisplay & ITableShrinkToList
 interface IFolderAccordionProps extends IFolderFilesProps {
   children: any;
   open: boolean;
-}
-
-function FolderChildrenList({ files, openInNewWindow, clickExpandToTable }: IFolderListProps) {
-  return (
-    <div className={styles.content}>
-      <TooltipHost content="expand to table view" styles={{ root: { alignSelf: 'center' } }}>
-        <a href="#" title="expand" onClick={clickExpandToTable} style={{ marginLeft: '0.3em' }}>
-          <Maximize16 />
-        </a>
-      </TooltipHost>
-      <ul>
-        {files.map((file: gapi.client.drive.File) => {
-          return (
-            <li key={file.id}>
-              <FileLink file={file} openInNewWindow={openInNewWindow}>
-                <FileWithIcon file={file} />
-              </FileLink>
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-  );
 }
 
 function FolderChildrenHide({ children, files, open }: IFolderAccordionProps) {

@@ -14,7 +14,6 @@ $sider-width: 300px;
   bottom: 0;
 
   overflow-y: auto;
-  padding-top: 1rem;
   padding-left: 0rem;
   background-color: $ui-01;
 
@@ -41,7 +40,7 @@ $sider-width: 300px;
 
   @include for-size(phone) {
     width: 100%;
-    padding: 0.5rem 0;
+    padding: 0;
     transform-origin: center top;
     transform: scaleY(0.8);
   }
