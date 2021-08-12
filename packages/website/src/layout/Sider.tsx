@@ -1,9 +1,9 @@
-import { CollapseAll16, Launch16 } from '@carbon/icons-react';
+import { CollapseAll16, Launch16, } from '@carbon/icons-react';
 import { InlineLoading, SkeletonText } from 'carbon-components-react';
 import TreeView, { TreeNode, TreeNodeProps } from 'carbon-components-react/lib/components/TreeView';
 import cx from 'classnames';
-import { Stack } from 'office-ui-fabric-react';
-import React, { useCallback, useEffect, useMemo } from 'react';
+import { Stack, Pivot, PivotItem } from 'office-ui-fabric-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { DriveIcon } from '../components';
 import { getConfig } from '../config';
@@ -320,6 +320,8 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
 
   const id = useSelector(selectActiveId) ?? getConfig().REACT_APP_ROOT_ID;
 
+  const [sidebarTab, setSidebarTab] = useState('directories');
+
   const handleToggle = useCallback(
     (ev: React.MouseEvent, node: TreeNodeProps) => {
       // handleToggle is called before onSelect
@@ -381,6 +383,26 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
     }
   }
 
+  function switchTab(item): void {
+    const tab = item.props['itemKey'];
+    setSidebarTab(tab);
+  }
+
+  /* auto-switching is not always wanted 
+  const activeFile = mapIdToFile[id];
+  useEffect(
+    function autoSwitchToOutline() {
+      if (!activeFile) { return; }
+      if (activeFile.mimeType === MimeTypes.GoogleDocument) { setSidebarTab('outline'); }
+    },
+    [activeFile]
+  );
+  */
+
+  function renderPivotOutline() {
+    return <span style={{ fontWeight: 600 }}>Document Outline</span>;
+  }
+
   return (
     <div className={cx(styles.sider, { [styles.isExpanded]: isExpanded })}>
       <HeaderExtraActionsForMobile />
@@ -394,38 +416,53 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
           <InlineLoading description={`Error: ${error.message}`} status="error" />
         </div>
       )}
-      {!loading && !error && (
-        <TreeView label="Table of Contents" selected={selected} active={id} id={'tree-toc'}>
-          {renderChildren(
-            id,
-            mapIdToFile,
-            mapIdToChildren,
-            onFolderShowFiles,
-            showFiles,
-            getConfig().REACT_APP_ROOT_ID,
-            expanded,
-            handleToggle
+      <Pivot onLinkClick={switchTab} selectedKey={sidebarTab}>
+        <PivotItem alwaysRender={true} itemKey="directories" headerText="Table of Contents">
+          {!loading && !error && (
+            <div style={{ marginTop: '0.5rem' }}>
+              <TreeView
+                label="Table of Contents"
+                hideLabel={true}
+                selected={selected}
+                active={id}
+                id={'tree-toc'}
+              >
+                {renderChildren(
+                  id,
+                  mapIdToFile,
+                  mapIdToChildren,
+                  onFolderShowFiles,
+                  showFiles,
+                  getConfig().REACT_APP_ROOT_ID,
+                  expanded,
+                  handleToggle
+                )}
+              </TreeView>
+            </div>
           )}
-        </TreeView>
-      )}
-      {headerTreeNodes.length > 0 && (
-        <div style={{ marginTop: '30px' }}>
-          <Stack
-            style={{ display: 'flex', justifyContent: 'center' }}
-            verticalAlign="center"
-            horizontal
-          >
-            <p>{file?.name}</p>
-          </Stack>
-          <TreeView
-            label="Document Headers"
-            selected={[headerTreeNodes[0].key?.toString() ?? 0]}
-            id="tree-document-headers"
-          >
-            {headerTreeNodes}
-          </TreeView>
-        </div>
-      )}
+        </PivotItem>
+        {headerTreeNodes.length > 0 && (
+          <PivotItem itemKey="outline" onRenderItemLink={renderPivotOutline}>
+            <div style={{ marginTop: '0.5rem' }}>
+              <TreeView
+                label="Document Outline"
+                hideLabel={true}
+                selected={[headerTreeNodes[0].key?.toString() ?? 0]}
+                id="tree-document-headers"
+              >
+                <Stack
+                  style={{ padding: '0.5rem', display: 'flex', justifyContent: 'center' }}
+                  verticalAlign="center"
+                  horizontal
+                >
+                  <p>{file?.name}</p>
+                </Stack>
+                {headerTreeNodes}
+              </TreeView>
+            </div>
+          </PivotItem>
+        )}
+      </Pivot>
     </div>
   );
 }
