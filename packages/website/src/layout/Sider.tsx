@@ -5,10 +5,10 @@ import cx from 'classnames';
 import { Stack, Pivot, PivotItem } from 'office-ui-fabric-react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { DriveIcon } from '../components';
+import { DriveIcon, FolderChildrenList } from '../components';
 import { getConfig } from '../config';
 import { useFolderFilesMeta } from '../hooks/useFolderFilesMeta';
-import { selectHeaders, selectDriveFile } from '../reduxSlices/doc';
+import { selectHeaders, selectDriveFile, selectDriveLinks } from '../reduxSlices/doc';
 import {
   selectError,
   selectLoading,
@@ -315,6 +315,7 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
   const expanded = useSelector(selectExpanded);
   const selected = useSelector(selectSelected);
   const headers = useSelector(selectHeaders);
+  const driveLinks = useSelector(selectDriveLinks);
   const file = useSelector(selectDriveFile);
   const showFiles = useSelector(selectShowFiles);
 
@@ -460,6 +461,14 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
                 {headerTreeNodes}
               </TreeView>
             </div>
+            {driveLinks.length > 0 && (
+              <div style={{ marginTop: '1em', marginLeft: '1em' }}>
+                <h4>Links in Document</h4>
+                <FolderChildrenList
+                  files={driveLinks.map((dl) => dl.file).filter((f) => f) as DriveFile[]}
+                />
+              </div>
+            )}
           </PivotItem>
         )}
       </Pivot>

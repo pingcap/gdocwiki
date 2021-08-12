@@ -3,11 +3,20 @@ import { DriveFile, MimeTypePreferredDisplay } from '../utils';
 import { DocHeader, TreeHeading } from '../utils/docHeaders';
 import { MimeTypes } from '../utils/gapi';
 
+export interface DriveLink {
+  driveLink: string;
+  linkText: string;
+  wikiLink: string;
+  id: string;
+  file?: DriveFile;
+}
+
 export interface DocState {
   file: DriveFile | null;
   modes: MimeTypePreferredDisplay;
   headers?: (TreeHeading | DocHeader)[];
   comments: gapi.client.drive.Comment[];
+  driveLinks: DriveLink[];
 }
 
 let mimeTypePreferredDisplay: MimeTypePreferredDisplay = {};
@@ -19,6 +28,7 @@ const initialStateDoc: DocState = {
   file: null,
   headers: [],
   comments: [],
+  driveLinks: [],
 };
 
 export const slice = createSlice({
@@ -45,6 +55,9 @@ export const slice = createSlice({
     setComments: (state, { payload }: { payload: gapi.client.drive.Comment[] }) => {
       state.comments = payload;
     },
+    setDriveLinks: (state, { payload }: { payload: DriveLink[] }) => {
+      state.driveLinks = payload;
+    },
   },
 });
 
@@ -55,11 +68,13 @@ export const {
   setNoFile,
   setHeaders,
   setComments,
+  setDriveLinks,
 } = slice.actions;
 
 export const selectHeaders = (state: { doc: DocState }) => state.doc.headers;
 export const selectComments = (state: { doc: DocState }) => state.doc.comments;
 export const selectDriveFile = (state: { doc: DocState }) => state.doc.file;
+export const selectDriveLinks = (state: { doc: DocState }) => state.doc.driveLinks;
 export const selectDocMode = (mimeType: string) => {
   return (state: { doc: DocState }) => {
     return state.doc.modes[mimeType];
