@@ -20,7 +20,7 @@ function HeaderSearch_() {
     () => {
       if (!keyword) {
         history.replace('/');
-      } else if (keyword.length > 3) {
+      } else if (keyword.length > 2) {
         const url = `${pathKey}${keyword}`;
         // still modifying the search
         if (lastKeyword && (keyword.startsWith(lastKeyword) || lastKeyword.startsWith(keyword))) {
