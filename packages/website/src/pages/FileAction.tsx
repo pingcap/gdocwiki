@@ -26,10 +26,10 @@ import {
   canEdit,
   extractTags,
   inlineEditable,
-  viewable,
   DocMode,
   DriveFile,
   MimeTypes,
+  docModes,
 } from '../utils';
 import { folderPageId } from './ContentPage/FolderPage';
 import { showCreateFile } from './FileAction.createFile';
@@ -345,6 +345,15 @@ function FileAction(props: { file?: DriveFile, allOverflow?: boolean }) {
     [history, file]
   );
 
+  const chooseDocMode = useMemo(() => {
+    return file?.mimeType && docModes(file.mimeType).length > 1;
+  }, [file?.mimeType]);
+
+  if (!file) {
+    console.log('no file, return null');
+    return null;
+  }
+
   if (commandBarItems.length === 0 && commandBarOverflowItems.length === 0) {
     console.log('no command bar items, return null');
     return null;
@@ -354,15 +363,10 @@ function FileAction(props: { file?: DriveFile, allOverflow?: boolean }) {
     return () => <TooltipHost content={mode}>{icon}</TooltipHost>;
   }
 
-  if (!file) {
-    console.log('no file, return null');
-    return null;
-  }
-
   return (
     <div style={{ marginLeft: '1rem' }}>
       <Stack horizontal>
-        {viewable(file.mimeType ?? '') && (
+        {chooseDocMode && file.mimeType && (
           <Stack.Item disableShrink>
             <Pivot onLinkClick={switchDocMode} selectedKey={docMode}>
               <PivotItem
@@ -370,7 +374,7 @@ function FileAction(props: { file?: DriveFile, allOverflow?: boolean }) {
                 onRenderItemLink={tooltip('view', <Icon icon={fileEdit} />)}
               />
               <PivotItem itemKey="preview" onRenderItemLink={tooltip('preview', <View16 />)} />
-              {inlineEditable(file.mimeType ?? '') && canEdit(file) && (
+              {inlineEditable(file.mimeType) && canEdit(file) && (
                 <PivotItem itemKey="edit" onRenderItemLink={tooltip('edit', <Edit16 />)} />
               )}
             </Pivot>
