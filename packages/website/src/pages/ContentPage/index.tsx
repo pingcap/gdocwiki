@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { selectDocMode } from '../../reduxSlices/doc';
-import { DriveFile, MimeTypes, PreviewableMimeTypes } from '../../utils';
+import { DriveFile, MimeTypes, previewable } from '../../utils';
 import DocPage from './DocPage';
 import FolderPage from './FolderPage';
 import PreviewPage from './PreviewPage';
@@ -30,9 +30,9 @@ function ContentPage({
 }: IContentPageProps) {
   const docMode = useSelector(selectDocMode(file?.mimeType ?? ''));
   function docPage(props: PageProps) {
-    const style = {};
+    let style = {};
     if (!splitWithFileListing) {
-      style['marginLeft'] = '1rem';
+      style = Object.assign(style, { marginLeft: '1rem' });
     }
     return (
       <div style={style}>
@@ -58,14 +58,10 @@ function ContentPage({
   };
 
   if (docMode) {
-    if (docMode !== 'view') {
-      const edit = docMode === 'edit';
-      return <PreviewPage {...pageProps} edit={edit} />;
-    }
-    return docPage(pageProps);
+    return docMode === 'view' ? docPage(pageProps) : <PreviewPage {...pageProps} />;
   }
 
-  if (PreviewableMimeTypes.indexOf(file?.mimeType ?? '') > -1) {
+  if (previewable(file?.mimeType ?? '')) {
     // Use key to force an unmount when the file changes
     // This resets event handlers
     return <PreviewPage {...pageProps} />;

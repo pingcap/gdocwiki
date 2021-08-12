@@ -9,11 +9,10 @@ import { DriveFile, HalfViewPreviewMimeTypes } from '../../utils';
 
 export interface IPreviewPageProps {
   file: DriveFile;
-  edit?: boolean;
   renderStackOffset?: number;
 }
 
-function PreviewPage({ file, edit = false, renderStackOffset = 0 }: IPreviewPageProps) {
+function PreviewPage({ file, renderStackOffset = 0 }: IPreviewPageProps) {
   const [isLoading, setIsLoading] = useState(true);
   const ref = useRef<HTMLIFrameElement>(null);
   const sidebarOpen = useSelector(selectSidebarOpen);
@@ -36,7 +35,7 @@ function PreviewPage({ file, edit = false, renderStackOffset = 0 }: IPreviewPage
 
   const iframeSrc = useMemo(() => {
     let qp = `?frameborder=0`;
-    if (edit && !sidebarOpen) {
+    if (docMode === 'edit' && !sidebarOpen) {
       qp = qp + '&rm=demo';
     }
     const params = new URLSearchParams(location.search);
@@ -50,9 +49,9 @@ function PreviewPage({ file, edit = false, renderStackOffset = 0 }: IPreviewPage
     }
     return file.webViewLink?.replace(
       /\/(edit|view)\?usp=drivesdk/,
-      edit ? `/edit${qp}` : `/preview${qp}`
+      docMode === 'edit' ? `/edit${qp}` : `/preview${qp}`
     );
-  }, [edit, sidebarOpen, file.webViewLink, location]);
+  }, [sidebarOpen, file.webViewLink, location, docMode]);
 
   useLayoutEffect(() => {
     setIsLoading(true);
@@ -63,8 +62,12 @@ function PreviewPage({ file, edit = false, renderStackOffset = 0 }: IPreviewPage
       setIsLoading(false);
     };
     ref.current.addEventListener('load', cb);
+    const timeout = setTimeout(function(){
+      setIsLoading(false);
+    }, 10000);
     const addedRef = ref.current;
     return () => {
+      clearTimeout(timeout);
       addedRef.removeEventListener('load', cb);
     };
   }, [iframeSrc]);
@@ -81,6 +84,7 @@ function PreviewPage({ file, edit = false, renderStackOffset = 0 }: IPreviewPage
   if (docMode !== 'view' || !sidebarOpen) {
     headSubtract = headSubtract - 48;
   }
+  console.log('Preview', docMode, sidebarOpen);
 
   return (
     <div style={contentStyle}>

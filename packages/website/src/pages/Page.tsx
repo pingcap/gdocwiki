@@ -9,7 +9,7 @@ import useUpdateSiderFromPath from '../hooks/useUpdateSiderFromPath';
 import { selectDocMode, setDocMode, resetDocMode  } from '../reduxSlices/doc';
 import { selectPageReloadToken } from '../reduxSlices/pageReload';
 import { selectSidebarOpen } from '../reduxSlices/siderTree';
-import { DocMode, MimeTypes } from '../utils';
+import { DocMode, MimeTypes, viewable } from '../utils';
 import ContentPage from './ContentPage';
 import FileAction from './FileAction';
 import FileBreadcrumb from './FileBreadcrumb';
@@ -43,21 +43,20 @@ function Page(props: PageProps) {
     }
   }, file);
 
-  const previewModeNotDoc = useMemo(() => {
+  const fullScreenMode = useMemo(() => {
+    if (!file?.mimeType) {
+      return false;
+    }
     return (
-      !sidebarOpen &&
-      file &&
-      file.mimeType !== MimeTypes.GoogleFolder &&
-      file.mimeType !== MimeTypes.GoogleDocument
+      (!viewable(file.mimeType) && file.mimeType !== MimeTypes.GoogleFolder && !sidebarOpen) ||
+      (viewable(file.mimeType) && docMode !== 'view')
     );
-  }, [sidebarOpen, file]);
-
-  const previewModeDoc = file?.mimeType === MimeTypes.GoogleDocument && docMode !== 'view';
+  }, [sidebarOpen, file?.mimeType, docMode]);
 
   return (
     <RightContainer>
       <>
-        {previewModeNotDoc || previewModeDoc ? (
+        {fullScreenMode ? (
           <Stack horizontal>
             <StackItem key="fileaction" grow={1}>
               <FileAction file={file} key={file?.id} allOverflow={true} />
