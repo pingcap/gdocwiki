@@ -56,7 +56,15 @@ export const slice = createSlice({
       state.comments = payload;
     },
     setDriveLinks: (state, { payload }: { payload: DriveLink[] }) => {
-      state.driveLinks = payload;
+      const newLinks = [] as DriveLink[];
+      const checkDupes = {};
+      for (const file of payload) {
+        if (!checkDupes[file.id]) {
+          checkDupes[file.id] = true;
+          newLinks.push(file);
+        }
+      }
+      state.driveLinks = newLinks;
     },
   },
 });

@@ -676,6 +676,7 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
       loadHtmlView();
       return function () {
         dispatch(setHeaders([]));
+        dispatch(setDriveLinks([]));
       };
     },
     [file.id, file.mimeType, dispatch, setDocWithPlainText, setDocWithRichContent]

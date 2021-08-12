@@ -442,25 +442,27 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
             </div>
           )}
         </PivotItem>
-        {headerTreeNodes.length > 0 && (
+        {(headerTreeNodes.length > 0 || driveLinks.length > 0) && (
           <PivotItem itemKey="outline" onRenderItemLink={renderPivotOutline}>
-            <div style={{ marginTop: '0.5rem' }}>
-              <TreeView
-                label="Document Outline"
-                hideLabel={true}
-                selected={[headerTreeNodes[0].key?.toString() ?? 0]}
-                id="tree-document-headers"
-              >
-                <Stack
-                  style={{ padding: '0.5rem', display: 'flex', justifyContent: 'center' }}
-                  verticalAlign="center"
-                  horizontal
+            {headerTreeNodes.length > 0 && (
+              <div style={{ marginTop: '0.5rem' }}>
+                <TreeView
+                  label="Document Outline"
+                  hideLabel={true}
+                  selected={[headerTreeNodes[0].key?.toString() ?? 0]}
+                  id="tree-document-headers"
                 >
-                  <p>{file?.name}</p>
-                </Stack>
-                {headerTreeNodes}
-              </TreeView>
-            </div>
+                  <Stack
+                    style={{ padding: '0.5rem', display: 'flex', justifyContent: 'center' }}
+                    verticalAlign="center"
+                    horizontal
+                  >
+                    <p>{file?.name}</p>
+                  </Stack>
+                  {headerTreeNodes}
+                </TreeView>
+              </div>
+            )}
             {driveLinks.length > 0 && (
               <div style={{ marginTop: '1em', marginLeft: '1em' }}>
                 <h4>Links in Document</h4>
