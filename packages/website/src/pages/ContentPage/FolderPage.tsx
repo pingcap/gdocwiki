@@ -4,11 +4,11 @@ import { Stack, TooltipHost } from 'office-ui-fabric-react';
 import React, { useMemo, useState, MouseEventHandler } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { DriveFileName, DriveIcon, FileListTable, IFileListTableProps } from '../../components';
+import { FileWithIcon, FileLink, FileListTable, IFileListTableProps } from '../../components';
 import { useManagedRenderStack } from '../../context/RenderStack';
 import { useFolderFilesMeta, IFolderFilesMeta  } from '../../hooks/useFolderFilesMeta';
 import { selectMapIdToFile } from '../../reduxSlices/files';
-import { DriveFile, FolderChildrenDisplayMode, canEdit, mdLink, } from '../../utils';
+import { DriveFile, FolderChildrenDisplayMode, canEdit } from '../../utils';
 import styles from './FolderPage.module.scss';
 import ContentPage from '.';
 
@@ -37,31 +37,6 @@ interface IFolderAccordionProps extends IFolderFilesProps {
   open: boolean;
 }
 
-interface IFileInList {
-  file: DriveFile;
-  openInNewWindow: boolean;
-}
-
-function FileLink({ file, openInNewWindow }: IFileInList) {
-  const link = mdLink.parse(file.name);
-  const target = openInNewWindow ? '_blank' : undefined;
-  const inner = (
-    <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
-      <DriveIcon file={file} />
-      <DriveFileName file={file} />
-    </Stack>
-  );
-  return link ? (
-    <a href={link.url} target="_blank" rel="noreferrer">
-      {inner}
-    </a>
-  ) : (
-    <Link to={`/view/${file.id}`} target={target}>
-      {inner}
-    </Link>
-  );
-}
-
 function FolderChildrenList({ files, openInNewWindow, clickExpandToTable }: IFolderListProps) {
   return (
     <div className={styles.content}>
@@ -74,7 +49,9 @@ function FolderChildrenList({ files, openInNewWindow, clickExpandToTable }: IFol
         {files.map((file: gapi.client.drive.File) => {
           return (
             <li key={file.id}>
-              <FileLink file={file} openInNewWindow={openInNewWindow} />
+              <FileLink file={file} openInNewWindow={openInNewWindow}>
+                <FileWithIcon file={file} />
+              </FileLink>
             </li>
           );
         })}

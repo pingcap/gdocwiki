@@ -2,7 +2,9 @@ import dayjs from 'dayjs';
 import { IColumn } from 'office-ui-fabric-react';
 import React, { useCallback, useMemo } from 'react';
 import { DriveFile, mdLink } from '../utils';
-import { DriveFileName, DriveIcon, Table } from '.';
+import { DriveFileName, FileLink } from './DriveFileName';
+import { DriveIcon } from './DriveIcon';
+import { Table } from './Table';
 
 export interface IFileListTableProps {
   files: DriveFile[];
@@ -35,7 +37,11 @@ export function FileListTable({ files, openInNewWindow }: IFileListTableProps) {
         name: 'Name',
         minWidth: 200,
         isRowHeader: true,
-        onRender: (item: DriveFile) => <DriveFileName file={item} />,
+        onRender: (item: DriveFile) => (
+          <FileLink file={item} openInNewWindow={openInNewWindow}>
+            <DriveFileName file={item} />
+          </FileLink>
+        ),
       },
       {
         key: 'create',
@@ -55,11 +61,19 @@ export function FileListTable({ files, openInNewWindow }: IFileListTableProps) {
       },
     ];
     return r;
-  }, []);
+  }, [openInNewWindow]);
 
+  let tableProps = {
+    items: files ?? [],
+    columns: columns,
+    getKey: getKey,
+  }
+  if (openInNewWindow) {
+    tableProps = Object.assign(tableProps, { onRowClicked: handleRowClick });
+  }
   return (
     <>
-      <Table items={files ?? []} columns={columns} onRowClicked={handleRowClick} getKey={getKey} />
+      <Table {...tableProps} />
       {!files?.length && <div style={{ marginTop: 16 }}>Folder is empty.</div>}
     </>
   );

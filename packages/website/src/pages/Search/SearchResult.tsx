@@ -21,7 +21,7 @@ export default function SearchResult() {
         <Typography.Title>Search: {result.value}</Typography.Title>
       </div>
       {(!result.loading || result.files.length > 0) && (
-        <FileListTable files={result.files} openInNewWindow />
+        <FileListTable files={result.files} openInNewWindow={false} />
       )}
       {result.loading && <InlineLoading description={`Searching...`} />}
     </RightContainer>
