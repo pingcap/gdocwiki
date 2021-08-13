@@ -14,8 +14,8 @@ import {
 import React, { useCallback, useMemo, useEffect, useState } from 'react';
 import Avatar from 'react-avatar';
 import { useDispatch, useSelector } from 'react-redux';
-import { useHistory, Link } from 'react-router-dom';
-import { DriveIcon, Tag } from '../components';
+import { useHistory } from 'react-router-dom';
+import { DriveIcon, Tags } from '../components';
 import { getConfig } from '../config';
 import { useRender } from '../context/RenderStack';
 import useFileMeta from '../hooks/useFileMeta';
@@ -24,7 +24,6 @@ import { selectDocMode, resetDocMode } from '../reduxSlices/doc';
 import {
   canChangeSettings,
   canEdit,
-  extractTags,
   inlineEditable,
   DocMode,
   DriveFile,
@@ -127,19 +126,11 @@ function FileAction(props: { file?: DriveFile, allOverflow?: boolean }) {
     };
   }, [dispatch, file]);
 
-  const tags = useMemo(() => {
-    if (!file) {
-      return [];
-    }
-    return extractTags(file);
-  }, [file]);
-
   const settingsCommand = useCallback(
-    (file: DriveFile, hasTags = false) => {
-      const isFolder = file.mimeType === MimeTypes.GoogleFolder;
+    (file: DriveFile) => {
       return {
         key: 'settings',
-        text: !isFolder && !hasTags ? 'Tag' : 'Settings',
+        text: 'Tag',
         iconProps: { iconName: 'Settings' },
         onClick: () => {
           history.push(`/view/${file.id}/settings`);
@@ -214,12 +205,12 @@ function FileAction(props: { file?: DriveFile, allOverflow?: boolean }) {
       });
     }
 
-    if (file && canChangeSettings(file) && tags.length === 0) {
-      commands.push(settingsCommand(file, false));
+    if (file && canChangeSettings(file)) {
+      commands.push(settingsCommand(file));
     }
 
     return commands;
-  }, [file, outerFolder.file, tags.length, settingsCommand, props.allOverflow]);
+  }, [file, outerFolder.file, settingsCommand, props.allOverflow]);
 
   const commandBarOverflowItems = useMemo(() => {
     const commands: ICommandBarItemProps[] = [];
@@ -278,8 +269,8 @@ function FileAction(props: { file?: DriveFile, allOverflow?: boolean }) {
       });
     }
 
-    if (file && canChangeSettings(file) && tags.length > 0) {
-      commands.push(settingsCommand(file, true));
+    if (file && canChangeSettings(file)) {
+      commands.push(settingsCommand(file));
     }
 
     if (file) {
@@ -333,7 +324,7 @@ function FileAction(props: { file?: DriveFile, allOverflow?: boolean }) {
     }
 
     return commands;
-  }, [file, outerFolder.file, tags.length, settingsCommand]);
+  }, [file, outerFolder.file, settingsCommand]);
 
   const switchDocMode = useCallback(
     (item) => {
@@ -394,42 +385,15 @@ function FileAction(props: { file?: DriveFile, allOverflow?: boolean }) {
         </Stack.Item>
         {docMode !== 'view' && (
           <Stack.Item disableShrink grow={1}>
-            <Tags tags={tags} file={file} />
+            <Tags file={file} add={true} style={{ paddingLeft: 8, paddingTop: 12 }} />
           </Stack.Item>
         )}
       </Stack>
       {revisionsEnabled && <Revisions file={file} />}
-      {docMode === 'view' && <Tags tags={tags} file={file} />}
+      {docMode === 'view' && (
+        <Tags file={file} add={true} style={{ marginTop: '0.5rem', padding: '0.4rem' }} />
+      )}
     </div>
-  );
-}
-
-function Tags({ file, tags }: { file: DriveFile; tags: string[] }) {
-  if (tags.length === 0) {
-    return null;
-  }
-
-  return (
-    <Stack horizontal>
-      <Stack
-        verticalAlign="center"
-        horizontal
-        tokens={{ childrenGap: 4 }}
-        style={{ paddingLeft: 8, paddingTop: 12 }}
-      >
-        {tags.map((tag) => (
-          <Tag.Link key={tag} text={tag} />
-        ))}
-      </Stack>
-      <Stack
-        verticalAlign="center"
-        horizontal
-        tokens={{ childrenGap: 4 }}
-        style={{ paddingLeft: 8, paddingTop: 12 }}
-      >
-        <Link to={`/view/${file.id}/settings`}>Add Tag</Link>
-      </Stack>
-    </Stack>
   );
 }
 
