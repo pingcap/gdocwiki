@@ -13,6 +13,8 @@ import {
   OverflowMenuHorizontal16,
   View16,
   Settings16,
+  Star16,
+  StarFilled16,
   TrashCan16,
   WatsonHealthStackedMove16,
 } from '@carbon/icons-react';
@@ -33,6 +35,8 @@ export function registerIcons() {
       Link: <Link16 />,
       List: <List16 />,
       Edit: <Edit16 />,
+      Star: <Star16 />,
+      StarFilled: <StarFilled16 />,
       Trash: <TrashCan16 />,
       View: <View16 />,
       Settings: <Settings16 />,

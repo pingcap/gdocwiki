@@ -39,7 +39,7 @@ const config = {
   REACT_APP_NAME: process.env.REACT_APP_NAME ?? '',
 
   DEFAULT_FILE_FIELDS:
-    'nextPageToken, files(properties, appProperties, name, id, parents, mimeType, modifiedTime, createdTime, lastModifyingUser(displayName, photoLink), iconLink, webViewLink, shortcutDetails, capabilities)',
+    'nextPageToken, files(properties, appProperties, name, id, parents, mimeType, modifiedTime, createdTime, lastModifyingUser(displayName, photoLink), iconLink, webViewLink, shortcutDetails, capabilities, starred)',
 
   NavItems: [] as INavMenuItem[],
 };

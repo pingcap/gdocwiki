@@ -1,10 +1,12 @@
+import { StarFilled16 } from '@carbon/icons-react';
 import dayjs from 'dayjs';
-import { IColumn } from 'office-ui-fabric-react';
-import React, { useCallback, useMemo } from 'react';
-import { DriveFile, mdLink } from '../utils';
+import { IColumn, Stack } from 'office-ui-fabric-react';
+import { useCallback, useMemo } from 'react';
+import { mdLink, DriveFile } from '../utils';
 import { DriveFileName, FileLink } from './DriveFileName';
 import { DriveIcon } from './DriveIcon';
 import { Table } from './Table';
+import { Tags } from './Tag';
 
 export interface IFileListTableProps {
   files: DriveFile[];
@@ -37,10 +39,14 @@ export function FileListTable({ files, openInNewWindow }: IFileListTableProps) {
         name: 'Name',
         minWidth: 200,
         isRowHeader: true,
-        onRender: (item: DriveFile) => (
-          <FileLink file={item} openInNewWindow={openInNewWindow}>
-            <DriveFileName file={item} />
-          </FileLink>
+        onRender: (file: DriveFile) => (
+          <Stack horizontal tokens={{ childrenGap: 8 }}>
+            <FileLink file={file} openInNewWindow={openInNewWindow}>
+              <DriveFileName file={file} />
+            </FileLink>
+            {file.starred && <StarFilled16 />}
+            <Tags file={file} />
+          </Stack>
         ),
       },
       {
