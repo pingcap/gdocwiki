@@ -205,12 +205,8 @@ function FileAction(props: { file?: DriveFile, allOverflow?: boolean }) {
       });
     }
 
-    if (file && canChangeSettings(file)) {
-      commands.push(settingsCommand(file));
-    }
-
     return commands;
-  }, [file, outerFolder.file, settingsCommand, props.allOverflow]);
+  }, [file, outerFolder.file, props.allOverflow]);
 
   const commandBarOverflowItems = useMemo(() => {
     const commands: ICommandBarItemProps[] = [];
