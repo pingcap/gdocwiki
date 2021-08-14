@@ -45,7 +45,7 @@ export default function useFileMeta(id?: string) {
             driveId: id!,
             fields: '*',
           });
-          console.log('useFileMeta drives.get', respDrive);
+          console.debug('useFileMeta drives.get', respDrive.result);
           respFile.result.name = respDrive.result.name;
         } else {
           dispatch(updateFile(respFile.result));

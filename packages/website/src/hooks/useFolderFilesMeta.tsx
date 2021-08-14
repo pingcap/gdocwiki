@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { GapiErrorDisplay } from '../components';
 import { updateFiles, selectMapIdToChildren } from '../reduxSlices/files';
-import { DriveFile, compareFiles } from '../utils';
+import { DriveFile, compareFiles, MakeRequestQueue } from '../utils';
 
 export interface IFolderFilesMeta {
   loading: boolean;
@@ -12,10 +12,11 @@ export interface IFolderFilesMeta {
 
 const inProgressRequests: { [fileId: string]: boolean } = {};
 
+const enqueueRequest = MakeRequestQueue();
+
 export function useFolderFilesMeta(id?: string) {
   const dispatch = useDispatch();
   const [data, setData] = useState<IFolderFilesMeta>({ loading: true });
-  const reqRef = useRef(0);
   const mapIdToChildren = useSelector(selectMapIdToChildren);
   if (id && data.loading && data.files === undefined) {
     // We already have the files
@@ -37,7 +38,7 @@ export function useFolderFilesMeta(id?: string) {
     }
     inProgressRequests[id!] = true;
 
-    async function loadFolderFilesMetadata(checkpoint: number) {
+    async function loadFolderFilesMetadata() {
       setData({ loading: true });
 
       try {
@@ -56,9 +57,6 @@ export function useFolderFilesMeta(id?: string) {
           const newFiles = resp.result.files ?? [];
           console.debug(`loadFolderFilesMetadata files.list (page #${i + 1})`, id, newFiles.length);
 
-          if (reqRef.current !== checkpoint) {
-            break;
-          }
           for (const file of newFiles) {
             files[file.id ?? ''] = file;
           }
@@ -74,20 +72,15 @@ export function useFolderFilesMeta(id?: string) {
         filesArray.sort(compareFiles);
         setData({ loading: false, files: filesArray });
       } catch (e) {
-        if (reqRef.current === checkpoint) {
-          console.log(e);
-          setData((d) => ({ ...d, error: <GapiErrorDisplay error={e} /> }));
-        }
+        console.log(e);
+        setData((d) => ({ ...d, error: <GapiErrorDisplay error={e} /> }));
       } finally {
         delete inProgressRequests[id!];
-        if (reqRef.current === checkpoint) {
-          setData((d) => ({ ...d, loading: false }));
-        }
+        setData((d) => ({ ...d, loading: false }));
       }
     }
 
-    reqRef.current++;
-    loadFolderFilesMetadata(reqRef.current);
+    enqueueRequest(loadFolderFilesMetadata);
   }, [id, dispatch]);
 
   return data;

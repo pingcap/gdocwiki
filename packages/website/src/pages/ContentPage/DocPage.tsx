@@ -299,10 +299,7 @@ function removeLinkStyling(style: string): string {
 }
 
 // linkPreview performs blocking API calls
-async function linkPreview(
-  baseEl: HTMLElement,
-  cb?: (files: DriveFile[]) => void
-): Promise<DriveFile[]> {
+async function linkPreview(baseEl: HTMLElement): Promise<DriveFile[]> {
   const files = [] as DriveFile[];
   try {
     for (const link of baseEl.querySelectorAll('.' + styles.gdocLink)) {
@@ -329,11 +326,8 @@ async function linkPreview(
     }
   } catch (e) {
     console.error('linkPreview thumbnails', e);
-  } finally {
-    if (cb) {
-      cb(files);
-    }
   }
+
   return files;
 }
 
@@ -595,7 +589,7 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
 
           // link preview makes blocking API calls
           setTimeout(function () {
-            linkPreview(content, function (files) {
+            linkPreview(content).then(function (files) {
               setDocContent(content.innerHTML);
               setDocHtmlChangesFinished(content);
               const fileLookup = {};
