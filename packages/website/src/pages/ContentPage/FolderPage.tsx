@@ -67,10 +67,10 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
   const mapIdToFile = useSelector(selectMapIdToFile);
   const openInNewWindow = useMemo(() => {
     // If current folder is not in the tree, open new window
-    return !mapIdToFile?.[file?.id ?? ''] && shortCutFile;
+    return !mapIdToFile?.[file?.id!] && shortCutFile;
   }, [mapIdToFile, file, shortCutFile]);
 
-  const filesMeta = useFolderFilesMeta(file.id);
+  const filesMeta = useFolderFilesMeta(file.id!);
   const { loading, error } = filesMeta;
   const files = useMemo(() => filesMeta.files ?? [], [filesMeta]);
 

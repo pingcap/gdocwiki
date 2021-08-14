@@ -162,7 +162,7 @@ function nodeLabel(props: {
   isExpanded?: boolean;
   isActive?: boolean;
   filesShown?: boolean;
-  onFolderShowFiles?: (file: DriveFile) => void
+  onFolderShowFiles?: (file: DriveFile) => void;
 }): React.ReactNode {
   const { file } = props;
   let isChildrenHidden = false;
@@ -250,7 +250,7 @@ function ExpandedFolder(props: {
   onFolderShowFiles?: (file: DriveFile) => void;
 }) {
   const { file } = props;
-  const filesMeta = useFolderFilesMeta(file.id);
+  const filesMeta = useFolderFilesMeta(file.id!);
   const nonFolderCount = useMemo(() => {
     return (filesMeta.files ?? []).filter((file) => file.mimeType !== MimeTypes.GoogleFolder)
       .length;

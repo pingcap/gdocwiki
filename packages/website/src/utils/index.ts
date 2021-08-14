@@ -8,3 +8,4 @@ export * from './showModal';
 export * from './store';
 export * from './doc';
 export * from './file';
+export * from './requestQueue';
