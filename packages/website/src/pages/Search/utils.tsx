@@ -1,7 +1,9 @@
 import { usePersistFn } from 'ahooks';
 import { useEffect, useRef, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { getConfig } from '../../config';
+import { updateFiles } from '../../reduxSlices/files';
 import { DriveFile } from '../../utils';
 
 export function escapeSearchQuery(keyword: string): string {
@@ -11,6 +13,7 @@ export function escapeSearchQuery(keyword: string): string {
 export function useSearch(fieldName: string, queryBuilder: (value: string) => string) {
   const param = useParams<any>();
   const fieldValue = param[fieldName];
+  const dispatch = useDispatch();
 
   const [loading, setLoading] = useState(false);
   const [files, setFiles] = useState<DriveFile[]>([]);
@@ -45,6 +48,7 @@ export function useSearch(fieldName: string, queryBuilder: (value: string) => st
           }
 
           const filesTmp = resp?.result?.files ?? [];
+          dispatch(updateFiles(filesTmp));
           fileList.push(...filesTmp);
           // Update file list each search
           setFiles(fileList);

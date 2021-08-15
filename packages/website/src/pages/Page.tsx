@@ -61,13 +61,13 @@ function Page(props: PageProps) {
             <StackItem key="fileaction" grow={1}>
               <FileAction file={file} key={file?.id} allOverflow={true} />
             </StackItem>
-            <StackItem key="breadcrumb" grow={11}>
+            <StackItem key="breadcrumb" grow={11} styles={{ root: { fontSize: '16px' }}}>
               <FileBreadcrumb file={file} />
             </StackItem>
           </Stack>
         ) : (
           <>
-            <div style={{ paddingTop: '0.2rem' }}>
+            <div style={{ paddingTop: '0.2rem', fontSize: '16px' }}>
               <FileBreadcrumb file={file} />
             </div>
             <FileAction file={file} key={file?.id} />
