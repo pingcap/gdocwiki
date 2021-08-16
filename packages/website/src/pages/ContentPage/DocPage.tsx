@@ -907,6 +907,32 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
     [docComments, isLoading, file.id, docHtmlChangesFinished]
   );
 
+  /* TODO: this gives a 404. I don't know why
+  useEffect(
+    function updateLastViewed() {
+      // check another fiel field lik mimeType for the case of optimistic rendering
+      if (!file.id || !file.mimeType) {
+        return;
+      }
+
+      async function updateApi() {
+        const d = new Date();
+        try {
+          await gapi.client.drive.files.update(
+            { fileId: file.id! },
+            { viewedByMeTime: d.toISOString() }
+          );
+        } catch (e) {
+          console.log('update file error: ', e);
+        }
+      }
+
+      updateApi();
+    },
+    [file.id, file.mimeType]
+  );
+  */
+
   const handleDocContentClick = useCallback(
     (ev: React.MouseEvent) => {
       if (isModifiedEvent(ev)) {

@@ -17,6 +17,7 @@ import RightContainer from './RightContainer';
 
 interface PageProps {
   docMode?: DocMode;
+  versions?: boolean;
 }
 
 function Page(props: PageProps) {
@@ -55,28 +56,30 @@ function Page(props: PageProps) {
 
   return (
     <RightContainer>
-      <>
-        {fullScreenMode ? (
-          <Stack horizontal>
-            <StackItem key="fileaction" grow={1}>
-              <FileAction file={file} key={file?.id} allOverflow={true} />
-            </StackItem>
-            <StackItem key="breadcrumb" grow={11} styles={{ root: { fontSize: '16px' }}}>
-              <FileBreadcrumb file={file} />
-            </StackItem>
-          </Stack>
-        ) : (
-          <>
-            <div style={{ paddingTop: '0.2rem', fontSize: '16px' }}>
-              <FileBreadcrumb file={file} />
-            </div>
-            <FileAction file={file} key={file?.id} />
-          </>
-        )}
-      </>
+      {file && (
+        <>
+          {fullScreenMode ? (
+            <Stack horizontal>
+              <StackItem key="fileaction" grow={1}>
+                <FileAction file={file} key={file?.id} allOverflow={true} />
+              </StackItem>
+              <StackItem key="breadcrumb" grow={11} styles={{ root: { fontSize: '16px' }}}>
+                <FileBreadcrumb file={file} />
+              </StackItem>
+            </Stack>
+          ) : (
+            <>
+              <div style={{ paddingTop: '0.2rem', fontSize: '16px' }}>
+                <FileBreadcrumb file={file} />
+              </div>
+              <FileAction file={file} key={file?.id} />
+            </>
+          )}
+        </>
+      )}
       {loading && <InlineLoading description="Loading file metadata..." />}
       {!loading && !!error && error}
-      {<ContentPage loading={loading || error ? id : null} file={file} />}
+      {<ContentPage loading={loading || error ? id : null} file={file} versions={props.versions} />}
     </RightContainer>
   );
 }

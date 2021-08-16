@@ -154,6 +154,9 @@ function App() {
                 <Route exact path="/view/:id/view">
                   <Page docMode="view" />
                 </Route>
+                <Route exact path="/view/:id/versions">
+                  <Page docMode="edit" versions={true} />
+                </Route>
                 <Route exact path="/view/:id/settings">
                   <Settings />
                 </Route>

@@ -14,8 +14,9 @@ import {
 import React, { useCallback, useMemo, useEffect, useState } from 'react';
 import Avatar from 'react-avatar';
 import { useDispatch, useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useHistory, Link } from 'react-router-dom';
 import { DriveIcon, Tags } from '../components';
+import { browserExtensionUrl } from '../config';
 import { getConfig } from '../config';
 import { useRender } from '../context/RenderStack';
 import useFileMeta from '../hooks/useFileMeta';
@@ -41,35 +42,34 @@ import { showTrashFile } from './FileAction.trashFile';
 function Revisions(props: { file: DriveFile }) {
   const revs: Array<gapi.client.drive.Revision> = [];
   const [revisions, setRevisions] = useState(revs);
+  const [isLoading, setIsLoading] = useState(true);
   const { file } = props;
 
   useEffect(() => {
     if (file.id === folderPageId) {
       return;
     }
-    const fields = 'revisions(id, modifiedTime, lastModifyingUser, exportLinks)'
+    const fields = 'revisions(id, modifiedTime, lastModifyingUser, exportLinks)';
     async function loadRevisions() {
       try {
         const resp = await gapi.client.drive.revisions.list({ fileId: file.id!, fields })
         setRevisions(resp.result.revisions!.reverse());
       } catch (e) {
         console.error('DocPage files.revisions', file, e);
+      } finally {
+        setIsLoading(false);
       }
     }
 
     loadRevisions();
   }, [file]);
 
-  if (revisions.length === 0) {
-    return null;
-  }
-
+  const link = inlineEditable(file.mimeType ?? '') ? `/view/${file.id}/versions` : null;
   return (
     <div className="revisions">
-      <hr />
+      {isLoading && <p>Loading Revisions ...</p>}
       {revisions.map((revision) => {
-        const htmlLink = file.webViewLink + '&versions';
-        // const htmlLink = (revision.exportLinks ?? {})['text/html'];
+        const timeAgo = dayjs(revision.modifiedTime).fromNow();
         return (
           <Stack
             key={revision.id}
@@ -78,9 +78,7 @@ function Revisions(props: { file: DriveFile }) {
             tokens={{ childrenGap: 16, padding: 2 }}
             className={styles.note}
           >
-            <a target="_blank" rel="noreferrer" href={htmlLink}>
-              {dayjs(revision.modifiedTime).fromNow()}
-            </a>
+            {link ? <Link to={link}>{timeAgo}</Link> : <span>{timeAgo}</span>}
             <div>
               <Avatar
                 name={revision.lastModifyingUser?.displayName}
@@ -96,11 +94,12 @@ function Revisions(props: { file: DriveFile }) {
           </Stack>
         )
       })}
+      <hr />
     </div>
   );
 }
 
-function FileAction(props: { file?: DriveFile, allOverflow?: boolean }) {
+function FileAction(props: { file: DriveFile, allOverflow?: boolean }) {
   const [revisionsEnabled, setRevisionsEnabled] = useState(false);
   const dispatch = useDispatch();
   const history = useHistory();
@@ -113,13 +112,15 @@ function FileAction(props: { file?: DriveFile, allOverflow?: boolean }) {
       ? rOuter?.file ?? rInner?.file
       : rInner?.file ?? props.file;
 
-  const outerFolderId = file?.mimeType === MimeTypes.GoogleFolder ? file?.id : file?.parents?.[0];
+  const outerFolderId = file.mimeType === MimeTypes.GoogleFolder ? file.id : file.parents?.[0];
   const outerFolder = useFileMeta(outerFolderId);
-  const docMode = useSelector(selectDocMode(file?.mimeType ?? '')) || 'view';
+  const docMode = useSelector(selectDocMode(file.mimeType ?? '')) || 'view';
+  const changesSinceLastView =
+    !file.viewedByMeTime || !file.modifiedTime || file.modifiedTime > file.viewedByMeTime;
 
   useEffect(() => {
     return () => {
-      if (!file?.mimeType) {
+      if (!file.mimeType) {
         return;
       }
       dispatch(resetDocMode(file.mimeType));
@@ -146,7 +147,7 @@ function FileAction(props: { file?: DriveFile, allOverflow?: boolean }) {
     }
     const commands: ICommandBarItemProps[] = [];
 
-    if (file && file?.mimeType !== MimeTypes.GoogleFolder) {
+    if (file.mimeType !== MimeTypes.GoogleFolder) {
       if (file.webViewLink) {
         commands.push({
           key: 'launch',
@@ -293,7 +294,7 @@ function FileAction(props: { file?: DriveFile, allOverflow?: boolean }) {
         });
       }
 
-      if (file?.mimeType !== MimeTypes.GoogleFolder && file?.webViewLink) {
+      if (file.mimeType !== MimeTypes.GoogleFolder && file.webViewLink) {
         commands.push({
           key: 'launch_preview',
           text: 'Preview in Google',
@@ -333,8 +334,8 @@ function FileAction(props: { file?: DriveFile, allOverflow?: boolean }) {
   );
 
   const chooseDocMode = useMemo(() => {
-    return file?.mimeType && docModes(file.mimeType).length > 1;
-  }, [file?.mimeType]);
+    return file.mimeType && docModes(file.mimeType).length > 1;
+  }, [file.mimeType]);
 
   if (!file) {
     console.log('no file, return null');
@@ -349,6 +350,8 @@ function FileAction(props: { file?: DriveFile, allOverflow?: boolean }) {
   function tooltip(mode: DocMode, icon: JSX.Element) {
     return () => <TooltipHost content={mode}>{icon}</TooltipHost>;
   }
+
+  const hasVersions = file.mimeType && inlineEditable(file.mimeType) && canEdit(file);
 
   return (
     <div style={{ marginLeft: '1rem' }}>
@@ -385,6 +388,42 @@ function FileAction(props: { file?: DriveFile, allOverflow?: boolean }) {
           </Stack.Item>
         )}
       </Stack>
+      {docMode === 'view' && file.mimeType !== MimeTypes.GoogleFolder && (
+        <>
+          <hr />
+          {!file.viewedByMe ? (
+            <p>This is your first time viewing this file.</p>
+          ) : (
+            <p>
+              {hasVersions && changesSinceLastView ? (
+                <>
+                  <Link to={`/view/${file.id}/versions`}>View changes since your last view</Link>
+                  &nbsp;
+                  {dayjs(file.viewedByMeTime).fromNow()}.&nbsp;
+                  <span style={{ fontSize: '10pt' }}>
+                    Requires the&nbsp;
+                    <a href={browserExtensionUrl} target="_blank" rel="noreferrer">
+                      browser extension
+                    </a>
+                    .
+                  </span>
+                </>
+              ) : changesSinceLastView ? (
+                <span>
+                  There have been changes since your last view&nbsp;
+                  {dayjs(file.viewedByMeTime).fromNow()}.
+                </span>
+              ) : (
+                <span>
+                  There are no changes to this file since your last view&nbsp;
+                  {dayjs(file.viewedByMeTime).fromNow()}.
+                </span>
+              )}
+            </p>
+          )}
+          <hr />
+        </>
+      )}
       {revisionsEnabled && <Revisions file={file} />}
       {docMode === 'view' && (
         <Tags file={file} add={true} style={{ marginTop: '0.5rem', padding: '0.4rem' }} />
