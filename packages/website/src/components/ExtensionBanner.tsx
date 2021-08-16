@@ -1,4 +1,5 @@
 import cx from 'classnames';
+import { browserExtensionUrl } from '../config';
 import { useExtInstallStatus } from '../context/ExtInstallStatus';
 import styles from './ExtensionBanner.module.scss';
 import image from './extension.png';
@@ -19,12 +20,7 @@ export function ExtensionBanner({ visible, onDismiss }: IExtensionBannerProps) {
       <div className={styles.imgContainer}>
         <img src={image} width="900" alt="banner" />
         <div className={styles.buttonsGroup}>
-          <a
-            href="https://chrome.google.com/webstore/detail/gdocwiki-integration/pcnhielddaaanlfkifllbjahdbndndea"
-            target="_blank"
-            rel="noreferrer"
-            className={styles.button}
-          >
+          <a href={browserExtensionUrl} className={styles.button} target="_blank" rel="noreferrer">
             Get in Chrome Web Store
           </a>
           <a href="#" className={styles.button} onClick={onDismiss}>

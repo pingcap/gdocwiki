@@ -115,3 +115,6 @@ async function overwriteConfig() {
 export function getConfig() {
   return config;
 }
+
+export const browserExtensionUrl =
+  'https://chrome.google.com/webstore/detail/gdocwiki-integration/pcnhielddaaanlfkifllbjahdbndndea';

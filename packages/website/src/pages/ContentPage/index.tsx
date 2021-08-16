@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { selectDocMode } from '../../reduxSlices/doc';
-import { DriveFile, MimeTypes, previewable } from '../../utils';
+import { DriveFile, inlineEditable, MimeTypes, previewable } from '../../utils';
 import DocPage from './DocPage';
 import FolderPage from './FolderPage';
 import PreviewPage from './PreviewPage';
@@ -13,12 +13,14 @@ export interface IContentPageProps {
   shortCutFile?: DriveFile;
   renderStackOffset?: number;
   splitWithFileListing?: boolean;
+  versions?: boolean;
 }
 
 interface PageProps {
   renderStackOffset: number;
   key: string;
   file: { id?: string };
+  versions?: boolean;
 }
 
 function ContentPage({
@@ -27,6 +29,7 @@ function ContentPage({
   shortCutFile,
   splitWithFileListing = false,
   renderStackOffset = 0,
+  versions = false,
 }: IContentPageProps) {
   const docMode = useSelector(selectDocMode(file?.mimeType ?? ''));
   function docPage(props: PageProps) {
@@ -51,14 +54,24 @@ function ContentPage({
     });
   }
 
+  if (!file) {
+    return null;
+  }
+
   const pageProps: PageProps = {
     renderStackOffset: renderStackOffset,
-    key: file!.id!,
+    key: file.id!,
     file: file!,
+    versions,
   };
 
   if (docMode) {
-    return docMode === 'view' ? docPage(pageProps) : <PreviewPage {...pageProps} />;
+    const noVersionsPreview = versions && !inlineEditable(file.mimeType ?? '');
+    return docMode === 'view' || noVersionsPreview ? (
+      docPage(pageProps)
+    ) : (
+      <PreviewPage {...pageProps} />
+    );
   }
 
   if (previewable(file?.mimeType ?? '')) {

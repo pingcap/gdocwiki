@@ -38,8 +38,7 @@ function PreviewPage({ file, versions, renderStackOffset = 0 }: IPreviewPageProp
     let qp = `?frameborder=0`;
     if (versions) {
       qp = qp + '&versions=1';
-    }
-    if (docMode === 'edit' && !sidebarOpen) {
+    } else if (docMode === 'edit' && !sidebarOpen) {
       qp = qp + '&rm=demo';
     }
     const params = new URLSearchParams(location.search);
