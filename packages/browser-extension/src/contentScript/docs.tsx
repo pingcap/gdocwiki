@@ -367,6 +367,8 @@ function Folders(props: {parentTree: ParentTree}) {
 }
 
 export async function runDocs(id: string) {
+  const isIframe = (window !== window.parent);
+
   // Users can add ?versions to the url params to deep-link to the versions page
   var urlParams = new URLSearchParams(window.location.search);
   if (urlParams.has('versions')) {
@@ -382,19 +384,25 @@ export async function runDocs(id: string) {
       console.debug("found versions link, triggering click")
       triggerMouseEvent(docsNotice, "mousedown", {})
       setTimeout(function(){
-        console.log("mouseup")
+        log.info("mouseup")
         triggerMouseEvent(docsNotice, "mouseup", {})
       }, 100)
     } else {
-      console.debug("no docs version link found")
+      log.debug("no docs version link found")
     }
   }
 
-  const elements = await waitSelector('.docs-title-outer');
-  const containerElement = elements[0] as HTMLDivElement;
+  // We assume an iframe means embedded inside gdocwiki.
+  // TODO: if that is not the case, this code should be ran
+  if (isIframe) {
+    log.info('in Iframe, not loading all functionality');
+  } else {
+    const elements = await waitSelector('.docs-title-outer');
+    const containerElement = elements[0] as HTMLDivElement;
 
-  const appContainer = document.createElement('div');
-  appContainer.classList.add(styles.container);
-  containerElement.prepend(appContainer);
-  ReactDOM.render(<App id={id} />, appContainer);
+    const appContainer = document.createElement('div');
+    appContainer.classList.add(styles.container);
+    containerElement.prepend(appContainer);
+    ReactDOM.render(<App id={id} />, appContainer);
+  }
 }

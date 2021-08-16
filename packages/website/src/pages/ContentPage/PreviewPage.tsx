@@ -9,10 +9,11 @@ import { DriveFile, HalfViewPreviewMimeTypes } from '../../utils';
 
 export interface IPreviewPageProps {
   file: DriveFile;
+  versions?: boolean;
   renderStackOffset?: number;
 }
 
-function PreviewPage({ file, renderStackOffset = 0 }: IPreviewPageProps) {
+function PreviewPage({ file, versions, renderStackOffset = 0 }: IPreviewPageProps) {
   const [isLoading, setIsLoading] = useState(true);
   const ref = useRef<HTMLIFrameElement>(null);
   const sidebarOpen = useSelector(selectSidebarOpen);
@@ -35,6 +36,9 @@ function PreviewPage({ file, renderStackOffset = 0 }: IPreviewPageProps) {
 
   const iframeSrc = useMemo(() => {
     let qp = `?frameborder=0`;
+    if (versions) {
+      qp = qp + '&versions=1';
+    }
     if (docMode === 'edit' && !sidebarOpen) {
       qp = qp + '&rm=demo';
     }
@@ -51,7 +55,7 @@ function PreviewPage({ file, renderStackOffset = 0 }: IPreviewPageProps) {
       /\/(edit|view)\?usp=drivesdk/,
       docMode === 'edit' ? `/edit${qp}` : `/preview${qp}`
     );
-  }, [sidebarOpen, file.webViewLink, location, docMode]);
+  }, [sidebarOpen, file.webViewLink, location, docMode, versions]);
 
   useLayoutEffect(() => {
     setIsLoading(true);
