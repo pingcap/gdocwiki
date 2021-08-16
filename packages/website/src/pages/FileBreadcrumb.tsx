@@ -91,7 +91,6 @@ export interface IFileBreadcrumbProps {
 }
 
 function FileBreadcrumb({ file, extraItems, foldersOnly }: IFileBreadcrumbProps) {
-  console.log('FileBreadcrumb', file, extraItems);
   const paths = useFilePathBreadcrumb(file, foldersOnly);
   const items = useMemo(() => {
     const r = [...(paths ?? []), ...(extraItems ?? [])];

@@ -84,7 +84,6 @@ function PreviewPage({ file, renderStackOffset = 0 }: IPreviewPageProps) {
   if (docMode !== 'view' || !sidebarOpen) {
     headSubtract = headSubtract - 48;
   }
-  console.log('Preview', docMode, sidebarOpen);
 
   return (
     <div style={contentStyle}>
