@@ -1,16 +1,16 @@
-import { ArrowUp16 } from '@carbon/icons-react';
+import { ArrowUp16, Close20 } from '@carbon/icons-react';
 import { InlineLoading } from 'carbon-components-react';
+import cx from 'classnames';
 import { unzipSync, strFromU8 } from 'fflate';
 import { Stack } from 'office-ui-fabric-react';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import Avatar from 'react-avatar';
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux';
 import { withRouter } from 'react-router';
 import { useHistory } from 'react-router-dom';
 import { useManagedRenderStack } from '../../context/RenderStack';
 import {
   setHeaders,
-  selectDriveLinks,
   setDriveLinks,
   setComments,
   selectComments,
@@ -18,9 +18,10 @@ import {
   setNoFile,
   DriveLink,
 } from '../../reduxSlices/doc';
+import { selectSidebarOpen } from '../../reduxSlices/siderTree';
 import { DriveFile, canEdit, parseDriveLink, MimeTypes } from '../../utils';
 import { fromHTML, MakeTree } from '../../utils/docHeaders';
-import styles from './FolderPage.module.scss';
+import styles from './DocPage.module.scss';
 
 export interface IDocPageProps {
   file: DriveFile;
@@ -161,7 +162,7 @@ function rewriteLink(el: HTMLAnchorElement): DriveLink | null {
   const id = parseDriveLink(href);
   if (id) {
     const wikiHref = `/view/${id}`;
-    el.href = wikiHref
+    el.href = wikiHref;
     el.dataset['__gdoc_id'] = id;
     el.classList.add(styles.gdocLink);
     return {
@@ -373,6 +374,7 @@ function highlightAndLinkComment(sup: HTMLElement){
     }
     link.innerHTML = span.innerHTML;
     link.id = supLink.id;
+    link.dataset['gdocwiki_comment_id'] = href.slice(1);
     sup.remove();
     span.replaceWith(link);
   }
@@ -464,11 +466,12 @@ interface UpgradedComment {
 function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
   const [docContent, setDocContent] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [viewingComment, setViewingComment] = useState(null as string | null);
   const dispatch = useDispatch();
   const docComments = useSelector(selectComments);
+  const sidebarOpen = useSelector(selectSidebarOpen);
   const history = useHistory();
   const [upgradedComments, setUpgradedComments] = useState([] as UpgradedComment[]);
-  const driveLinks = useSelector(selectDriveLinks);
 
   useCallback(() => {
     if (file.name) {
@@ -949,7 +952,7 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
       let target = ev.target as HTMLElement;
       if (target.nodeName !== 'A' && target.parentElement) {
         target = target.parentElement;
-        while (['SVG', 'PATH'].includes(target.nodeName) && target.parentElement) {
+        while (['SVG', 'PATH', 'FONT'].includes(target.nodeName) && target.parentElement) {
           target = target.parentElement;
         }
       }
@@ -962,6 +965,14 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
         } else {
           history.push(`/view/${id}`);
         }
+        return;
+      }
+      const commentLink = target.dataset?.['gdocwiki_comment_id'];
+      if (commentLink) {
+        ev.preventDefault();
+        console.log('setting viewing comment to', commentLink);
+        setViewingComment(commentLink);
+        scrollWithOffset(target);
       }
     },
     [history]
@@ -975,25 +986,71 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
     );
   }
 
-  const style = {}; // { maxWidth: '50rem' };
+  function hideNotViewing(comment: UpgradedComment) {
+    if (!!viewingComment && comment.htmlId !== viewingComment) {
+      return 'none';
+    }
+  }
+
+  const fixSidebar = { position: 'fixed' as 'fixed', right: 0, left: sidebarOpen ? '320px' : '0' };
+
   return (
-    <div id="doc-page-outer" style={style} onClick={handleDocContentClick}>
+    <div id="doc-page-outer" onClick={handleDocContentClick}>
       <div
         id="gdoc-html-content"
         style={{ marginTop: '1rem' }}
         dangerouslySetInnerHTML={{ __html: docContent }}
       />
-      {upgradedComments.length > 0 && (
+      {!viewingComment && (
         <div style={{ paddingTop: '30px' }}>
           <hr />
-          <p>Comments</p>
-          {upgradedComments.map((comment) => (
-            <ReactComment key={comment.htmlId} fileId={file.id!} comment={comment} />
+          <p>{upgradedComments.length === 0 ? 'No' : 'All'} Comments</p>
+          <hr style={{ marginBottom: '1rem' }} />
+          {upgradedComments.map((comment, i) => (
+            <div key={comment.htmlId}>
+              {i !== 0 && <hr />}
+              <ReactComment key={comment.htmlId} fileId={file.id!} comment={comment} />
+            </div>
           ))}
+        </div>
+      )}
+      {viewingComment && (
+        <div
+          style={fixSidebar}
+          className={cx(styles.commentsDrawer, { [styles.viewing]: !!viewingComment })}
+        >
+          <div style={fixSidebar}>
+            <hr />
+            <Stack horizontal>
+              <a
+                onClick={() => {
+                  setViewingComment(null);
+                }}
+              >
+                <Close20 />
+              </a>
+              <h4>Comments</h4>
+            </Stack>
+            <hr />
+          </div>
+          <div style={{ marginTop: '4.0rem' }}>
+            {upgradedComments.map((comment) => (
+              <div key={comment.htmlId} style={{ display: hideNotViewing(comment) }}>
+                {!viewingComment && <hr />}
+                <ReactComment key={comment.htmlId} fileId={file.id!} comment={comment} />
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
   );
+}
+
+function scrollWithOffset(link: HTMLElement, fixedOffset = 100) {
+  const rect = link.getBoundingClientRect();
+  const anchorOffset = window.pageYOffset + rect.top - fixedOffset;
+  window.scrollTo(window.pageXOffset, anchorOffset);
 }
 
 function ReactComment(props: { fileId: string, comment: UpgradedComment }): JSX.Element {
@@ -1001,7 +1058,6 @@ function ReactComment(props: { fileId: string, comment: UpgradedComment }): JSX.
   const { htmlId, topHref, comment } = props.comment;
   return (
     <div style={{ paddingBottom: '20px' }}>
-      <hr />
       <Stack
         horizontal
         style={{ paddingLeft: '10px' }}

@@ -51,15 +51,3 @@
     }
   }
 }
-
-.gdocLink {
-  .gdocThumbnail {
-    z-index: 0;
-    display: none;
-  }
-}
-.gdocLink:hover .gdocThumbnail {
-  z-index: 9999;
-  display: inline;
-  position: absolute;
-}
