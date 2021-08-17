@@ -145,7 +145,6 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
               )}
             </Stack>
             <ContentPage
-              loading={null}
               splitWithFileListing={props.display === 'list'}
               file={readMeFile}
               renderStackOffset={renderStackOffset + 1}

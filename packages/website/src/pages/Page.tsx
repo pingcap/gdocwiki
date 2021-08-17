@@ -31,7 +31,7 @@ function Page(props: PageProps) {
       dispatch(resetDocMode(file.mimeType));
     } else {
       const newModes = {};
-      newModes[file!.mimeType!] = props.docMode;
+      newModes[file.mimeType!] = props.docMode;
       dispatch(setDocMode(newModes));
     }
   }
@@ -61,7 +61,7 @@ function Page(props: PageProps) {
           {fullScreenMode ? (
             <Stack horizontal>
               <StackItem key="fileaction" grow={1}>
-                <FileAction file={file} key={file?.id} allOverflow={true} />
+                <FileAction file={file} key={file.id} allOverflow={true} />
               </StackItem>
               <StackItem key="breadcrumb" grow={11} styles={{ root: { fontSize: '16px' }}}>
                 <FileBreadcrumb file={file} />
@@ -77,9 +77,9 @@ function Page(props: PageProps) {
           )}
         </>
       )}
-      {loading && <InlineLoading description="Loading file metadata..." />}
-      {!loading && !!error && error}
-      {<ContentPage loading={loading || error ? id : null} file={file} versions={props.versions} />}
+      {!file && loading && <InlineLoading description="Loading file metadata..." />}
+      {!!error && error}
+      {!error && <ContentPage file={file || { id }} versions={props.versions} />}
     </RightContainer>
   );
 }

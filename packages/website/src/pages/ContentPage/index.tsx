@@ -8,8 +8,7 @@ import PreviewPage from './PreviewPage';
 import ShortcutPage from './ShortcutPage';
 
 export interface IContentPageProps {
-  loading: string | null;
-  file?: DriveFile;
+  file: DriveFile;
   shortCutFile?: DriveFile;
   renderStackOffset?: number;
   splitWithFileListing?: boolean;
@@ -18,13 +17,11 @@ export interface IContentPageProps {
 
 interface PageProps {
   renderStackOffset: number;
-  key: string;
   file: { id?: string };
   versions?: boolean;
 }
 
 function ContentPage({
-  loading,
   file,
   shortCutFile,
   splitWithFileListing = false,
@@ -39,29 +36,23 @@ function ContentPage({
     }
     return (
       <div style={style}>
-        <DocPage {...props} />
+        <DocPage key={file.id} {...props} />
       </div>
     );
   }
 
-  // Assume a document for speed in that case.
+  // Assume a document for speed if we are still loading the file metadata
   // We might be wrong, but that will get corrected without issue.
-  if (loading !== null) {
+  if (!file.name) {
     return docPage({
-      key: loading,
-      file: { id: loading },
+      file,
       renderStackOffset: renderStackOffset,
     });
   }
 
-  if (!file) {
-    return null;
-  }
-
   const pageProps: PageProps = {
     renderStackOffset: renderStackOffset,
-    key: file.id!,
-    file: file!,
+    file,
     versions,
   };
 
@@ -74,13 +65,13 @@ function ContentPage({
     );
   }
 
-  if (previewable(file?.mimeType ?? '')) {
+  if (previewable(file.mimeType ?? '')) {
     // Use key to force an unmount when the file changes
     // This resets event handlers
     return <PreviewPage {...pageProps} />;
   }
 
-  switch (file?.mimeType ?? '') {
+  switch (file.mimeType ?? '') {
     case MimeTypes.GoogleFolder:
       return <FolderPage {...pageProps} shortCutFile={shortCutFile} />;
     case MimeTypes.GoogleShortcut:
@@ -93,7 +84,7 @@ function ContentPage({
   return (
     <div>
       This file cannot be previewed.{' '}
-      <a href={file!.webViewLink} target="_blank" rel="noreferrer">
+      <a href={file.webViewLink} target="_blank" rel="noreferrer">
         View in Google Drive
       </a>
     </div>

@@ -26,7 +26,6 @@ function ShortcutPage(props: IShortcutPageProps) {
       {!loading && !!error && error}
       {!loading && !!pointingFile && (
         <ContentPage
-          loading={null}
           file={pointingFile}
           shortCutFile={file}
           splitWithFileListing={splitWithFileListing}
