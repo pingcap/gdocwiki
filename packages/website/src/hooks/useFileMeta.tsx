@@ -10,12 +10,21 @@ export interface IFileMeta {
   error?: React.ReactNode;
 }
 
+const inProgressRequests: { [fileId: string]: boolean } = {};
+
 export default function useFileMeta(id?: string) {
   const dispatch = useDispatch();
   const [data, setData] = useState<IFileMeta>({ loading: true });
   const mapIdToFile = useSelector(selectMapIdToFile);
-
-  const reqRef = useRef(0);
+  if (id && data.loading && data.file === undefined) {
+    const file = mapIdToFile[id];
+    if (file) {
+      // We may already have the file
+      // Still go ahead and do the API call to refresh the data
+      // The caller can use the existing data in the mean time.
+      setData({ loading: data.loading, file });
+    }
+  }
 
   useEffect(() => {
     if (!id) {
@@ -23,7 +32,14 @@ export default function useFileMeta(id?: string) {
       return;
     }
 
-    async function loadFileMetadata(checkpoint: number) {
+    // Synchronize access when there are multiple callers.
+    if (inProgressRequests[id]) {
+      console.debug('second request, bailing', id);
+      return;
+    }
+    inProgressRequests[id!] = true;
+
+    async function loadFileMetadata() {
       setData({ loading: true });
 
       try {
@@ -33,12 +49,6 @@ export default function useFileMeta(id?: string) {
           fields: '*',
         });
         console.debug('useFileMeta files.get', respFile);
-
-        // If another request is performed, simply ignore this result.
-        // This may happen when id changes very frequently
-        if (reqRef.current !== checkpoint) {
-          return;
-        }
 
         if (respFile.result.driveId === id) {
           const respDrive = await gapi.client.drive.drives.get({
@@ -53,24 +63,15 @@ export default function useFileMeta(id?: string) {
 
         setData({ loading: false, file: respFile.result });
       } catch (e) {
-        if (reqRef.current === checkpoint) {
-          console.log(e);
-          setData((d) => ({ ...d, error: <GapiErrorDisplay error={e} /> }));
-        }
+        console.log(e);
+        setData((d) => ({ ...d, error: <GapiErrorDisplay error={e} /> }));
       } finally {
-        if (reqRef.current === checkpoint) {
-          setData((d) => ({ ...d, loading: false }));
-        }
+        delete inProgressRequests[id!];
+        setData((d) => ({ ...d, loading: false }));
       }
     }
 
-    // If data is available in the doc tree, use it directly.
-    if (mapIdToFile?.[id] === undefined) {
-      reqRef.current++;
-      loadFileMetadata(reqRef.current);
-    } else {
-      setData({ loading: false, file: mapIdToFile[id] });
-    }
+    loadFileMetadata();
 
     // Ignore mapIdToFile change
     // eslint-disable-next-line react-hooks/exhaustive-deps

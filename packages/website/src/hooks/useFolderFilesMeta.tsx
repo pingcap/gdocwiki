@@ -19,10 +19,13 @@ export function useFolderFilesMeta(id?: string) {
   const [data, setData] = useState<IFolderFilesMeta>({ loading: true });
   const mapIdToChildren = useSelector(selectMapIdToChildren);
   if (id && data.loading && data.files === undefined) {
-    // We already have the files
-    // Still go ahead and do the API call to refresh the data
-    // But the caller can use the existing data in the mean time.
-    setData({ loading: data.loading, files: mapIdToChildren[id] });
+    const files = mapIdToChildren[id];
+    if (files) {
+      // We may already have the files
+      // Still go ahead and do the API call to refresh the data
+      // The caller can use the existing data in the mean time.
+      setData({ loading: data.loading, files });
+    }
   }
 
   useEffect(() => {
