@@ -907,9 +907,16 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
     [docComments, isLoading, file.id, docHtmlChangesFinished]
   );
 
-  /* TODO: this gives a 404. I don't know why
   useEffect(
     function updateLastViewed() {
+      // wait for all other HTML alterations to complete.
+      // There are 2 potential benefits:
+      // * ensure this network request does not delay more important ones
+      // * If someone quickly hits the back button their view may not be recorded
+      if (!docHtmlChangesFinished) {
+        return;
+      }
+
       // check another fiel field lik mimeType for the case of optimistic rendering
       if (!file.id || !file.mimeType) {
         return;
@@ -919,7 +926,7 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
         const d = new Date();
         try {
           await gapi.client.drive.files.update(
-            { fileId: file.id! },
+            { fileId: file.id!, supportsAllDrives: true },
             { viewedByMeTime: d.toISOString() }
           );
         } catch (e) {
@@ -929,9 +936,8 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
 
       updateApi();
     },
-    [file.id, file.mimeType]
+    [file.id, file.mimeType, docHtmlChangesFinished]
   );
-  */
 
   const handleDocContentClick = useCallback(
     (ev: React.MouseEvent) => {
