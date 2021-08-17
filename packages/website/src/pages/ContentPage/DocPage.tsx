@@ -1009,7 +1009,7 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
           {upgradedComments.map((comment, i) => (
             <div key={comment.htmlId}>
               {i !== 0 && <hr />}
-              <ReactComment key={comment.htmlId} fileId={file.id!} comment={comment} />
+              <CommentView key={comment.htmlId} fileId={file.id!} comment={comment} />
             </div>
           ))}
         </div>
@@ -1037,7 +1037,12 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
             {upgradedComments.map((comment) => (
               <div key={comment.htmlId} style={{ display: hideNotViewing(comment) }}>
                 {!viewingComment && <hr />}
-                <ReactComment key={comment.htmlId} fileId={file.id!} comment={comment} />
+                <CommentView
+                  hideLinkBack={true}
+                  key={comment.htmlId}
+                  fileId={file.id!}
+                  comment={comment}
+                />
               </div>
             ))}
           </div>
@@ -1053,8 +1058,13 @@ function scrollWithOffset(link: HTMLElement, fixedOffset = 100) {
   window.scrollTo(window.pageXOffset, anchorOffset);
 }
 
-function ReactComment(props: { fileId: string, comment: UpgradedComment }): JSX.Element {
-  const { fileId } = props;
+interface CommentViewProps {
+  fileId: string;
+  comment: UpgradedComment;
+  hideLinkBack?: boolean;
+}
+
+function CommentView(props: CommentViewProps): JSX.Element {
   const { htmlId, topHref, comment } = props.comment;
   return (
     <div style={{ paddingBottom: '20px' }}>
@@ -1064,14 +1074,16 @@ function ReactComment(props: { fileId: string, comment: UpgradedComment }): JSX.
         key={topHref}
         tokens={{ childrenGap: 12, padding: 0 }}
       >
-        <a href={topHref} title="back to text">
-          <ArrowUp16 />
-        </a>
+        {!props.hideLinkBack && (
+          <a href={topHref} title="back to document">
+            <ArrowUp16 />
+          </a>
+        )}
         <span>
           <a
             id={htmlId}
-            data-__gdoc_id={fileId}
-            href={`/view/${fileId}/edit/?disco=${comment.id}`}
+            data-__gdoc_id={props.fileId}
+            href={`/view/${props.fileId}/edit/?disco=${comment.id}`}
             style={{ textDecoration: 'none' }}
             title="view in doc">
             <em>{comment.quotedFileContent?.value}</em>
