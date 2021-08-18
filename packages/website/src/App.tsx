@@ -31,7 +31,7 @@ import {
   closeSidebar,
   openSidebar,
 } from './reduxSlices/siderTree';
-import { history } from './utils';
+import { history, isTouchScreen } from './utils';
 
 function DriveFilesLoader({ children }) {
   useLoadDriveFiles();
@@ -145,21 +145,29 @@ function App() {
                 <Route exact path="/">
                   <Page />
                 </Route>
-                <Route path="/view/:id/edit">
-                  <Page docMode="edit" />
-                </Route>
-                <Route path="/view/:id/preview">
-                  <Page docMode="preview" />
-                </Route>
                 <Route exact path="/view/:id/view">
                   <Page docMode="view" />
-                </Route>
-                <Route exact path="/view/:id/versions">
-                  <Page docMode="edit" versions={true} />
                 </Route>
                 <Route exact path="/view/:id/settings">
                   <Settings />
                 </Route>
+                {isTouchScreen
+                  ? [
+                      <Redirect to="/view/:id/view" from="/view/:id/preview" />,
+                      <Redirect to="/view/:id/view" from="/view/:id/edit" />,
+                      <Redirect to="/view/:id/view" from="/view/:id/versions" />,
+                    ]
+                  : [
+                      <Route path="/view/:id/edit">
+                        <Page docMode="edit" />
+                      </Route>,
+                      <Route path="/view/:id/preview">
+                        <Page docMode="preview" />
+                      </Route>,
+                      <Route exact path="/view/:id/versions">
+                        <Page docMode="edit" versions={true} />
+                      </Route>,
+                  ]}
                 <Route path="/view/:id">
                   <Page />
                 </Route>

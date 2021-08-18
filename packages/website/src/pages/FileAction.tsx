@@ -28,6 +28,7 @@ import {
   DriveFile,
   MimeTypes,
   docModes,
+  isTouchScreen,
 } from '../utils';
 import { folderPageId } from './ContentPage/FolderPage';
 import { showCreateFile } from './FileAction.createFile';
@@ -36,27 +37,6 @@ import styles from './FileAction.module.scss';
 import { showMoveFile } from './FileAction.moveFile';
 import { showRenameFile } from './FileAction.renameFile';
 import { showTrashFile } from './FileAction.trashFile';
-
-function detectTouchscreen() {
-  if (window.PointerEvent && 'maxTouchPoints' in navigator) {
-    // if Pointer Events are supported, just check maxTouchPoints
-    if (navigator.maxTouchPoints > 0) {
-      return true;
-    }
-  } else {
-    // no Pointer Events...
-    if (window.matchMedia && window.matchMedia('(any-pointer:coarse)').matches) {
-      // check for any-pointer:coarse which mostly means touchscreen
-      return true;
-    } else if (window.TouchEvent || 'ontouchstart' in window) {
-      // last resort - check for exposed touch events API / event handler
-      return true;
-    }
-  }
-  return false;
-}
-
-const isTouchScreen = detectTouchscreen();
 
 function Revisions(props: { file: DriveFile }) {
   const revs: Array<gapi.client.drive.Revision> = [];
