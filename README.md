@@ -4,11 +4,12 @@ A wiki based on Google Doc / Drive.
 
 ## User Guide
 
-Gdocwiki combines a folder tree view in a sidebar (equivalent to drive.google.com) with a document viewer in the main panel (equivalent to docs.google.com, etc). Documents can be browsed and edited without opening (lots of) new tabs. This helps keep the user in flow.
+Gdocwiki combines a folder tree view in a sidebar (equivalent to drive.google.com) with a document viewer in the main panel (equivalent to docs.google.com, etc). Documents can be browsed and edited without opening (lots of) new tabs. This helps the user stay in flow and understand the folder hierarchy.
 
 Gdocwiki also helps with understanding lots of documents. README files in a folder are automatically rendered to give an overview of a directory. Tags and folder hierarchy are shown wherever docs are shown.
 
-Gdocwiki defaults to a mobile-friendly HTML preview with comments. Switch to edit mode to start writing.
+Gdocwiki defaults to a mobile-friendly HTML preview with comments. Switch to edit mode to start writing. On mobile this will link out to the Google Docs mobile app.
+
 
 ## Getting Started
 
@@ -91,11 +92,10 @@ REACT_APP_ROOT_DRIVE_ID=xxxxxxx
     - [x] Show revision history
     - [x] View as html or in iframe as /preview or /edit
     - [x] HTML view
-      - [x] Header-based document navigation
+      - [x] Header-based outline and editing links
       - [x] Links
         - [x] Rewrite links to open in wiki directly
         - [x] Thumbnail preview
-        - [x] Support #xxx anchors in the Google doc
       - [x] Comments
         - [x] Highlight quoted comment text
         - [ ] Reply
@@ -135,16 +135,16 @@ REACT_APP_ROOT_DRIVE_ID=xxxxxxx
   - [x] View/Set file tags
   - [x] List all tags
   - [ ] Rename a tag
-- [ ] Performance
+- [x] Performance
   - [x] Optimistic render of doc for faster first doc load
-  - [x] Utilize cache to load folder content
-  - [ ] Watch changes from cached entities
+  - [x] Utilize cache for folder content and file data
 - [x] Search
   - [x] Full text
   - [x] File name
   - [x] Search Tag
 - [x] Mobile Support
   - [x] Responsive Sidebar
+  - [x] Link to Google Docs app
 - [x] Chrome extension
   - [x] check whether the doc is in the tree: [`browser-extension`](./packages/browser-extension)
   - [x] deep link to the versions page by adding a ?versions param
