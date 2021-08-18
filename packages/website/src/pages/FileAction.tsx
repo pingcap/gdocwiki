@@ -17,7 +17,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useHistory, Link } from 'react-router-dom';
 import { DriveIcon, Tags } from '../components';
 import { getConfig } from '../config';
-import { useRender } from '../context/RenderStack';
 import useFileMeta from '../hooks/useFileMeta';
 import responsiveStyle from '../layout/responsive.module.scss';
 import { selectDocMode, resetDocMode } from '../reduxSlices/doc';
@@ -37,6 +36,27 @@ import styles from './FileAction.module.scss';
 import { showMoveFile } from './FileAction.moveFile';
 import { showRenameFile } from './FileAction.renameFile';
 import { showTrashFile } from './FileAction.trashFile';
+
+function detectTouchscreen() {
+  if (window.PointerEvent && 'maxTouchPoints' in navigator) {
+    // if Pointer Events are supported, just check maxTouchPoints
+    if (navigator.maxTouchPoints > 0) {
+      return true;
+    }
+  } else {
+    // no Pointer Events...
+    if (window.matchMedia && window.matchMedia('(any-pointer:coarse)').matches) {
+      // check for any-pointer:coarse which mostly means touchscreen
+      return true;
+    } else if (window.TouchEvent || 'ontouchstart' in window) {
+      // last resort - check for exposed touch events API / event handler
+      return true;
+    }
+  }
+  return false;
+}
+
+const isTouchScreen = detectTouchscreen();
 
 function Revisions(props: { file: DriveFile }) {
   const revs: Array<gapi.client.drive.Revision> = [];
@@ -317,7 +337,12 @@ function FileAction(props: { file: DriveFile, allOverflow?: boolean }) {
     (item) => {
       const mode = item.props['itemKey'];
       if (file) {
-        history.push(`/view/${file.id}/${mode}`);
+        if (mode !== 'view' && isTouchScreen) {
+          const link = file.webViewLink?.replace(/\/(edit|view)\?usp=drivesdk/, '/' + mode);
+          window.open(link, '_blank');
+        } else {
+          history.push(`/view/${file.id}/${mode}`);
+        }
       }
     },
     [history, file]
