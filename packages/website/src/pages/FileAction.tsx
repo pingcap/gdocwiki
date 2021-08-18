@@ -16,7 +16,6 @@ import Avatar from 'react-avatar';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory, Link } from 'react-router-dom';
 import { DriveIcon, Tags } from '../components';
-import { browserExtensionUrl } from '../config';
 import { getConfig } from '../config';
 import { useRender } from '../context/RenderStack';
 import useFileMeta from '../hooks/useFileMeta';
@@ -104,19 +103,10 @@ function FileAction(props: { file: DriveFile, allOverflow?: boolean }) {
   const dispatch = useDispatch();
   const history = useHistory();
 
-  // When viewing a folder and auto-displaying a README,
-  // rOuter is the folder and rInner is the README.
-  const { inMost: rInner, outMost: rOuter } = useRender();
-  const file =
-    rInner?.file.name?.toLowerCase() === 'readme'
-      ? rOuter?.file ?? rInner?.file
-      : rInner?.file ?? props.file;
-
+  let file = props.file;
   const outerFolderId = file.mimeType === MimeTypes.GoogleFolder ? file.id : file.parents?.[0];
   const outerFolder = useFileMeta(outerFolderId);
   const docMode = useSelector(selectDocMode(file.mimeType ?? '')) || 'view';
-  const changesSinceLastView =
-    !file.viewedByMeTime || !file.modifiedTime || file.modifiedTime > file.viewedByMeTime;
 
   useEffect(() => {
     return () => {
@@ -351,8 +341,6 @@ function FileAction(props: { file: DriveFile, allOverflow?: boolean }) {
     return () => <TooltipHost content={mode}>{icon}</TooltipHost>;
   }
 
-  const hasVersions = file.mimeType && inlineEditable(file.mimeType) && canEdit(file);
-
   return (
     <div style={{ marginLeft: '1rem' }}>
       <Stack horizontal>
@@ -388,42 +376,6 @@ function FileAction(props: { file: DriveFile, allOverflow?: boolean }) {
           </Stack.Item>
         )}
       </Stack>
-      {docMode === 'view' && file.mimeType !== MimeTypes.GoogleFolder && (
-        <>
-          <hr />
-          {!file.viewedByMe ? (
-            <p>This is your first time viewing this file.</p>
-          ) : (
-            <p>
-              {hasVersions && changesSinceLastView ? (
-                <>
-                  <Link to={`/view/${file.id}/versions`}>View changes since your last view</Link>
-                  &nbsp;
-                  {dayjs(file.viewedByMeTime).fromNow()}.&nbsp;
-                  <span style={{ fontSize: '10pt' }}>
-                    Requires the&nbsp;
-                    <a href={browserExtensionUrl} target="_blank" rel="noreferrer">
-                      browser extension
-                    </a>
-                    .
-                  </span>
-                </>
-              ) : changesSinceLastView ? (
-                <span>
-                  There have been changes since your last view&nbsp;
-                  {dayjs(file.viewedByMeTime).fromNow()}.
-                </span>
-              ) : (
-                <span>
-                  There are no changes to this file since your last view&nbsp;
-                  {dayjs(file.viewedByMeTime).fromNow()}.
-                </span>
-              )}
-            </p>
-          )}
-          <hr />
-        </>
-      )}
       {revisionsEnabled && <Revisions file={file} />}
       {docMode === 'view' && (
         <Tags file={file} add={true} style={{ marginTop: '0.5rem', padding: '0.4rem' }} />

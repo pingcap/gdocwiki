@@ -75,8 +75,16 @@ function ContentPage({
     case MimeTypes.GoogleFolder:
       return <FolderPage {...pageProps} shortCutFile={shortCutFile} />;
     case MimeTypes.GoogleShortcut:
+      const child = (pointingFile: DriveFile) => (
+        <ContentPage
+          file={pointingFile}
+          shortCutFile={file}
+          splitWithFileListing={splitWithFileListing}
+          renderStackOffset={renderStackOffset + 1}
+        />
+      );
       if (!shortCutFile) {
-        return <ShortcutPage {...pageProps} splitWithFileListing={splitWithFileListing} />;
+        return <ShortcutPage file={file} child={child} renderStackOffset={renderStackOffset} />;
       }
       break;
   }
