@@ -38,7 +38,7 @@ function Page(props: PageProps) {
     }
   }, file);
 
-  const fullScreenMode = (file: DriveFile) => {
+  function fullScreenMode(file: DriveFile) {
     if (!file?.mimeType) {
       return false;
     }

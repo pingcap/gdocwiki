@@ -19,7 +19,7 @@ import {
   DriveLink,
 } from '../../reduxSlices/doc';
 import { selectSidebarOpen } from '../../reduxSlices/siderTree';
-import { DriveFile, canEdit, parseDriveLink, MimeTypes } from '../../utils';
+import { DriveFile, canEdit, isTouchScreen, parseDriveLink, MimeTypes } from '../../utils';
 import { fromHTML, MakeTree } from '../../utils/docHeaders';
 import styles from './DocPage.module.scss';
 
@@ -386,7 +386,8 @@ function externallyLinkHeaders(baseEl: HTMLElement, file: DriveFile) {
   function headerLink(headerId: string): HTMLAnchorElement {
     let link = document.createElement('a');
     const path = editable ? 'edit' : 'preview';
-    const href = `/view/${fileId}/${path}#heading=${headerId}`;
+    const base = isTouchScreen ? 'https://docs.google.com/document/d' : '/view';
+    const href = `${base}/${fileId}/${path}#heading=${headerId}`;
     link.href = href;
     link.dataset['__gdoc_id'] = fileId;
     return link;
@@ -960,8 +961,15 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
       if (id) {
         ev.preventDefault();
         if ((target as HTMLElement).nodeName === 'A') {
-          const u = new URL((target as HTMLAnchorElement).href);
-          history.push(u.pathname + u.search + u.hash);
+          const hrefAttr = target.getAttribute('href');
+          console.log('opening target', hrefAttr);
+          if (hrefAttr?.[0] === '/' && hrefAttr?.[1] !== '/') {
+            const u = new URL((target as HTMLAnchorElement).href);
+            history.push(u.pathname + u.search + u.hash);
+          } else {
+            // For touchscreen preview/edit we open externally in gdocs app
+            window.open((target as HTMLAnchorElement).href, '_blank');
+          }
         } else {
           history.push(`/view/${id}`);
         }
