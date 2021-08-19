@@ -131,6 +131,10 @@ function FileAction(props: { file: DriveFile, allOverflow?: boolean }) {
     [history]
   );
 
+  const chooseDocMode = useMemo(() => {
+    return !isTouchScreen && file.mimeType && docModes(file.mimeType).length > 1;
+  }, [file.mimeType]);
+
   const commandBarItems: ICommandBarItemProps[] = useMemo(() => {
     function toggleRevisions() {
       setRevisionsEnabled((v) => !v);
@@ -139,10 +143,11 @@ function FileAction(props: { file: DriveFile, allOverflow?: boolean }) {
 
     if (file.mimeType !== MimeTypes.GoogleFolder) {
       if (file.webViewLink) {
+        const showText = props.allOverflow || !chooseDocMode;
         commands.push({
           key: 'launch',
-          text: props.allOverflow ? 'Open in Google' : undefined,
-          title: props.allOverflow ? undefined : 'Open in Google',
+          text: showText ? 'Open in Google' : undefined,
+          title: showText ? undefined : 'Open in Google',
           iconProps: { iconName: 'Launch' },
           onClick: () => {
             window.open(file.webViewLink, '_blank');
@@ -317,20 +322,11 @@ function FileAction(props: { file: DriveFile, allOverflow?: boolean }) {
     (item) => {
       const mode = item.props['itemKey'];
       if (file) {
-        if (mode !== 'view' && isTouchScreen) {
-          const link = file.webViewLink?.replace(/\/(edit|view)\?usp=drivesdk/, '/' + mode);
-          window.open(link, '_blank');
-        } else {
-          history.push(`/view/${file.id}/${mode}`);
-        }
+        history.push(`/view/${file.id}/${mode}`);
       }
     },
     [history, file]
   );
-
-  const chooseDocMode = useMemo(() => {
-    return file.mimeType && docModes(file.mimeType).length > 1;
-  }, [file.mimeType]);
 
   if (!file) {
     console.log('no file, return null');
@@ -346,10 +342,12 @@ function FileAction(props: { file: DriveFile, allOverflow?: boolean }) {
     return () => <TooltipHost content={mode}>{icon}</TooltipHost>;
   }
 
+  const showEditLink = file.mimeType && inlineEditable(file.mimeType) && canEdit(file);
+
   return (
     <div style={{ marginLeft: '1rem' }}>
       <Stack horizontal>
-        {chooseDocMode && file.mimeType && (
+        {chooseDocMode && (
           <Stack.Item disableShrink>
             <Pivot onLinkClick={switchDocMode} selectedKey={docMode}>
               <PivotItem
@@ -357,7 +355,7 @@ function FileAction(props: { file: DriveFile, allOverflow?: boolean }) {
                 onRenderItemLink={tooltip('view', <Icon icon={fileEdit} />)}
               />
               <PivotItem itemKey="preview" onRenderItemLink={tooltip('preview', <View16 />)} />
-              {inlineEditable(file.mimeType) && canEdit(file) && (
+              {showEditLink && (
                 <PivotItem itemKey="edit" onRenderItemLink={tooltip('edit', <Edit16 />)} />
               )}
             </Pivot>
