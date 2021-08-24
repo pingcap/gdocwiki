@@ -33,7 +33,13 @@ type FileInfo = {
   trashed?: boolean;
 };
 
-function buildWikiUrl(id: string, drive?: ManifestDrive) {
+function buildFolderUrl(id: string, drive?: ManifestDrive) {
+  return drive
+    ? `${drive.workspace}/view/${id}`
+    : `https://drive.google.com/drive/folders/${id}`;
+}
+
+function buildFileUrl(id: string, drive?: ManifestDrive) {
   return drive
     ? `${drive.workspace}/view/${id}`
     : `https://drive.google.com/file/d/${id}`;
@@ -76,11 +82,12 @@ async function loadFileInfo(fileId: string, token: Token): Promise<FileInfo | un
   log.info('File metadata', file);
 
   const drives = manifest?.data?.drives ?? {};
+  const fileUrl = buildFileUrl(file.id!, drives[Object.keys(drives)[0]])
   const parentTree = {
     parents: [],
     file: {
       name: file.name ?? '',
-      url: buildWikiUrl(file.id!, drives[Object.keys(drives)[0]])
+      url: fileUrl
     }
   }
 
@@ -147,7 +154,7 @@ async function loadFileInfo(fileId: string, token: Token): Promise<FileInfo | un
       log.info(`Parent is the workspace, finished`, discoveredWorkspace, discoveredDrive);
       parents.push({
         name: discoveredWorkspace!,
-        url: buildWikiUrl(parentId, discoveredDrive),
+        url: buildFolderUrl(parentId, discoveredDrive),
       });
       break;
     }
@@ -160,7 +167,7 @@ async function loadFileInfo(fileId: string, token: Token): Promise<FileInfo | un
       log.info(`Parent file metadata`, parentFile);
       parents.push({
         name: parentFile.name!,
-        url: buildWikiUrl(parentId, discoveredDrive),
+        url: buildFolderUrl(parentId, discoveredDrive),
       });
       currentFile = parentFile;
     } catch (e) {
@@ -178,7 +185,7 @@ async function loadFileInfo(fileId: string, token: Token): Promise<FileInfo | un
       folder: parents.pop(),
       file: {
         name: file.name!,
-        url: buildWikiUrl(file.id!, discoveredDrive),
+        url: fileUrl,
       },
       parents
     },
