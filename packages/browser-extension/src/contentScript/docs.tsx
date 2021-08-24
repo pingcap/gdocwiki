@@ -29,18 +29,20 @@ type ParentTree = {
 type FileInfo = {
   isOrphanAndOwner?: boolean;
   parentTree: ParentTree;
-  privateOwners?: gapi.client.drive.User[];
+  privateOwners?: null | gapi.client.drive.User[];
   trashed?: boolean;
 };
 
-function buildWikiUrl(drive: ManifestDrive, id: string) {
-  return `${drive.workspace}/view/${id}`;
+function buildWikiUrl(id: string, drive?: ManifestDrive) {
+  return drive
+    ? `${drive.workspace}/view/${id}`
+    : `https://drive.google.com/file/d/${id}`;
 }
 
 async function loadFileInfo(fileId: string, token: Token): Promise<FileInfo | undefined> {
   const manifest = await getManifestInfo();
   if (!manifest) {
-    log.warn('Skipped since manifest is unavailable');
+    log.warn('manifest is unavailable');
   }
   const client = new GapiClient(token);
   log.info(`Getting file info for base file ${fileId}`);
@@ -73,12 +75,12 @@ async function loadFileInfo(fileId: string, token: Token): Promise<FileInfo | un
 
   log.info('File metadata', file);
 
-  const { drives } = manifest!.data;
+  const drives = manifest?.data?.drives ?? {};
   const parentTree = {
     parents: [],
     file: {
       name: file.name ?? '',
-      url: buildWikiUrl(drives[Object.keys(drives)[0]], file.id!)
+      url: buildWikiUrl(file.id!, drives[Object.keys(drives)[0]])
     }
   }
 
@@ -102,7 +104,11 @@ async function loadFileInfo(fileId: string, token: Token): Promise<FileInfo | un
     log.info(
       'File does not have a drive id, maybe the owner did not put it in the Wiki, skip listing parents'
     );
-    const orgOwners = file.owners?.filter((owner) => owner.emailAddress?.split("@")?.[1] === manifest?.data.gapiHostedDomain)
+    const domain = manifest?.data.gapiHostedDomain
+    const orgOwners = domain
+      ? null
+      : file.owners?.filter((owner) => owner.emailAddress?.split("@")?.[1] === domain)
+
     return {
       privateOwners: orgOwners,
       parentTree,
@@ -118,12 +124,6 @@ async function loadFileInfo(fileId: string, token: Token): Promise<FileInfo | un
       discoveredWorkspace = name;
       break;
     }
-  }
-  if (discoveredDrive === undefined) {
-    log.info(
-      `File drive ${file.driveId} does not match drives in the manifest, skip listing parents`
-    );
-    return { parentTree };
   }
 
   // Now we know the drive of the file, let's list parents.
@@ -143,11 +143,11 @@ async function loadFileInfo(fileId: string, token: Token): Promise<FileInfo | un
     }
     visitedParentIds.add(parentId);
 
-    if (discoveredDrive.driveId === parentId || discoveredDrive.rootId === parentId) {
+    if (discoveredDrive && (discoveredDrive.driveId === parentId || discoveredDrive.rootId === parentId)) {
       log.info(`Parent is the workspace, finished`, discoveredWorkspace, discoveredDrive);
       parents.push({
         name: discoveredWorkspace!,
-        url: buildWikiUrl(discoveredDrive, parentId),
+        url: buildWikiUrl(parentId, discoveredDrive),
       });
       break;
     }
@@ -160,7 +160,7 @@ async function loadFileInfo(fileId: string, token: Token): Promise<FileInfo | un
       log.info(`Parent file metadata`, parentFile);
       parents.push({
         name: parentFile.name!,
-        url: buildWikiUrl(discoveredDrive, parentId),
+        url: buildWikiUrl(parentId, discoveredDrive),
       });
       currentFile = parentFile;
     } catch (e) {
@@ -178,7 +178,7 @@ async function loadFileInfo(fileId: string, token: Token): Promise<FileInfo | un
       folder: parents.pop(),
       file: {
         name: file.name!,
-        url: buildWikiUrl(discoveredDrive, file.id!),
+        url: buildWikiUrl(file.id!, discoveredDrive),
       },
       parents
     },
@@ -294,7 +294,7 @@ function Loading(props: { isTokenLoading?: boolean; token?: Token; }) {
   )
 }
 
-function PrivateOwners(props: { id: string, token: Token, privateOwners?: gapi.client.drive.User[]; }) {
+function PrivateOwners(props: { id: string, token: Token, privateOwners?: null | gapi.client.drive.User[]; }) {
   const [showExtra, setShowExtra] = useState(false);
   const [askShared, setAskShared] = useState(false);
 
