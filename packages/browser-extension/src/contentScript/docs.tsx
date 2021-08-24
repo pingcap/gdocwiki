@@ -9,7 +9,7 @@ import { getManifestInfo, ManifestDrive } from '../utils/manifest';
 import ReactDOM from 'react-dom';
 import { useEffect, useState } from 'react';
 import { useToken } from '../utils/hooks/oauth';
-import { ChevronRight16, Launch16, WarningAltFilled16 } from '@carbon/icons-react';
+import { Folders16, Launch16, WarningAltFilled16 } from '@carbon/icons-react';
 import Button from 'carbon-components-react/lib/components/Button';
 import { log } from '../utils/log';
 
@@ -76,7 +76,7 @@ async function loadFileInfo(fileId: string, token: Token): Promise<FileInfo | un
       window.history.replaceState({path: newUrl}, "", newUrl);
     }
   } catch (e) {
-    console.warn("error trying to add doc name to parameters ", e);
+    log.warn("error trying to add doc name to parameters ", e);
   }
 
   log.info('File metadata', file);
@@ -268,9 +268,6 @@ function App(props: { id: string }) {
 
   return (
     <>
-      <a title="open in gdocwiki" style={{ textIndent: '-5px', paddingRight: '30px' }} href={fi.parentTree.file.url} target="_blank" rel="noreferrer" className={styles.wikiTreeIcon}>
-        <Launch16/>
-      </a>
       {Boolean(fi.isOrphanAndOwner) && (
         <span className={cx(styles.tag, styles.warning)}>
           <WarningAltFilled16 style={{ marginRight: 6 }} />
@@ -351,20 +348,25 @@ function Folders(props: {parentTree: ParentTree}) {
 
   return (
     <div className={styles.wikiTree}>
+      <a href={parentTree.file.url} style={{ paddingRight: '3px', color: 'black' }} target="_blank" rel="noreferrer" className={styles.wikiTreeIcon}>
+        <Folders16 />
+      </a>
       {parentTree.parents?.map((pi) => {
         return (
-          <>
+          <div key={pi.url}>
             <a href={pi.url} target="_blank" rel="noreferrer" className={styles.wikiTreeItem}>
               {pi.name}
+              ／
             </a>
-            <span className={styles.wikiTreeIcon}>
-              <ChevronRight16 />
-            </span>
-          </>
+          </div>
         );
       })}
       <a href={parentTree.folder.url} target="_blank" rel="noreferrer" className={styles.wikiTreeItem}>
         {parentTree.folder.name}
+        ／
+      </a>
+      <a href={parentTree.file.url} style={{ color: 'black' }} target="_blank" rel="noreferrer" className={styles.wikiTreeIcon}>
+        <Launch16 />
       </a>
     </div>
   )
@@ -376,7 +378,7 @@ export async function runDocs(id: string) {
   // Users can add ?versions to the url params to deep-link to the versions page
   var urlParams = new URLSearchParams(window.location.search);
   if (urlParams.has('versions')) {
-    console.debug('wait to click on versions link');
+    log.debug('wait to click on versions link');
     const docsNotice = await waitFor(() => {
       const docsNotice = document.getElementById('docs-notice');
       if (!docsNotice || docsNotice.textContent === "" || docsNotice.getAttribute("aria-disabled") === "true") {
@@ -385,7 +387,7 @@ export async function runDocs(id: string) {
       return docsNotice
     })
     if (docsNotice) {
-      console.debug("found versions link, triggering click")
+      log.debug("found versions link, triggering click")
       triggerMouseEvent(docsNotice, "mousedown", {})
       setTimeout(function(){
         log.info("mouseup")
@@ -393,6 +395,29 @@ export async function runDocs(id: string) {
       }, 100)
     } else {
       log.debug("no docs version link found")
+    }
+  }
+
+  if (urlParams.has('suggesting')) {
+    log.info('wait for suggesting dropdown');
+    const dropdown = await waitFor(() => {
+      const modeSwitch = document.getElementById('docs-toolbar-mode-switcher');
+      if (!modeSwitch || modeSwitch.style.display === 'none') {
+        throw new Error("No mode switcher");
+      }
+      const dropdown = modeSwitch.querySelector('.goog-toolbar-menu-button-dropdown')
+      if (!dropdown || (dropdown as HTMLElement).style.display === 'none') {
+        throw new Error("No mode switcher dropdown");
+      }
+      return dropdown
+    })
+
+    if (!dropdown) {
+      log.info('no suggesting dropdown');
+    } else {
+      log.info('clicking on suggesting dropdown');
+      triggerMouseEvent(dropdown, "mousedown", {})
+      // TODO: actually select suggesting
     }
   }
 
@@ -406,7 +431,7 @@ export async function runDocs(id: string) {
 
     const appContainer = document.createElement('div');
     appContainer.classList.add(styles.container);
-    containerElement.append(appContainer);
+    containerElement.prepend(appContainer);
     ReactDOM.render(<App id={id} />, appContainer);
   }
 }
