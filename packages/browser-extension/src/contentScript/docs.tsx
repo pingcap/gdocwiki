@@ -268,7 +268,7 @@ function App(props: { id: string }) {
 
   return (
     <>
-      <a style={{ paddingRight: '10px' }} href={fi.parentTree.file.url} target="_blank" rel="noreferrer" className={styles.wikiTreeIcon}>
+      <a title="open in gdocwiki" style={{ textIndent: '-5px', paddingRight: '30px' }} href={fi.parentTree.file.url} target="_blank" rel="noreferrer" className={styles.wikiTreeIcon}>
         <Launch16/>
       </a>
       {Boolean(fi.isOrphanAndOwner) && (
@@ -365,9 +365,6 @@ function Folders(props: {parentTree: ParentTree}) {
       })}
       <a href={parentTree.folder.url} target="_blank" rel="noreferrer" className={styles.wikiTreeItem}>
         {parentTree.folder.name}
-      </a>
-      <a href={parentTree.file.url} target="_blank" rel="noreferrer" className={styles.wikiTreeIcon}>
-        <ChevronRight16 />
       </a>
     </div>
   )
