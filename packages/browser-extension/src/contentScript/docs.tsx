@@ -276,6 +276,9 @@ function App(props: { id: string }) {
       )}
       <PrivateOwners id={props.id} token={token} privateOwners={fi.privateOwners} />
       <Folders parentTree={fi.parentTree} />
+      <a href={fi.parentTree.file.url} target="_blank" rel="noreferrer" className={styles.wikiTreeIcon}>
+        <Launch16/>
+      </a>
     </>
   );
 }
@@ -365,9 +368,6 @@ function Folders(props: {parentTree: ParentTree}) {
         {parentTree.folder.name}
         ／
       </a>
-      <a href={parentTree.file.url} style={{ color: 'black' }} target="_blank" rel="noreferrer" className={styles.wikiTreeIcon}>
-        <Launch16 />
-      </a>
     </div>
   )
 }
@@ -398,6 +398,7 @@ export async function runDocs(id: string) {
     }
   }
 
+  /* TODO: this does not properly wait for the menu item to be clickable
   if (urlParams.has('suggesting')) {
     log.info('wait for suggesting dropdown');
     const dropdown = await waitFor(() => {
@@ -420,6 +421,7 @@ export async function runDocs(id: string) {
       // TODO: actually select suggesting
     }
   }
+  */
 
   // We assume an iframe means embedded inside gdocwiki.
   // TODO: if that is not the case, this code should be ran
