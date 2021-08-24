@@ -268,6 +268,9 @@ function App(props: { id: string }) {
 
   return (
     <>
+      <a style={{ paddingRight: '10px' }} href={fi.parentTree.file.url} target="_blank" rel="noreferrer" className={styles.wikiTreeIcon}>
+        <Launch16/>
+      </a>
       {Boolean(fi.isOrphanAndOwner) && (
         <span className={cx(styles.tag, styles.warning)}>
           <WarningAltFilled16 style={{ marginRight: 6 }} />
@@ -276,9 +279,6 @@ function App(props: { id: string }) {
       )}
       <PrivateOwners id={props.id} token={token} privateOwners={fi.privateOwners} />
       <Folders parentTree={fi.parentTree} />
-      <a href={fi.parentTree.file.url} target="_blank" rel="noreferrer" className={styles.wikiTreeIcon}>
-        <Launch16/>
-      </a>
     </>
   );
 }
@@ -409,7 +409,7 @@ export async function runDocs(id: string) {
 
     const appContainer = document.createElement('div');
     appContainer.classList.add(styles.container);
-    containerElement.prepend(appContainer);
+    containerElement.append(appContainer);
     ReactDOM.render(<App id={id} />, appContainer);
   }
 }
