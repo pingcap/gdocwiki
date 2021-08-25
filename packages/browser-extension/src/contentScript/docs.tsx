@@ -82,7 +82,6 @@ function initialFileInfo(
   file: FileHasId,
 ): BasicFileInfo {
   const drives = manifestData?.drives ?? {};
-  const fileUrl = buildFileUrl(file.id, drives[Object.keys(drives)[0]])
 
   let discoveredDrive: ManifestDrive | null = null;
   let discoveredWorkspace: string | null = null;
@@ -95,6 +94,8 @@ function initialFileInfo(
     }
   }
 
+  const driveForFile = discoveredDrive || drives[Object.keys(drives)[0]];
+  const fileUrl = buildFileUrl(file.id, driveForFile)
 
   let fi: BasicFileInfo = {
     discoveredDrive,
