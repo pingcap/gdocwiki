@@ -407,7 +407,7 @@ function App(props: { id: string }) {
 
   return (
     <>
-      {sharedExternally && (
+      {sharedExternally && sharedExternally.length > 0 && (
         <span className={cx(styles.tag, styles.warning)}>
           <WarningAltFilled16 style={{ marginRight: 6 }} />
           Externally Shared
