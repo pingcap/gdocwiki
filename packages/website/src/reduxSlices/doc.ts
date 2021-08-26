@@ -16,7 +16,7 @@ export interface DocState {
   modes: MimeTypePreferredDisplay;
   headers?: (TreeHeading | DocHeader)[];
   comments: gapi.client.drive.Comment[];
-  driveLinks: DriveLink[];
+  driveLinks: { [fileId: string]: DriveLink };
 }
 
 let mimeTypePreferredDisplay: MimeTypePreferredDisplay = {};
@@ -28,7 +28,7 @@ const initialStateDoc: DocState = {
   file: null,
   headers: [],
   comments: [],
-  driveLinks: [],
+  driveLinks: {},
 };
 
 export const slice = createSlice({
@@ -55,14 +55,17 @@ export const slice = createSlice({
     setComments: (state, { payload }: { payload: gapi.client.drive.Comment[] }) => {
       state.comments = payload;
     },
+    addDriveLinks: (state, { payload }: { payload: DriveLink[] }) => {
+      const newLinks = {};
+      for (const link of payload) {
+        newLinks[link.id] = link;
+      }
+      state.driveLinks = Object.assign({}, newLinks, state.driveLinks);
+    },
     setDriveLinks: (state, { payload }: { payload: DriveLink[] }) => {
-      const newLinks = [] as DriveLink[];
-      const checkDupes = {};
-      for (const file of payload) {
-        if (!checkDupes[file.id]) {
-          checkDupes[file.id] = true;
-          newLinks.push(file);
-        }
+      const newLinks = {};
+      for (const link of payload) {
+        newLinks[link.id] = link;
       }
       state.driveLinks = newLinks;
     },
@@ -76,17 +79,21 @@ export const {
   setNoFile,
   setHeaders,
   setComments,
+  addDriveLinks,
   setDriveLinks,
 } = slice.actions;
 
 export const selectHeaders = (state: { doc: DocState }) => state.doc.headers;
 export const selectComments = (state: { doc: DocState }) => state.doc.comments;
 export const selectDriveFile = (state: { doc: DocState }) => state.doc.file;
-export const selectDriveLinks = (state: { doc: DocState }) => state.doc.driveLinks;
 export const selectDocMode = (mimeType: string) => {
   return (state: { doc: DocState }) => {
     return state.doc.modes[mimeType];
   };
 };
+export const selectDriveLinks = (state: { doc: DocState }) => {
+  return Object.values(state.doc.driveLinks);
+}
+export const selectDriveLinksLookup = (state: { doc: DocState }) => state.doc.driveLinks;
 
 export default slice.reducer;

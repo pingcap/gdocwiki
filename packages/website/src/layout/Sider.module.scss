@@ -20,6 +20,13 @@ $sider-width: 300px;
   z-index: 7999;
 
   :global {
+    .bx--accordion__content {
+      padding: 0;
+    }
+
+    .bx--tree {
+      font-size: 14px;
+    }
     .bx--label {
       padding-left: 1rem;
     }
