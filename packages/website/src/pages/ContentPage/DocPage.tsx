@@ -744,7 +744,7 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
               >
                 <Close20 />
               </a>
-              <h4>View Comment</h4>
+              <h4>Comment</h4>
             </Stack>
             <hr />
           </div>
