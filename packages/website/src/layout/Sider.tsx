@@ -1,5 +1,5 @@
-import { CollapseAll16, Launch16, } from '@carbon/icons-react';
-import { InlineLoading, SkeletonText } from 'carbon-components-react';
+import { CollapseAll16, Launch16 } from '@carbon/icons-react';
+import { Accordion, AccordionItem, InlineLoading, SkeletonText } from 'carbon-components-react';
 import TreeView, { TreeNode, TreeNodeProps } from 'carbon-components-react/lib/components/TreeView';
 import cx from 'classnames';
 import { Stack, Pivot, PivotItem } from 'office-ui-fabric-react';
@@ -321,8 +321,6 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
 
   const id = useSelector(selectActiveId) ?? getConfig().REACT_APP_ROOT_ID;
 
-  const [sidebarTab, setSidebarTab] = useState('directories');
-
   const handleToggle = useCallback(
     (ev: React.MouseEvent, node: TreeNodeProps) => {
       // handleToggle is called before onSelect
@@ -384,26 +382,6 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
     }
   }
 
-  function switchTab(item): void {
-    const tab = item.props['itemKey'];
-    setSidebarTab(tab);
-  }
-
-  /* auto-switching is not always wanted 
-  const activeFile = mapIdToFile[id];
-  useEffect(
-    function autoSwitchToOutline() {
-      if (!activeFile) { return; }
-      if (activeFile.mimeType === MimeTypes.GoogleDocument) { setSidebarTab('outline'); }
-    },
-    [activeFile]
-  );
-  */
-
-  function renderPivotOutline() {
-    return <span style={{ fontWeight: 600 }}>Document Outline</span>;
-  }
-
   return (
     <div className={cx(styles.sider, { [styles.isExpanded]: isExpanded })}>
       <HeaderExtraActionsForMobile />
@@ -417,63 +395,58 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
           <InlineLoading description={`Error: ${error.message}`} status="error" />
         </div>
       )}
-      <Pivot onLinkClick={switchTab} selectedKey={sidebarTab}>
-        <PivotItem alwaysRender={true} itemKey="directories" headerText="Table of Contents">
-          {!loading && !error && (
-            <div style={{ marginTop: '0.5rem' }}>
-              <TreeView
-                label="Table of Contents"
-                hideLabel={true}
-                selected={selected}
-                active={id}
-                id={'tree-toc'}
-              >
-                {renderChildren(
-                  id,
-                  mapIdToFile,
-                  mapIdToChildren,
-                  onFolderShowFiles,
-                  showFiles,
-                  getConfig().REACT_APP_ROOT_ID,
-                  expanded,
-                  handleToggle
-                )}
-              </TreeView>
+      <Accordion>
+        {driveLinks.length > 0 && (
+          <AccordionItem title="Links">
+            <div style={{ padding: '1rem' }}>
+              <FolderChildrenList
+                files={driveLinks.map((dl) => dl.file).filter((f) => f) as DriveFile[]}
+              />
             </div>
-          )}
-        </PivotItem>
-        {(headerTreeNodes.length > 0 || driveLinks.length > 0) && (
-          <PivotItem itemKey="outline" onRenderItemLink={renderPivotOutline}>
-            {headerTreeNodes.length > 0 && (
-              <div style={{ marginTop: '0.5rem' }}>
-                <TreeView
-                  label="Document Outline"
-                  hideLabel={true}
-                  selected={[headerTreeNodes[0].key?.toString() ?? 0]}
-                  id="tree-document-headers"
-                >
-                  <Stack
-                    style={{ padding: '0.5rem', display: 'flex', justifyContent: 'center' }}
-                    verticalAlign="center"
-                    horizontal
-                  >
-                    <p>{file?.name}</p>
-                  </Stack>
-                  {headerTreeNodes}
-                </TreeView>
-              </div>
-            )}
-            {driveLinks.length > 0 && (
-              <div style={{ marginTop: '1em', marginLeft: '1em' }}>
-                <h4>Links in Document</h4>
-                <FolderChildrenList
-                  files={driveLinks.map((dl) => dl.file).filter((f) => f) as DriveFile[]}
-                />
-              </div>
-            )}
-          </PivotItem>
+          </AccordionItem>
         )}
-      </Pivot>
+        {headerTreeNodes.length > 0 && (
+          <AccordionItem title="Outline">
+            <TreeView
+              label="Document Outline"
+              hideLabel={true}
+              selected={[headerTreeNodes[0].key?.toString() ?? 0]}
+              id="tree-document-headers"
+            >
+              <Stack
+                style={{ padding: '0.5rem', display: 'flex', justifyContent: 'center' }}
+                verticalAlign="center"
+                horizontal
+              >
+                <p>{file?.name}</p>
+              </Stack>
+              {headerTreeNodes}
+            </TreeView>
+          </AccordionItem>
+        )}
+        {!loading && !error && (
+          <AccordionItem open={true} title="All Folders">
+            <TreeView
+              label="Table of Contents"
+              hideLabel={true}
+              selected={selected}
+              active={id}
+              id={'tree-toc'}
+            >
+              {renderChildren(
+                id,
+                mapIdToFile,
+                mapIdToChildren,
+                onFolderShowFiles,
+                showFiles,
+                getConfig().REACT_APP_ROOT_ID,
+                expanded,
+                handleToggle
+              )}
+            </TreeView>
+          </AccordionItem>
+        )}
+      </Accordion>
     </div>
   );
 }
