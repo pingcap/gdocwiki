@@ -153,21 +153,21 @@ function App() {
                 </Route>
                 {isTouchScreen
                   ? [
-                      <Redirect to="/view/:id/view" from="/view/:id/preview" />,
-                      <Redirect to="/view/:id/view" from="/view/:id/edit" />,
-                      <Redirect to="/view/:id/view" from="/view/:id/versions" />,
+                      <Redirect to="/view/:id/view" from="/view/:id/preview" key="preview" />,
+                      <Redirect to="/view/:id/view" from="/view/:id/edit" key="edit" />,
+                      <Redirect to="/view/:id/view" from="/view/:id/versions" key="versions" />,
                     ]
                   : [
-                      <Route path="/view/:id/edit">
+                      <Route path="/view/:id/edit" key="edit">
                         <Page docMode="edit" />
                       </Route>,
-                      <Route path="/view/:id/preview">
+                      <Route path="/view/:id/preview" key="preview">
                         <Page docMode="preview" />
                       </Route>,
-                      <Route exact path="/view/:id/versions">
+                      <Route exact path="/view/:id/versions" key="versions">
                         <Page docMode="edit" versions={true} />
                       </Route>,
-                  ]}
+                    ]}
                 <Route path="/view/:id">
                   <Page />
                 </Route>
