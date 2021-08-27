@@ -13,6 +13,7 @@ import {
   selectDrives,
   setDrive,
   selectDriveId,
+  selectRootFolderId,
   selectError,
   selectLoading,
   selectMapIdToChildren,
@@ -341,8 +342,10 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
   const showFiles = useSelector(selectShowFiles);
 
   const drives = useSelector(selectDrives);
+  const rootFolderId = useSelector(selectRootFolderId);
   const driveId = useSelector(selectDriveId);
-  const id = useSelector(selectActiveId) ?? driveId;
+  const rootId = rootFolderId || driveId;
+  const id = useSelector(selectActiveId) ?? rootFolderId ?? rootId;
   const loading = useSelector(selectLoading);
 
   const handleToggle = useCallback(
@@ -447,7 +450,7 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
                     mapIdToChildren,
                     onFolderShowFiles,
                     showFiles,
-                    driveId,
+                    rootId,
                     expanded,
                     handleToggle
                   )

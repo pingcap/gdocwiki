@@ -16,11 +16,10 @@ import Avatar from 'react-avatar';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory, Link } from 'react-router-dom';
 import { DriveIcon, Tags } from '../components';
-import { getConfig } from '../config';
 import useFileMeta from '../hooks/useFileMeta';
 import responsiveStyle from '../layout/responsive.module.scss';
 import { selectDocMode, resetDocMode } from '../reduxSlices/doc';
-import { selectDriveId } from '../reduxSlices/files';
+import { selectDriveId, selectRootFolderId } from '../reduxSlices/files';
 import {
   canChangeSettings,
   canEdit,
@@ -108,7 +107,7 @@ function FileAction(props: { file: DriveFile, allOverflow?: boolean }) {
   const outerFolderId = file.mimeType === MimeTypes.GoogleFolder ? file.id : file.parents?.[0];
   const outerFolder = useFileMeta(outerFolderId);
   const docMode = useSelector(selectDocMode(file.mimeType ?? '')) || 'view';
-  const driveId = useSelector(selectDriveId);
+  const rootId = useSelector(selectRootFolderId);
 
   useEffect(() => {
     return () => {
@@ -304,7 +303,7 @@ function FileAction(props: { file: DriveFile, allOverflow?: boolean }) {
       }
 
       // Do not allow trash root folder..
-      if (file.id !== driveId && file.capabilities?.canTrash) {
+      if (file.id !== rootId && file.capabilities?.canTrash) {
         // Trash
         commands.push({
           key: 'trash',

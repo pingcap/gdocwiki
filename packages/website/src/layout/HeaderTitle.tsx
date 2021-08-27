@@ -4,17 +4,17 @@ import { useSelector } from 'react-redux';
 import { Link, LinkProps } from 'react-router-dom';
 import { getConfig } from '../config';
 import { selectMapIdToFile } from '../reduxSlices/files';
-import { selectDriveId } from '../reduxSlices/files';
+import { selectRootFolderId } from '../reduxSlices/files';
 
 function HeaderTitle_() {
   const mapIdToFile = useSelector(selectMapIdToFile);
-  const driveId = useSelector(selectDriveId);
+  const rootId = useSelector(selectRootFolderId);
 
   const appName = (() => {
     if (getConfig().REACT_APP_NAME) {
       return getConfig().REACT_APP_NAME;
     }
-    return !driveId ? '' : mapIdToFile?.[driveId]?.name ?? '';
+    return !rootId ? '' : mapIdToFile?.[rootId]?.name ?? '';
   })();
 
   return (

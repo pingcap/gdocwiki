@@ -8,17 +8,17 @@ export interface FilesState {
   error: Error | undefined;
   mapIdToFile: Record<string, DriveFile>;
   driveId: string | undefined;
+  rootFolderId: string | undefined;
   drive: DriveFile | undefined;
   drives: gapi.client.drive.Drive[];
 }
-
-const topConf = getConfig();
 
 const initialState: FilesState = {
   isLoading: false,
   error: undefined,
   mapIdToFile: {},
-  driveId: topConf.REACT_APP_ROOT_ID || topConf.REACT_APP_ROOT_DRIVE_ID,
+  driveId: undefined,
+  rootFolderId: undefined,
   drive: undefined,
   drives: [],
 };
@@ -34,7 +34,9 @@ function setDriveId_(state: FilesState, driveId: string | undefined): boolean {
   const conf = getConfig();
   const rootDriveId = conf.REACT_APP_ROOT_DRIVE_ID;
   if (rootDriveId && driveId === rootDriveId) {
-    driveId = conf.REACT_APP_ROOT_ID || rootDriveId;
+    state.rootFolderId = conf.REACT_APP_ROOT_ID;
+  } else {
+    state.rootFolderId = driveId;
   }
   state.mapIdToFile = {};
   state.drive = undefined;
@@ -65,6 +67,9 @@ export const slice = createSlice({
     setDriveId: (state, { payload }: { payload: string | undefined }) => {
       setDriveId_(state, payload);
     },
+    setRootFolderId: (state, { payload }: { payload: string }) => {
+      state.rootFolderId = payload;
+    },
     updateFile: (state, { payload }: { payload: DriveFile }) => {
       addFileToMap(state, payload);
     },
@@ -84,6 +89,7 @@ export const {
   setDrive,
   setDrives,
   setDriveId,
+  setRootFolderId,
   setError,
   updateFile,
   updateFiles,
@@ -94,6 +100,7 @@ export const selectLoading = (state: { files: FilesState }) => state.files.isLoa
 export const selectDrive = (state: { files: FilesState }) => state.files.drive;
 export const selectDrives = (state: { files: FilesState }) => state.files.drives;
 export const selectDriveId = (state: { files: FilesState }) => state.files.driveId;
+export const selectRootFolderId = (state: { files: FilesState }) => state.files.rootFolderId;
 export const selectError = (state: { files: FilesState }) => state.files.error;
 export const selectMapIdToFile = (state: { files: FilesState }) => state.files.mapIdToFile;
 export const selectAllTags = (state: { files: FilesState }) => {

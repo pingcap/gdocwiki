@@ -4,7 +4,6 @@ import { getConfig } from '../config';
 import {
   setDrive,
   setDriveId,
-  selectDrive,
   selectDriveId,
   setLoading,
   updateFiles,
@@ -16,7 +15,6 @@ import { driveToFolder, handleGapiError, MimeTypes } from '../utils';
 
 export default function useLoadDriveFiles() {
   const dispatch = useDispatch();
-  const drive = useSelector(selectDrive);
   const driveId = useSelector(selectDriveId);
   const activeId = useSelector(selectActiveId);
 
