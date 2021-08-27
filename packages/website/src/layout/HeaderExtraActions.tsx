@@ -5,9 +5,12 @@ import cx from 'classnames';
 import { Stack } from 'office-ui-fabric-react';
 import Trigger from 'rc-trigger';
 import React, { useMemo } from 'react';
-import { Link, LinkProps } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { useHistory, Link, LinkProps } from 'react-router-dom';
 import { ExtensionHeaderItem, NavMenu } from '../components';
 import { getConfig, INavMenuGroupChildren } from '../config';
+import useLoadDrives from '../hooks/useLoadDrives';
+import { setDrive } from '../reduxSlices/files';
 import styles from './HeaderExtraActions.module.scss';
 import responsiveStyle from './responsive.module.scss';
 
@@ -16,6 +19,14 @@ export interface IHeaderExtraActionsProps {
 }
 
 export function HeaderExtraActions({ onExtensionAction }) {
+  const drives = useLoadDrives();
+  const dispatch = useDispatch();
+  const history = useHistory();
+  function selectDrive(ev: any, drive: gapi.client.drive.Drive) {
+    ev.preventDefault();
+    dispatch(setDrive(drive));
+    history.push(`/view/${drive.id}`);
+  }
   return (
     <HeaderNavigation className={responsiveStyle.hideInPhone} aria-label="navigation" >
       <HeaderMenuItem<LinkProps> element={Link} to="/search/tag">
@@ -70,9 +81,30 @@ export function HeaderExtraActions({ onExtensionAction }) {
             return null;
         }
       })}
-      <HeaderMenuItem<LinkProps> element={Link} to="/drives">
-        Drives
-      </HeaderMenuItem>
+      <Trigger
+        popupAlign={{
+          points: ['tl', 'bl'],
+        }}
+        mouseLeaveDelay={0.3}
+        zIndex={10000}
+        action="hover"
+        popup={
+          <NavMenu>
+            {drives.map((drive) => (
+              <NavMenu.Link href={`/view/${drive.id}`} onClick={(ev) => selectDrive(ev, drive)}>
+                {drive.name ?? ''}
+              </NavMenu.Link>
+            ))}
+          </NavMenu>
+        }
+      >
+        <HeaderMenuItem<LinkProps> element={Link} to="/drives">
+          <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
+            <span>Drives</span>
+            <ChevronDown20 />
+          </Stack>
+        </HeaderMenuItem>
+      </Trigger>
       <ExtensionHeaderItem onClick={onExtensionAction} />
     </HeaderNavigation>
   );
