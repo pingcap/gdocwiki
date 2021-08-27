@@ -36,6 +36,7 @@ export interface TreeState {
 
 const initialState: TreeState = {
   sidebarOpen: window.innerWidth >= 600,
+  activeId: undefined,
   expanded: [],
   selected: [],
   showFiles: {},
@@ -50,6 +51,13 @@ export const slice = createSlice({
   name: 'tree',
   initialState,
   reducers: {
+    resetFiles: (state, { payload }: { payload: string }) => {
+      state.activeId = payload;
+      state.expanded = [];
+      state.selected = [];
+      state.showFiles = {};
+    },
+
     unsetShowFiles: (state, { payload }: { payload: string }) => {
       delete state.showFiles[payload];
     },
@@ -116,6 +124,7 @@ export const {
   expand,
   collapse,
   collapseAll,
+  resetFiles,
 } = slice.actions;
 
 export const selectExpanded = (state: { tree: TreeState }) =>

@@ -2,7 +2,7 @@ import { CollapseAll16, Launch16 } from '@carbon/icons-react';
 import { Accordion, AccordionItem, InlineLoading, SkeletonText } from 'carbon-components-react';
 import TreeView, { TreeNode, TreeNodeProps } from 'carbon-components-react/lib/components/TreeView';
 import cx from 'classnames';
-import { Stack, Pivot, PivotItem } from 'office-ui-fabric-react';
+import { Stack } from 'office-ui-fabric-react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { DriveIcon, FolderChildrenList } from '../components';
@@ -10,6 +10,7 @@ import { getConfig } from '../config';
 import { useFolderFilesMeta } from '../hooks/useFolderFilesMeta';
 import { selectHeaders, selectDriveFile, selectDriveLinks } from '../reduxSlices/doc';
 import {
+  selectDriveId,
   selectError,
   selectLoading,
   selectMapIdToChildren,
@@ -45,6 +46,24 @@ function isLeafFolder(file: DriveFile, mapIdToChildren: Record<string, DriveFile
       return file.mimeType === MimeTypes.GoogleFolder;
     }).length === 0
   );
+}
+
+function entryNode(heading: DocHeader): JSX.Element {
+  const label = <a href={'#' + heading.id}>{heading.text}</a>;
+  return <TreeNode key={heading.id} id={'tree-' + heading.id} label={label} />;
+}
+
+function treeNode(heading: DocHeader, inner: JSX.Element[]) {
+  const label = <a href={'#' + heading.id}>{heading.text}</a>;
+  return (
+    <TreeNode key={heading.id} id={'tree-' + heading.id} isExpanded={true} label={label}>
+      {inner}
+    </TreeNode>
+  );
+}
+
+function toTreeElements(node: TreeHeading | DocHeader): JSX.Element {
+  return isTreeHeading(node) ? treeNode(node, node.entries.map(toTreeElements)) : entryNode(node);
 }
 
 function renderChildren(
@@ -319,7 +338,10 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
   const file = useSelector(selectDriveFile);
   const showFiles = useSelector(selectShowFiles);
 
-  const id = useSelector(selectActiveId) ?? getConfig().REACT_APP_ROOT_ID;
+  const conf = getConfig();
+  const id = useSelector(selectActiveId) ?? conf.REACT_APP_ROOT_ID;
+  const driveId = useSelector(selectDriveId);
+  const parentId = driveId === conf.REACT_APP_ROOT_DRIVE_ID ? conf.REACT_APP_ROOT_ID : driveId;
 
   const handleToggle = useCallback(
     (ev: React.MouseEvent, node: TreeNodeProps) => {
@@ -345,27 +367,9 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
     }
   }, [id, mapIdToFile, dispatch]);
 
-  function entryNode(heading: DocHeader): JSX.Element {
-    const label = <a href={'#' + heading.id}>{heading.text}</a>;
-    return <TreeNode key={heading.id} id={'tree-' + heading.id} label={label} />;
-  }
-
-  function treeNode(heading: DocHeader, inner) {
-    const label = <a href={'#' + heading.id}>{heading.text}</a>;
-    return (
-      <TreeNode key={heading.id} id={'tree-' + heading.id} isExpanded={true} label={label}>
-        {inner}
-      </TreeNode>
-    );
-  }
-
-  function toTreeElements(node: TreeHeading | DocHeader): JSX.Element {
-    return isTreeHeading(node) ? treeNode(node, node.entries.map(toTreeElements)) : entryNode(node);
-  }
   const headerTreeNodes = (headers ?? []).slice().map(toTreeElements);
 
   function onFolderShowFiles(file: DriveFile) {
-    console.log('onFolderShowFiles');
     if (!file.id) {
       return;
     }
@@ -439,7 +443,7 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
                 mapIdToChildren,
                 onFolderShowFiles,
                 showFiles,
-                getConfig().REACT_APP_ROOT_ID,
+                parentId,
                 expanded,
                 handleToggle
               )}

@@ -19,7 +19,7 @@ export function HeaderExtraActions({ onExtensionAction }) {
   return (
     <HeaderNavigation className={responsiveStyle.hideInPhone} aria-label="navigation" >
       <HeaderMenuItem<LinkProps> element={Link} to="/search/tag">
-        All Tags
+        Tags
       </HeaderMenuItem>
       {getConfig().NavItems.map((item) => {
         switch (item.type) {
@@ -58,7 +58,7 @@ export function HeaderExtraActions({ onExtensionAction }) {
                 }
                 popupTransitionName="slide-up"
               >
-                <HeaderMenuItem href="javascript:;">
+                <HeaderMenuItem onClick={(ev) => ev.preventDefault()} href="#">
                   <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
                     <span>{item.text ?? ''}</span>
                     <ChevronDown20 />
@@ -70,6 +70,9 @@ export function HeaderExtraActions({ onExtensionAction }) {
             return null;
         }
       })}
+      <HeaderMenuItem<LinkProps> element={Link} to="/drives">
+        Drives
+      </HeaderMenuItem>
       <ExtensionHeaderItem onClick={onExtensionAction} />
     </HeaderNavigation>
   );

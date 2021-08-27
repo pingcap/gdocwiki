@@ -1,26 +1,41 @@
 import { useMount } from 'ahooks';
 import { useCallback } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { getConfig } from '../config';
-import { setLoading, clearFileList, updateFiles, setError, updateFile } from '../reduxSlices/files';
-import { handleGapiError, MimeTypes } from '../utils';
+import {
+  selectDriveId,
+  setDriveId,
+  setLoading,
+  updateFiles,
+  setError,
+  updateFile,
+} from '../reduxSlices/files';
+import { resetFiles } from '../reduxSlices/siderTree';
+import { driveToFolder, handleGapiError, MimeTypes } from '../utils';
 
 export default function useLoadDriveFiles() {
   const dispatch = useDispatch();
+  const driveId = useSelector(selectDriveId);
+  if (driveId === undefined) {
+    const rootDriveId = getConfig().REACT_APP_ROOT_DRIVE_ID;
+    if (rootDriveId) {
+      dispatch(setDriveId(rootDriveId));
+    }
+  }
 
   const loadTreeData = useCallback(async () => {
     dispatch(setLoading(true));
     dispatch(setError(undefined));
-
+    if (driveId) {
+      dispatch(resetFiles(driveId));
+    }
     try {
-      dispatch(clearFileList());
-
       let pageToken = '';
       for (let i = 0; i < 10; i++) {
         const resp = await gapi.client.drive.files.list({
           pageToken,
           corpora: 'drive',
-          driveId: getConfig().REACT_APP_ROOT_DRIVE_ID,
+          driveId: driveId,
           includeItemsFromAllDrives: true,
           supportsAllDrives: true,
           pageSize: 500,
@@ -29,7 +44,7 @@ export default function useLoadDriveFiles() {
         });
         console.debug(
           `useLoadDriveFiles files.list (page #${i + 1})`,
-          getConfig().REACT_APP_ROOT_DRIVE_ID,
+          driveId,
           resp.result.files?.length
         );
         dispatch(updateFiles(resp.result.files ?? []));
@@ -45,27 +60,24 @@ export default function useLoadDriveFiles() {
     } finally {
       dispatch(setLoading(false));
     }
-  }, [dispatch]);
+  }, [dispatch, driveId]);
 
   const loadDriveRoot = useCallback(async () => {
+    if (!driveId) {
+      return;
+    }
     const resp = await gapi.client.drive.drives.get({
-      driveId: getConfig().REACT_APP_ROOT_DRIVE_ID,
+      driveId,
       fields: '*',
     });
-    dispatch(
-      updateFile({
-        mimeType: MimeTypes.GoogleFolder,
-        webViewLink: `https://drive.google.com/drive/folders/${resp.result.id}`,
-        ...resp.result,
-      })
-    );
-  }, [dispatch]);
+    dispatch(updateFile(driveToFolder(resp.result)));
+  }, [dispatch, driveId]);
 
   useMount(() => {
     // Only load tree data once when webpage is loaded. There is no need to reload
     // in other scenarios.
     loadTreeData();
-    if (getConfig().REACT_APP_ROOT_DRIVE_ID === getConfig().REACT_APP_ROOT_ID) {
+    if (driveId === getConfig().REACT_APP_ROOT_ID) {
       loadDriveRoot();
     }
   });
