@@ -108,7 +108,7 @@ function FileAction(props: { file: DriveFile, allOverflow?: boolean }) {
   const outerFolderId = file.mimeType === MimeTypes.GoogleFolder ? file.id : file.parents?.[0];
   const outerFolder = useFileMeta(outerFolderId);
   const docMode = useSelector(selectDocMode(file.mimeType ?? '')) || 'view';
-  const driveId = useSelector(selectDriveId) ?? getConfig().REACT_APP_ROOT_ID;
+  const driveId = useSelector(selectDriveId);
 
   useEffect(() => {
     return () => {

@@ -91,7 +91,11 @@ export function HeaderExtraActions({ onExtensionAction }) {
         popup={
           <NavMenu>
             {drives.map((drive) => (
-              <NavMenu.Link href={`/view/${drive.id}`} onClick={(ev) => selectDrive(ev, drive)}>
+              <NavMenu.Link
+                key={drive.id}
+                href={`/view/${drive.id}`}
+                onClick={(ev) => selectDrive(ev, drive)}
+              >
                 {drive.name ?? ''}
               </NavMenu.Link>
             ))}

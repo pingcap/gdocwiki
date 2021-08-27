@@ -14,9 +14,7 @@ function HeaderTitle_() {
     if (getConfig().REACT_APP_NAME) {
       return getConfig().REACT_APP_NAME;
     }
-    return (
-      mapIdToFile?.[driveId ?? '']?.name ?? mapIdToFile?.[getConfig().REACT_APP_ROOT_ID]?.name ?? ''
-    );
+    return !driveId ? '' : mapIdToFile?.[driveId]?.name ?? '';
   })();
 
   return (

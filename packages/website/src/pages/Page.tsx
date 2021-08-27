@@ -16,6 +16,7 @@ import ContentPage from './ContentPage';
 import ShortcutPage from './ContentPage/ShortcutPage';
 import FileAction from './FileAction';
 import FileBreadcrumb from './FileBreadcrumb';
+import Drives from './Location/Drives';
 import RightContainer from './RightContainer';
 
 interface PageProps {
@@ -25,17 +26,25 @@ interface PageProps {
 
 function Page(props: PageProps) {
   const id = useUpdateSiderFromPath('id');
+  return id ? <PageId key={id} id={id} {...props} /> : <Drives />;
+}
+
+function PageId(props: PageProps & { id: string }) {
+  const id = props.id;
   const { file, loading, error } = useFileMeta(id);
   const dispatch = useDispatch();
   const docMode = useSelector(selectDocMode(file?.mimeType ?? ''));
   const sidebarOpen = useSelector(selectSidebarOpen);
+  console.log('Page id', id);
 
   useTitle((file) => {
-    if (file && file?.id !== getConfig().REACT_APP_ROOT_ID) {
-      return file.name;
-    } else {
-      return undefined;
+    if (file) {
+      const rootId = getConfig().REACT_APP_ROOT_ID;
+      if (rootId && file?.id !== rootId) {
+        return file.name;
+      }
     }
+    return undefined;
   }, file);
 
   function fullScreenMode(file: DriveFile) {

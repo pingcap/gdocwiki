@@ -3,13 +3,15 @@ import { Accordion, AccordionItem, InlineLoading, SkeletonText } from 'carbon-co
 import TreeView, { TreeNode, TreeNodeProps } from 'carbon-components-react/lib/components/TreeView';
 import cx from 'classnames';
 import { Stack } from 'office-ui-fabric-react';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 import { DriveIcon, FolderChildrenList } from '../components';
-import { getConfig } from '../config';
 import { useFolderFilesMeta } from '../hooks/useFolderFilesMeta';
 import { selectHeaders, selectDriveFile, selectDriveLinks } from '../reduxSlices/doc';
 import {
+  selectDrives,
+  setDrive,
   selectDriveId,
   selectError,
   selectLoading,
@@ -326,8 +328,8 @@ function selectFile(file: gapi.client.drive.File) {
 
 function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
   const dispatch = useDispatch();
+  const history = useHistory();
 
-  const loading = useSelector(selectLoading);
   const error = useSelector(selectError);
   const mapIdToFile = useSelector(selectMapIdToFile);
   const mapIdToChildren = useSelector(selectMapIdToChildren);
@@ -338,10 +340,10 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
   const file = useSelector(selectDriveFile);
   const showFiles = useSelector(selectShowFiles);
 
-  const conf = getConfig();
-  const id = useSelector(selectActiveId) ?? conf.REACT_APP_ROOT_ID;
+  const drives = useSelector(selectDrives);
   const driveId = useSelector(selectDriveId);
-  const parentId = driveId === conf.REACT_APP_ROOT_DRIVE_ID ? conf.REACT_APP_ROOT_ID : driveId;
+  const id = useSelector(selectActiveId) ?? driveId;
+  const loading = useSelector(selectLoading);
 
   const handleToggle = useCallback(
     (ev: React.MouseEvent, node: TreeNodeProps) => {
@@ -362,7 +364,8 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
   );
 
   useEffect(() => {
-    if (mapIdToFile[id]) {
+    // This should probably be handled by the state tree, but it connects 2 sub states
+    if (id && mapIdToFile[id]) {
       dispatch(activate({ arg: id, mapIdToFile: mapIdToFile }));
     }
   }, [id, mapIdToFile, dispatch]);
@@ -437,16 +440,29 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
               active={id}
               id={'tree-toc'}
             >
-              {renderChildren(
-                id,
-                mapIdToFile,
-                mapIdToChildren,
-                onFolderShowFiles,
-                showFiles,
-                parentId,
-                expanded,
-                handleToggle
-              )}
+              {id
+                ? renderChildren(
+                    id,
+                    mapIdToFile,
+                    mapIdToChildren,
+                    onFolderShowFiles,
+                    showFiles,
+                    driveId,
+                    expanded,
+                    handleToggle
+                  )
+                : drives.map((drive) => (
+                    <TreeNode
+                      key={drive.id}
+                      id={'drive-' + drive.id}
+                      isExpanded={false}
+                      label={drive.name}
+                      onSelect={() => {
+                        dispatch(setDrive(drive));
+                        history.push(`/view/${drive.id}`);
+                      }}
+                    />
+                  ))}
             </TreeView>
           </AccordionItem>
         )}

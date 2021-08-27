@@ -1,6 +1,7 @@
 import { createSlice, createSelector } from '@reduxjs/toolkit';
 import naturalCompare from 'natural-compare-lite';
-import { DriveFile, getFileSortKey, extractTagsIntoSet } from '../utils';
+import { getConfig } from '../config';
+import { DriveFile, getFileSortKey, driveToFolder, extractTagsIntoSet } from '../utils';
 
 export interface FilesState {
   isLoading: boolean;
@@ -8,14 +9,18 @@ export interface FilesState {
   mapIdToFile: Record<string, DriveFile>;
   driveId: string | undefined;
   drive: DriveFile | undefined;
+  drives: gapi.client.drive.Drive[];
 }
 
+const topConf = getConfig();
+
 const initialState: FilesState = {
-  isLoading: true,
+  isLoading: false,
   error: undefined,
   mapIdToFile: {},
-  driveId: undefined,
+  driveId: topConf.REACT_APP_ROOT_ID || topConf.REACT_APP_ROOT_DRIVE_ID,
   drive: undefined,
+  drives: [],
 };
 
 function addFileToMap(state: FilesState, file: DriveFile) {
@@ -25,6 +30,11 @@ function addFileToMap(state: FilesState, file: DriveFile) {
 function setDriveId_(state: FilesState, driveId: string | undefined): boolean {
   if (driveId === state.driveId) {
     return false;
+  }
+  const conf = getConfig();
+  const rootDriveId = conf.REACT_APP_ROOT_DRIVE_ID;
+  if (rootDriveId && driveId === rootDriveId) {
+    driveId = conf.REACT_APP_ROOT_ID || rootDriveId;
   }
   state.mapIdToFile = {};
   state.drive = undefined;
@@ -42,9 +52,12 @@ export const slice = createSlice({
     setError: (state, { payload }: { payload: Error | undefined }) => {
       state.error = payload;
     },
+    setDrives: (state, { payload }: { payload: DriveFile[] }) => {
+      state.drives = payload.map(driveToFolder);
+    },
     setDrive: (state, { payload }: { payload: DriveFile | undefined }) => {
-      state.drive = payload;
       setDriveId_(state, payload?.id);
+      state.drive = payload;
       if (payload) {
         addFileToMap(state, payload);
       }
@@ -69,6 +82,7 @@ export const slice = createSlice({
 export const {
   setLoading,
   setDrive,
+  setDrives,
   setDriveId,
   setError,
   updateFile,
@@ -77,6 +91,8 @@ export const {
 } = slice.actions;
 
 export const selectLoading = (state: { files: FilesState }) => state.files.isLoading;
+export const selectDrive = (state: { files: FilesState }) => state.files.drive;
+export const selectDrives = (state: { files: FilesState }) => state.files.drives;
 export const selectDriveId = (state: { files: FilesState }) => state.files.driveId;
 export const selectError = (state: { files: FilesState }) => state.files.error;
 export const selectMapIdToFile = (state: { files: FilesState }) => state.files.mapIdToFile;

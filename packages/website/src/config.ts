@@ -45,12 +45,7 @@ const config = {
 };
 
 if (!config.REACT_APP_USE_CONFIG_FILE) {
-  for (const f of [
-    'REACT_APP_GAPI_KEY',
-    'REACT_APP_GAPI_CLIENT_ID',
-    'REACT_APP_ROOT_ID',
-    'REACT_APP_ROOT_DRIVE_ID',
-  ]) {
+  for (const f of ['REACT_APP_GAPI_KEY', 'REACT_APP_GAPI_CLIENT_ID']) {
     if (!config[f]) {
       throw new Error(`Environment variable ${f} is not configured`);
     }
