@@ -66,7 +66,6 @@ async function linkPreview(
         const req = { fileId: id, supportsAllDrives: true, fields };
         const rsp = await gapi.client.drive.files.get(req);
         files[id] = rsp.result;
-        console.log('linkPreview got file', rsp.result.name, id);
 
         driveLinks.push({
           file: rsp.result,

@@ -19,6 +19,7 @@ import {
   HeaderUserMenu,
 } from './layout';
 import responsiveStyle from './layout/responsive.module.scss';
+import Drives from './pages/Location/Drives';
 import Page from './pages/Page';
 import { SearchResult, SearchTag } from './pages/Search';
 import SearchAllTags from './pages/Search/AllTags';
@@ -182,6 +183,9 @@ function App() {
                 </Route>
                 <Route path="/n/:slug/:id">
                   <Page />
+                </Route>
+                <Route path="/drives">
+                  <Drives />
                 </Route>
               </Switch>
             </RenderStackProvider>

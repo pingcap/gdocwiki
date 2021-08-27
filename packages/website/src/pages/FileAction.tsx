@@ -20,6 +20,7 @@ import { getConfig } from '../config';
 import useFileMeta from '../hooks/useFileMeta';
 import responsiveStyle from '../layout/responsive.module.scss';
 import { selectDocMode, resetDocMode } from '../reduxSlices/doc';
+import { selectDriveId } from '../reduxSlices/files';
 import {
   canChangeSettings,
   canEdit,
@@ -107,6 +108,7 @@ function FileAction(props: { file: DriveFile, allOverflow?: boolean }) {
   const outerFolderId = file.mimeType === MimeTypes.GoogleFolder ? file.id : file.parents?.[0];
   const outerFolder = useFileMeta(outerFolderId);
   const docMode = useSelector(selectDocMode(file.mimeType ?? '')) || 'view';
+  const driveId = useSelector(selectDriveId) ?? getConfig().REACT_APP_ROOT_ID;
 
   useEffect(() => {
     return () => {
@@ -302,7 +304,7 @@ function FileAction(props: { file: DriveFile, allOverflow?: boolean }) {
       }
 
       // Do not allow trash root folder..
-      if (file.id !== getConfig().REACT_APP_ROOT_ID && file.capabilities?.canTrash) {
+      if (file.id !== driveId && file.capabilities?.canTrash) {
         // Trash
         commands.push({
           key: 'trash',

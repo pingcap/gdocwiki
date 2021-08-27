@@ -1,5 +1,17 @@
 export type DriveFile = gapi.client.drive.File;
 
+export function driveToFolder(drive: gapi.client.drive.Drive): gapi.client.drive.File {
+  return {
+    id: drive.id,
+    name: drive.name,
+    capabilities: drive.capabilities,
+    createdTime: drive.createdTime,
+    kind: drive.kind,
+    mimeType: MimeTypes.GoogleFolder,
+    webViewLink: `https://drive.google.com/drive/folders/${drive.id}`,
+  };
+}
+
 export function handleGapiError(e: any): Error {
   if (e?.result?.error) {
     return e.result.error;
