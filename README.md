@@ -137,7 +137,7 @@ REACT_APP_ROOT_DRIVE_ID=xxxxxxx
   - `auth/drive`
   - `auth/documents`
 
-- `REACT_APP_ROOT_ID`: The ID of the Google drive folder that you want to display as the wiki root folder.
+- `REACT_APP_ROOT_ID`: Optional. The ID of the Google drive folder that you want to display as the wiki root folder.
 
   ![](etc/root_folder.png)
 
@@ -145,7 +145,7 @@ REACT_APP_ROOT_DRIVE_ID=xxxxxxx
 
   **Note**: Only folders in the "[Shared drives](https://support.google.com/a/users/answer/9310351)" are supported. Folders in the "My Drive" are not supported.
 
-- `REACT_APP_ROOT_DRIVE_ID`: The drive ID where your wiki root folder belongs.
+- `REACT_APP_ROOT_DRIVE_ID`: Optional. The drive ID where your wiki root folder belongs.
 
   ![](etc/root_drive_1.png)
 
