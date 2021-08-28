@@ -11,8 +11,9 @@ function HeaderTitle_() {
   const rootId = useSelector(selectRootFolderId);
 
   const appName = (() => {
-    if (getConfig().REACT_APP_NAME) {
-      return getConfig().REACT_APP_NAME;
+    const conf = getConfig()
+    if (conf.REACT_APP_NAME && rootId === conf.REACT_APP_ROOT_ID) {
+      return conf.REACT_APP_NAME;
     }
     return !rootId ? '' : mapIdToFile?.[rootId]?.name ?? '';
   })();
