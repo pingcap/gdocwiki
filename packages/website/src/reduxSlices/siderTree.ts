@@ -51,8 +51,7 @@ export const slice = createSlice({
   name: 'tree',
   initialState,
   reducers: {
-    resetFiles: (state, { payload }: { payload: string }) => {
-      state.activeId = payload;
+    resetFiles: (state) => {
       state.expanded = [];
       state.selected = [];
       state.showFiles = {};
@@ -83,7 +82,6 @@ export const slice = createSlice({
       if (state.selected.indexOf(id) !== -1) {
         return;
       }
-      console.log(`Sidebar activate`, id);
       const newExpandNodes = ancestors(payload.arg, payload.mapIdToFile);
       state.selected = [...newExpandNodes];
       state.expanded = [...newExpandNodes];

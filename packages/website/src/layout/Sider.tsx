@@ -3,7 +3,7 @@ import { Accordion, AccordionItem, InlineLoading, SkeletonText } from 'carbon-co
 import TreeView, { TreeNode, TreeNodeProps } from 'carbon-components-react/lib/components/TreeView';
 import cx from 'classnames';
 import { Stack } from 'office-ui-fabric-react';
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { DriveIcon, FolderChildrenList } from '../components';
@@ -20,7 +20,6 @@ import {
   selectMapIdToFile,
 } from '../reduxSlices/files';
 import {
-  activate,
   expand,
   collapse,
   selectActiveId,
@@ -345,7 +344,8 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
   const rootFolderId = useSelector(selectRootFolderId);
   const driveId = useSelector(selectDriveId);
   const rootId = rootFolderId || driveId;
-  const id = useSelector(selectActiveId) ?? rootFolderId ?? rootId;
+  const activeId = useSelector(selectActiveId);
+  const id = activeId ?? rootFolderId ?? rootId;
   const loading = useSelector(selectLoading);
 
   const handleToggle = useCallback(
@@ -365,13 +365,6 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
     },
     [dispatch, mapIdToFile]
   );
-
-  useEffect(() => {
-    // This should probably be handled by the state tree, but it connects 2 sub states
-    if (id && mapIdToFile[id]) {
-      dispatch(activate({ arg: id, mapIdToFile: mapIdToFile }));
-    }
-  }, [id, mapIdToFile, dispatch]);
 
   const headerTreeNodes = (headers ?? []).slice().map(toTreeElements);
 
