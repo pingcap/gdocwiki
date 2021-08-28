@@ -81,34 +81,36 @@ export function HeaderExtraActions({ onExtensionAction }) {
             return null;
         }
       })}
-      <Trigger
-        popupAlign={{
-          points: ['tl', 'bl'],
-        }}
-        mouseLeaveDelay={0.3}
-        zIndex={10000}
-        action="hover"
-        popup={
-          <NavMenu>
-            {drives.map((drive) => (
-              <NavMenu.Link
-                key={drive.id}
-                href={`/view/${drive.id}`}
-                onClick={(ev) => selectDrive(ev, drive)}
-              >
-                {drive.name ?? ''}
-              </NavMenu.Link>
-            ))}
-          </NavMenu>
-        }
-      >
-        <HeaderMenuItem<LinkProps> element={Link} to="/drives">
-          <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
-            <span>Drives</span>
-            <ChevronDown20 />
-          </Stack>
-        </HeaderMenuItem>
-      </Trigger>
+      {drives.length > 0 && (
+        <Trigger
+          popupAlign={{
+            points: ['tl', 'bl'],
+          }}
+          mouseLeaveDelay={0.3}
+          zIndex={10000}
+          action="hover"
+          popup={
+            <NavMenu>
+              {drives.map((drive) => (
+                <NavMenu.Link
+                  key={drive.id}
+                  href={`/view/${drive.id}`}
+                  onClick={(ev) => selectDrive(ev, drive)}
+                >
+                  {drive.name ?? ''}
+                </NavMenu.Link>
+              ))}
+            </NavMenu>
+          }
+        >
+          <HeaderMenuItem<LinkProps> element={Link} to="/drives">
+            <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
+              <span>Drives</span>
+              <ChevronDown20 />
+            </Stack>
+          </HeaderMenuItem>
+        </Trigger>
+      )}
       <ExtensionHeaderItem onClick={onExtensionAction} />
     </HeaderNavigation>
   );
