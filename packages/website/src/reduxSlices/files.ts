@@ -69,7 +69,7 @@ export const slice = createSlice({
       if (myDrive1?.name === myDriveName && myDrive2?.name !== myDriveName) {
         state.drives.unshift(myDrive1);
       } else if (myDrive1?.name !== 'My Drive' && myDrive2?.name !== myDriveName) {
-        console.debug('adding fake root', state.drives);
+        console.debug('adding fake my drive', state.drives);
         // This will end up getting replaced with the real file in setDrive
         state.drives.unshift({
           id: 'root',
@@ -82,7 +82,7 @@ export const slice = createSlice({
         // update to the actual root folder
         if (payload.id !== 'root') {
           myDriveRootId = payload.id!;
-          console.debug('adding real root', payload);
+          console.debug('adding real my drive', payload);
           if (state.drives[0]?.name === myDriveName) {
             state.drives[0] = payload;
           } else {
