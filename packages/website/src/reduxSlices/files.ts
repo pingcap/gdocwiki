@@ -42,7 +42,7 @@ function setDriveId_(state: FilesState, driveId: string | undefined): boolean {
   }
   state.mapIdToFile = {};
   state.drive = undefined;
-  if (driveId === myDriveRootId) {
+  if (driveId === myDriveRootId || driveId === undefined) {
     state.driveId = 'root';
   } else {
     state.driveId = driveId;
