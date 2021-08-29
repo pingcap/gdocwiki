@@ -1,3 +1,4 @@
+import { useMount } from 'ahooks';
 import { InlineLoading } from 'carbon-components-react';
 import dayjs from 'dayjs';
 import { Stack, StackItem } from 'office-ui-fabric-react';
@@ -8,7 +9,8 @@ import { browserExtensionUrl, getConfig } from '../config';
 import useFileMeta from '../hooks/useFileMeta';
 import useTitle from '../hooks/useTitle';
 import useUpdateSiderFromPath from '../hooks/useUpdateSiderFromPath';
-import { selectDocMode, setDocMode, resetDocMode  } from '../reduxSlices/doc';
+import { selectDocMode, setDocMode, resetDocMode } from '../reduxSlices/doc';
+import { setDriveId } from '../reduxSlices/files';
 import { selectPageReloadToken } from '../reduxSlices/pageReload';
 import { selectSidebarOpen } from '../reduxSlices/siderTree';
 import { DocMode, DriveFile, MimeTypes, canEdit, viewable, inlineEditable } from '../utils';
@@ -22,11 +24,19 @@ import RightContainer from './RightContainer';
 interface PageProps {
   docMode?: DocMode;
   versions?: boolean;
+  driveId?: string;
 }
 
+export function HomePage(props: {}) {
+  const dispatch = useDispatch();
+  useMount(() => {
+    dispatch(setDriveId(undefined))
+  });
+  return <Page />;
+}
 function Page(props: PageProps) {
-  const id = useUpdateSiderFromPath('id');
-  return id ? <PageId key={id} id={id} {...props} /> : <Drives />;
+  const id = useUpdateSiderFromPath('id') || 'root';
+  return <PageId key={id} id={id} {...props} />;
 }
 
 function PageId(props: PageProps & { id: string }) {

@@ -9,18 +9,16 @@ import { selectRootFolderId } from '../reduxSlices/files';
 function HeaderTitle_() {
   const mapIdToFile = useSelector(selectMapIdToFile);
   const rootId = useSelector(selectRootFolderId);
-
-  const appName = (() => {
-    const conf = getConfig()
-    if (conf.REACT_APP_NAME && rootId === conf.REACT_APP_ROOT_ID) {
-      return conf.REACT_APP_NAME;
-    }
-    return !rootId ? '' : mapIdToFile?.[rootId]?.name ?? '';
-  })();
+  const driveName = !rootId ? '' : mapIdToFile?.[rootId]?.name ?? '';
+  const isMyDrive = rootId === 'root' || driveName === 'My Drive';
+  const headerName = !driveName || isMyDrive ? '' : driveName;
+  const prefix = getConfig().REACT_APP_NAME || 'Gdoc Wiki';
+  const headerPrefix = headerName ? prefix + ': ' : prefix;
+  const linkTo = rootId === undefined || isMyDrive ? '/' : `/view/${rootId}`;
 
   return (
-    <HeaderName<LinkProps> prefix="Gdoc Wiki:" element={Link} to="/">
-      {appName}
+    <HeaderName<LinkProps> prefix={headerPrefix} element={Link} to={linkTo}>
+      {headerName}
     </HeaderName>
   );
 }

@@ -20,7 +20,7 @@ import {
 } from './layout';
 import responsiveStyle from './layout/responsive.module.scss';
 import Drives from './pages/Location/Drives';
-import Page from './pages/Page';
+import Page, { HomePage } from './pages/Page';
 import { SearchResult, SearchTag } from './pages/Search';
 import SearchAllTags from './pages/Search/AllTags';
 import Settings from './pages/Settings';
@@ -144,7 +144,7 @@ function App() {
                 <Redirect to="/view/:id" from="/https\://:domain/document/d/:id/*" />
 
                 <Route exact path="/">
-                  <Page />
+                  <HomePage />
                 </Route>
                 <Route exact path="/view/:id/view">
                   <Page docMode="view" />

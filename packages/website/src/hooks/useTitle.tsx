@@ -11,15 +11,14 @@ export default function useTitle<T>(titleBuilder: (T) => string | undefined, dep
   const rootId = useSelector(selectRootFolderId);
 
   useEffect(() => {
-    let suffix = 'Gdoc Wiki';
-    if (getConfig().REACT_APP_NAME) {
-      suffix = `${getConfig().REACT_APP_NAME} Wiki`;
+    const appName = getConfig().REACT_APP_NAME || 'Gdoc Wiki';
+    let locationName = mapIdToFile?.[rootId ?? '']?.name;
+    if (!locationName || locationName === 'My Drive') {
+      locationName = '';
     } else {
-      const s = mapIdToFile?.[rootId ?? '']?.name;
-      if (s) {
-        suffix = `${s} Wiki`;
-      }
+      locationName = ' ' + locationName + ' - ';
     }
+    const suffix = locationName + appName;
     const prefix = memoTitleBuilder(dep);
     if (!prefix) {
       document.title = suffix;

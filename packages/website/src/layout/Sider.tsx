@@ -388,11 +388,7 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
   return (
     <div className={cx(styles.sider, { [styles.isExpanded]: isExpanded })}>
       <HeaderExtraActionsForMobile />
-      {loading && (
-        <div className={styles.skeleton}>
-          <SkeletonText paragraph />
-        </div>
-      )}
+      {loading && <InlineLoading description="Loading Drive..." />}
       {!loading && error && (
         <div className={styles.skeleton}>
           <InlineLoading description={`Error: ${error.message}`} status="error" />
