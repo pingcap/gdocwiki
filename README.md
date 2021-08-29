@@ -120,8 +120,6 @@ A sample `.env.local` file could be:
 ```plain
 REACT_APP_GAPI_KEY=xxxxxxx
 REACT_APP_GAPI_CLIENT_ID=xxxxxxx
-REACT_APP_ROOT_ID=xxxxxxx
-REACT_APP_ROOT_DRIVE_ID=xxxxxxx
 ```
 
 - `REACT_APP_GAPI_KEY`: The Google API Key.
