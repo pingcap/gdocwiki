@@ -1,2 +1,5 @@
 /public/config.json
-/build
+/build/*
+/build/.*
+!/build/_redirects
+.env.*
