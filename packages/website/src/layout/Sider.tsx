@@ -427,7 +427,8 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
             </TreeView>
           </AccordionItem>
         )}
-        {drives.length > 0 && (
+        {/* > 1 because of My Drive */}
+        {drives.length > 1 && (
           <AccordionItem key="drives" open={!id || driveId === 'root'} title="Shared Drives">
             <TreeView
               label="Shared Drives"

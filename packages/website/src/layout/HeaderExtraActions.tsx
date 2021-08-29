@@ -85,7 +85,8 @@ export function HeaderExtraActions({ onExtensionAction }) {
             return null;
         }
       })}
-      {drives.length > 0 && (
+      {/* > 1 because of My Drive */}
+      {drives.length > 1 && (
         <Trigger
           popupAlign={{
             points: ['tl', 'bl'],
