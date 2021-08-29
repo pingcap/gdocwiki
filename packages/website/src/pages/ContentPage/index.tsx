@@ -43,7 +43,7 @@ function ContentPage({
 
   // Assume a document for speed if we are still loading the file metadata
   // We might be wrong, but that will get corrected without issue.
-  if (!file.name) {
+  if (!file.name && file.id !== 'root') {
     return docPage({
       file,
       renderStackOffset: renderStackOffset,

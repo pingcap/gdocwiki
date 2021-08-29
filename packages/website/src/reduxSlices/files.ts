@@ -75,7 +75,7 @@ export const slice = createSlice({
     },
     updateFiles: (state, { payload }: { payload: DriveFile[] }) => {
       for (const file of payload) {
-        state.mapIdToFile[file.id ?? ''] = file;
+        addFileToMap(state, file);
       }
     },
     removeFile: (state, { payload }: { payload: string }) => {

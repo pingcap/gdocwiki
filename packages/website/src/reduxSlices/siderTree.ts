@@ -65,11 +65,11 @@ export const slice = createSlice({
       state.showFiles[payload] = true;
     },
 
-    closeSidebar: (state, { payload }: { payload: undefined }) => {
+    closeSidebar: (state) => {
       state.sidebarOpen = false;
     },
 
-    openSidebar: (state, { payload }: { payload: undefined }) => {
+    openSidebar: (state) => {
       state.sidebarOpen = true;
     },
 

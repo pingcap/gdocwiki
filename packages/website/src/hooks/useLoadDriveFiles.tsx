@@ -7,6 +7,7 @@ import {
   selectDriveId,
   selectMapIdToFile,
   setLoading,
+  setRootFolderId,
   updateFiles,
   setError,
   updateFile,
@@ -35,8 +36,8 @@ export default function useLoadDriveFiles() {
           for (let i = 0; i < 10; i++) {
             const resp = await gapi.client.drive.files.list({
               pageToken,
-              corpora: 'drive',
-              driveId: driveId,
+              corpora: driveId === 'root' ? 'user' : 'drive',
+              driveId: driveId === 'root' ? undefined : driveId,
               includeItemsFromAllDrives: true,
               supportsAllDrives: true,
               pageSize: 500,
@@ -48,6 +49,7 @@ export default function useLoadDriveFiles() {
               driveId,
               resp.result.files?.length
             );
+            // TODO: need to point their parent to the user's drive
             dispatch(updateFiles(resp.result.files ?? []));
             setLoadedDriveFiles(true);
             if (resp.result.nextPageToken) {
@@ -69,15 +71,14 @@ export default function useLoadDriveFiles() {
   );
 
   useEffect(() => {
-    if (!loadedDriveFiles || !driveId) {
+    if (!loadedDriveFiles) {
       return;
     }
     if (activeId) {
       dispatch(activate({ arg: activeId, mapIdToFile }));
       dispatch(expand({ arg: [activeId], mapIdToFile }));
     }
-    dispatch(expand({ arg: [driveId], mapIdToFile }));
-  }, [activeId, loadedDriveFiles, dispatch, mapIdToFile, driveId]);
+  }, [activeId, loadedDriveFiles, dispatch, mapIdToFile]);
 
   useEffect(
     function doLoadDriveFromParents() {
@@ -112,13 +113,24 @@ export default function useLoadDriveFiles() {
         if (!driveId) {
           return;
         }
-        console.log('get drive');
-        const resp = await gapi.client.drive.drives.get({
-          driveId: driveId,
-          fields: '*',
-        });
-        dispatch(setDrive(resp.result));
-        dispatch(updateFile(driveToFolder(resp.result)));
+        // TODO: maybe do this for the drive as well
+        if (driveId === 'root') {
+          console.log('get my drive folder');
+          const resp = await gapi.client.drive.files.get({
+            fileId: driveId,
+            fields: '*',
+          });
+          dispatch(updateFile(resp.result));
+          dispatch(setRootFolderId(resp.result.id!));
+        } else {
+          console.log('get drive');
+          const resp = await gapi.client.drive.drives.get({
+            driveId: driveId,
+            fields: '*',
+          });
+          dispatch(setDrive(resp.result));
+          dispatch(updateFile(driveToFolder(resp.result)));
+        }
       }
       loadDrive();
     },

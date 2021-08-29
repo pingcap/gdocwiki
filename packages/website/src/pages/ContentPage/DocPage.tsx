@@ -73,7 +73,7 @@ async function linkPreview(
           driveLink: link.dataset?.['orig_href'] || link.href,
           linkText: link.innerText,
           id: id,
-        })
+        });
 
         const imgSrc = rsp.result.thumbnailLink;
         if (!imgSrc) {

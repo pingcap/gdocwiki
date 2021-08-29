@@ -21,6 +21,8 @@ export default function useUpdateSiderFromPath(field: string) {
       const conf = getConfig();
       if (conf.REACT_APP_ROOT_DRIVE_ID) {
         dispatch(setDriveId(conf.REACT_APP_ROOT_DRIVE_ID));
+      } else {
+        dispatch(setDriveId('root'));
       }
       if (conf.REACT_APP_ROOT_ID) {
         dispatch(setRootFolderId(conf.REACT_APP_ROOT_ID));
