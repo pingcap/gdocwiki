@@ -13,7 +13,7 @@ import {
 } from '../../components';
 import { useManagedRenderStack } from '../../context/RenderStack';
 import { useFolderFilesMeta, IFolderFilesMeta  } from '../../hooks/useFolderFilesMeta';
-import { selectMapIdToFile } from '../../reduxSlices/files';
+import { selectMapIdToFile, selectMapIdToChildren } from '../../reduxSlices/files';
 import { DriveFile, FolderChildrenDisplayMode, canEdit } from '../../utils';
 import styles from './FolderPage.module.scss';
 import ContentPage from '.';
@@ -65,6 +65,7 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
   });
 
   const mapIdToFile = useSelector(selectMapIdToFile);
+  const mapIdToChildren = useSelector(selectMapIdToChildren);
   const openInNewWindow = useMemo(() => {
     // If current folder is not in the tree, open new window
     return !mapIdToFile?.[file?.id!] && shortCutFile;
@@ -72,13 +73,16 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
 
   const filesMeta = useFolderFilesMeta(file.id!);
   const { loading, error } = filesMeta;
-  const files = useMemo(() => filesMeta.files ?? [], [filesMeta]);
+  const files = mapIdToChildren[file.id!];
 
   const defaultDisplay =
     (localStorage.getItem(folderDisplayStorageKey) as FolderChildrenDisplayMode) || 'list';
   const [preferredDisplay, setpreferredDisplay] = useState(defaultDisplay);
 
   const readMeFile = useMemo(() => {
+    if (!files) {
+      return;
+    }
     for (const item of files) {
       if (item.name?.toLowerCase() === 'readme') {
         setpreferredDisplay('list');
@@ -106,7 +110,7 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
   const props = {
     loading,
     error,
-    files,
+    files: files ?? [],
     openInNewWindow,
     display: preferredDisplay,
     clickExpandToTable,

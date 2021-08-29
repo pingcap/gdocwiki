@@ -21,6 +21,12 @@ async function reportManifestUrl() {
 }
 
 async function main() {
+  if (!gapi) {
+    ReactDOM.render(
+      <InlineLoading description="Error. Please reload" />,
+      document.getElementById('root')
+    );
+  }
   gapi.load('client:auth2', () => {
     gapi.client.load('drive', 'v3', async () => {
       try {

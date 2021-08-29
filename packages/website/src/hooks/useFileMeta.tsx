@@ -48,19 +48,8 @@ export default function useFileMeta(id?: string) {
           fileId: id!,
           fields: '*',
         });
-        console.debug('useFileMeta files.get', respFile);
-
-        if (respFile.result.driveId === id) {
-          const respDrive = await gapi.client.drive.drives.get({
-            driveId: id!,
-            fields: '*',
-          });
-          console.debug('useFileMeta drives.get', respDrive.result);
-          respFile.result.name = respDrive.result.name;
-        } else {
-          dispatch(updateFile(respFile.result));
-        }
-
+        console.debug('useFileMeta files.get', id);
+        dispatch(updateFile(respFile.result));
         setData({ loading: false, file: respFile.result });
       } catch (e) {
         console.log(e);

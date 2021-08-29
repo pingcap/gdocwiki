@@ -9,7 +9,7 @@ import { useHistory } from 'react-router-dom';
 import { DriveIcon, FolderChildrenList } from '../components';
 import { useFolderFilesMeta } from '../hooks/useFolderFilesMeta';
 import { selectHeaders, selectDriveFile, selectDriveLinks } from '../reduxSlices/doc';
-import {
+import files, {
   selectDrives,
   setDrive,
   selectDriveId,
@@ -125,6 +125,7 @@ function renderChildren(
     const leafFolder = isLeafFolder(file, mapIdToChildren);
     let label: React.ReactNode = nodeLabel({
       file,
+      mapIdToChildren,
       isActive: file.id === activeId,
       isExpanded,
       isLeafFolder: leafFolder,
@@ -164,7 +165,7 @@ function renderChildren(
   });
 
   const fileViews = filesNotFolder.map((file: DriveFile) => {
-    let label: React.ReactNode = nodeLabel({ file });
+    let label: React.ReactNode = nodeLabel({ file, mapIdToChildren });
     const nodeProps: TreeNodeProps = {
       isExpanded: false,
       label,
@@ -179,6 +180,7 @@ function renderChildren(
 
 function nodeLabel(props: {
   file: DriveFile;
+  mapIdToChildren: Record<string, DriveFile[]>;
   isLeafFolder?: boolean;
   isExpanded?: boolean;
   isActive?: boolean;
@@ -264,23 +266,28 @@ function nodeLabel(props: {
 function ExpandedFolder(props: {
   label: JSX.Element;
   file: DriveFile;
+  mapIdToChildren: Record<string, DriveFile[]>;
   isLeafFolder?: boolean;
   isExpanded?: boolean;
   isActive?: boolean;
   filesShown?: boolean;
   onFolderShowFiles?: (file: DriveFile) => void;
 }) {
-  const { file } = props;
+  const { file, mapIdToChildren } = props;
   const filesMeta = useFolderFilesMeta(file.id!);
+  const files = useMemo(() => mapIdToChildren[file.id!] ?? filesMeta.files ?? [], [
+    mapIdToChildren,
+    filesMeta.files,
+    file.id,
+  ]);
   const nonFolderCount = useMemo(() => {
-    return (filesMeta.files ?? []).filter((file) => file.mimeType !== MimeTypes.GoogleFolder)
-      .length;
-  }, [filesMeta]);
+    return files.filter((file) => file.mimeType !== MimeTypes.GoogleFolder).length;
+  }, [files]);
   const noFilesEver = !filesMeta.loading && nonFolderCount === 0;
 
   if (noFilesEver) {
     const style = {};
-    if (!(filesMeta.files?.length !== 0)) {
+    if (files?.length === 0) {
       style['textIndent'] = '-.2em';
       style['listStylePosition'] = 'inside';
       style['listStyleType'] = 'disc';

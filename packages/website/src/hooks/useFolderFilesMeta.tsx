@@ -18,31 +18,37 @@ export function useFolderFilesMeta(id?: string) {
   const dispatch = useDispatch();
   const [data, setData] = useState<IFolderFilesMeta>({ loading: true });
   const mapIdToChildren = useSelector(selectMapIdToChildren);
-  if (id && data.loading && data.files === undefined) {
-    const files = mapIdToChildren[id];
-    if (files) {
+  if (id) {
+    const files = mapIdToChildren[id] ?? [];
+    if (
+      data.loading &&
+      (data.files === undefined || (data.files && files.length > data.files.length))
+    ) {
       // We may already have the files
       // Still go ahead and do the API call to refresh the data
       // The caller can use the existing data in the mean time.
-      setData({ loading: data.loading, files });
+      setData((d) => ({ ...d, files }));
     }
   }
 
   useEffect(() => {
     if (!id) {
-      setData({ loading: true });
+      console.log('useFolderFilesMeta no id');
+      setData((v) => ({ ...v, loading: true }));
       return;
     }
 
     // Synchronize access when there are multiple callers.
     if (inProgressRequests[id]) {
       console.debug('second request, bailing', id);
+      // TOD: This isn't correct, but the other will not cancel this one
+      setData((v) => ({ ...v, loading: false }));
       return;
     }
     inProgressRequests[id!] = true;
 
     async function loadFolderFilesMetadata() {
-      setData({ loading: true });
+      setData((d) => ({ ...d, loading: true }));
 
       try {
         let pageToken = '';
@@ -75,11 +81,9 @@ export function useFolderFilesMeta(id?: string) {
         filesArray.sort(compareFiles);
         setData({ loading: false, files: filesArray });
       } catch (e) {
-        console.log(e);
-        setData((d) => ({ ...d, error: <GapiErrorDisplay error={e} /> }));
+        setData((d) => ({ ...d, loading: false, error: <GapiErrorDisplay error={e} /> }));
       } finally {
         delete inProgressRequests[id!];
-        setData((d) => ({ ...d, loading: false }));
       }
     }
 
