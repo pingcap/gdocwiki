@@ -122,6 +122,7 @@ export default function useLoadDriveFiles() {
           });
           dispatch(updateFile(resp.result));
           dispatch(setRootFolderId(resp.result.id!));
+          dispatch(setDrive(resp.result));
         } else {
           console.log('get drive');
           const resp = await gapi.client.drive.drives.get({

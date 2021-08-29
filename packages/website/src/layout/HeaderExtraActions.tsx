@@ -57,7 +57,11 @@ export function HeaderExtraActions({ onExtensionAction }) {
                           return <NavMenu.Divider>{childItem.text ?? ''}</NavMenu.Divider>;
                         case 'link':
                           return (
-                            <NavMenu.Link href={childItem.href} target={childItem.target}>
+                            <NavMenu.Link
+                              key={childItem.href}
+                              href={childItem.href}
+                              target={childItem.target}
+                            >
                               {childItem.text ?? ''}
                             </NavMenu.Link>
                           );

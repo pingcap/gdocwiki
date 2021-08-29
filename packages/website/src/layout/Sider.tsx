@@ -400,7 +400,7 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
       )}
       <Accordion>
         {driveLinks.length > 0 && (
-          <AccordionItem title="Links">
+          <AccordionItem key="links" title="Links">
             <div style={{ padding: '1rem' }}>
               <FolderChildrenList
                 files={driveLinks.map((dl) => dl.file).filter((f) => f) as DriveFile[]}
@@ -409,7 +409,7 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
           </AccordionItem>
         )}
         {headerTreeNodes.length > 0 && (
-          <AccordionItem title="Outline">
+          <AccordionItem key="outline" title="Outline">
             <TreeView
               label="Document Outline"
               hideLabel={true}
@@ -427,38 +427,53 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
             </TreeView>
           </AccordionItem>
         )}
-        {!loading && !error && (
-          <AccordionItem open={true} title="All Folders">
+        {drives.length > 0 && (
+          <AccordionItem key="drives" open={!id || driveId === 'root'} title="Shared Drives">
             <TreeView
-              label="Table of Contents"
+              label="Shared Drives"
               hideLabel={true}
               selected={selected}
               active={id}
-              id={'tree-toc'}
+              id={'tree-drives'}
             >
-              {id
-                ? renderChildren(
-                    id,
-                    mapIdToFile,
-                    mapIdToChildren,
-                    onFolderShowFiles,
-                    showFiles,
-                    rootId,
-                    expanded,
-                    handleToggle
-                  )
-                : drives.map((drive) => (
-                    <TreeNode
-                      key={drive.id}
-                      id={'drive-' + drive.id}
-                      isExpanded={false}
-                      label={drive.name}
-                      onSelect={() => {
-                        dispatch(setDrive(drive));
-                        history.push(`/view/${drive.id}`);
-                      }}
-                    />
-                  ))}
+              {drives.map((drive) => (
+                <TreeNode
+                  key={drive.id}
+                  id={'drive-' + drive.id}
+                  isExpanded={false}
+                  label={drive.name}
+                  onSelect={() => {
+                    dispatch(setDrive(drive));
+                    history.push(`/view/${drive.id}`);
+                  }}
+                />
+              ))}
+            </TreeView>
+          </AccordionItem>
+        )}
+        {!loading && !error && id && rootId && (
+          <AccordionItem
+            key="folders"
+            open={true}
+            title={'All Folders ' + mapIdToFile[rootId]?.name}
+          >
+            <TreeView
+              label="All Folders"
+              hideLabel={true}
+              selected={selected}
+              active={id}
+              id={'tree-folders'}
+            >
+              {renderChildren(
+                id,
+                mapIdToFile,
+                mapIdToChildren,
+                onFolderShowFiles,
+                showFiles,
+                rootId,
+                expanded,
+                handleToggle
+              )}
             </TreeView>
           </AccordionItem>
         )}

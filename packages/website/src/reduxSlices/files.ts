@@ -27,6 +27,8 @@ function addFileToMap(state: FilesState, file: DriveFile) {
   state.mapIdToFile[file.id ?? ''] = file;
 }
 
+let myDriveRootId = null as null | string;
+
 function setDriveId_(state: FilesState, driveId: string | undefined): boolean {
   if (driveId === state.driveId) {
     return false;
@@ -40,9 +42,15 @@ function setDriveId_(state: FilesState, driveId: string | undefined): boolean {
   }
   state.mapIdToFile = {};
   state.drive = undefined;
-  state.driveId = driveId;
+  if (driveId === myDriveRootId) {
+    state.driveId = 'root';
+  } else {
+    state.driveId = driveId;
+  }
   return true;
 }
+
+const myDriveName = 'My Drive';
 
 export const slice = createSlice({
   name: 'files',
@@ -55,14 +63,38 @@ export const slice = createSlice({
       state.error = payload;
     },
     setDrives: (state, { payload }: { payload: DriveFile[] }) => {
+      const myDrive1 = state.drives[0];
       state.drives = payload.map(driveToFolder);
+      const myDrive2 = state.drives[0];
+      if (myDrive1?.name === myDriveName && myDrive2?.name !== myDriveName) {
+        state.drives.unshift(myDrive1);
+      } else if (myDrive1?.name !== 'My Drive' && myDrive2?.name !== myDriveName) {
+        console.debug('adding fake root', state.drives);
+        // This will end up getting replaced with the real file in setDrive
+        state.drives.unshift({
+          id: 'root',
+          name: 'My Drive',
+        });
+      }
     },
     setDrive: (state, { payload }: { payload: DriveFile | undefined }) => {
-      setDriveId_(state, payload?.id);
-      state.drive = payload;
       if (payload) {
         addFileToMap(state, payload);
+        if (payload.name === myDriveName) {
+          // update to the actual root folder
+          if (payload.id !== 'root') {
+            myDriveRootId = payload.id!;
+            console.debug('adding real root', payload);
+            if (state.drives[0]?.name === myDriveName) {
+              state.drives[0] = payload;
+            } else {
+              state.drives.unshift(payload);
+            }
+          }
+        }
       }
+      setDriveId_(state, payload?.id);
+      state.drive = payload;
     },
     setDriveId: (state, { payload }: { payload: string | undefined }) => {
       setDriveId_(state, payload);
