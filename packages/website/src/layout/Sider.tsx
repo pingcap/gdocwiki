@@ -456,7 +456,7 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
           <AccordionItem
             key="folders"
             open={true}
-            title={'All Folders ' + mapIdToFile[rootId]?.name}
+            title={'All Folders in ' + mapIdToFile[rootId]?.name}
           >
             <TreeView
               label="All Folders"
