@@ -18,7 +18,6 @@ import ContentPage from './ContentPage';
 import ShortcutPage from './ContentPage/ShortcutPage';
 import FileAction from './FileAction';
 import FileBreadcrumb from './FileBreadcrumb';
-import Drives from './Location/Drives';
 import RightContainer from './RightContainer';
 
 interface PageProps {
@@ -30,7 +29,7 @@ interface PageProps {
 export function HomePage(props: {}) {
   const dispatch = useDispatch();
   useMount(() => {
-    dispatch(setDriveId(undefined))
+    dispatch(setDriveId(undefined));
   });
   return <Page />;
 }

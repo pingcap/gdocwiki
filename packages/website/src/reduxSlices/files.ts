@@ -78,23 +78,23 @@ export const slice = createSlice({
       }
     },
     setDrive: (state, { payload }: { payload: DriveFile | undefined }) => {
-      if (payload) {
-        addFileToMap(state, payload);
-        if (payload.name === myDriveName) {
-          // update to the actual root folder
-          if (payload.id !== 'root') {
-            myDriveRootId = payload.id!;
-            console.debug('adding real root', payload);
-            if (state.drives[0]?.name === myDriveName) {
-              state.drives[0] = payload;
-            } else {
-              state.drives.unshift(payload);
-            }
+      if (payload && payload.name === myDriveName) {
+        // update to the actual root folder
+        if (payload.id !== 'root') {
+          myDriveRootId = payload.id!;
+          console.debug('adding real root', payload);
+          if (state.drives[0]?.name === myDriveName) {
+            state.drives[0] = payload;
+          } else {
+            state.drives.unshift(payload);
           }
         }
       }
       setDriveId_(state, payload?.id);
       state.drive = payload;
+      if (payload) {
+        addFileToMap(state, payload);
+      }
     },
     setDriveId: (state, { payload }: { payload: string | undefined }) => {
       setDriveId_(state, payload);
