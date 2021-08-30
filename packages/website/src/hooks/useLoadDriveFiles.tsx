@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getConfig } from '../config';
+import Drives from '../pages/Location/Drives';
 import {
   setDrive,
   setDriveId,
   selectDriveId,
+  selectDrives,
   selectMapIdToFile,
   setLoading,
   setRootFolderId,
@@ -18,6 +20,7 @@ import { driveToFolder, handleGapiError, MimeTypes } from '../utils';
 export default function useLoadDriveFiles() {
   const dispatch = useDispatch();
   const driveId = useSelector(selectDriveId);
+  const drives = useSelector(selectDrives);
   const activeId = useSelector(selectActiveId);
   const mapIdToFile = useSelector(selectMapIdToFile);
   const [loadedDriveFiles, setLoadedDriveFiles] = useState(false);
@@ -91,12 +94,17 @@ export default function useLoadDriveFiles() {
             fields: '*',
           });
           const file = respFile.result;
-          dispatch(updateFile(file));
           if (file.driveId === parentId) {
-            console.log('found parent drive', file.name);
+            console.log('found parent drive', file.name, file);
             dispatch(setDriveId(parentId));
+            if (file.name === 'Drive') {
+              dispatch(updateFile({ ...file, name: 'Loading Drive...' }));
+            } else {
+              dispatch(updateFile(file));
+            }
             break;
           }
+          dispatch(updateFile(file));
           if (file.name === 'My Drive') {
             console.log('found parent My Drive');
             dispatch(setDrive(file));
@@ -111,6 +119,25 @@ export default function useLoadDriveFiles() {
       }
     },
     [activeId, driveId, dispatch]
+  );
+
+  useEffect(
+    // We may already have the drive from listing all the drives
+    // We don't have to wait for doLoadDrive below
+    function alreadyHaveDrive() {
+      if (!driveId) {
+        return;
+      }
+      const driveFileName = mapIdToFile[driveId]?.name;
+      if (driveFileName === 'Drive' || driveFileName === 'Loading Drive...') {
+        for (const drive of drives) {
+          if (drive.id === driveId) {
+            dispatch(setDrive(drive));
+          }
+        }
+      }
+    },
+    [mapIdToFile, driveId, drives, dispatch]
   );
 
   useEffect(

@@ -103,7 +103,11 @@ export const slice = createSlice({
       state.rootFolderId = payload;
     },
     updateFile: (state, { payload }: { payload: DriveFile }) => {
-      addFileToMap(state, payload);
+      const adjustedFile =
+        payload.parents === undefined && payload.name === 'Drive'
+          ? { ...payload, name: 'Loading Drive...' }
+          : payload;
+      addFileToMap(state, adjustedFile);
     },
     updateFiles: (state, { payload }: { payload: DriveFile[] }) => {
       for (const file of payload) {

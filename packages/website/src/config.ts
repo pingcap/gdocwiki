@@ -36,7 +36,10 @@ const config = {
   REACT_APP_ROOT_ID: process.env.REACT_APP_ROOT_ID ?? '',
   // Ued to list all files in a fast way.
   REACT_APP_ROOT_DRIVE_ID: process.env.REACT_APP_ROOT_DRIVE_ID ?? '',
+  // This is not an app name but instead the drive name
   REACT_APP_NAME: process.env.REACT_APP_NAME ?? '',
+  // This is an app name (like GDoc Wiki)
+  APP_NAME: process.env.APP_NAME ?? '',
 
   DEFAULT_FILE_FIELDS:
     'nextPageToken, files(properties, appProperties, name, id, parents, mimeType, modifiedTime, createdTime, lastModifyingUser(displayName, photoLink), iconLink, webViewLink, shortcutDetails, capabilities, starred)',
