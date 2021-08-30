@@ -10,7 +10,7 @@ import useFileMeta from '../hooks/useFileMeta';
 import useTitle from '../hooks/useTitle';
 import useUpdateSiderFromPath from '../hooks/useUpdateSiderFromPath';
 import { selectDocMode, setDocMode, resetDocMode } from '../reduxSlices/doc';
-import { setDriveId } from '../reduxSlices/files';
+import { setDriveId, setRootFolderId } from '../reduxSlices/files';
 import { selectPageReloadToken } from '../reduxSlices/pageReload';
 import { selectSidebarOpen } from '../reduxSlices/siderTree';
 import { DocMode, DriveFile, MimeTypes, canEdit, viewable, inlineEditable } from '../utils';
@@ -29,10 +29,19 @@ interface PageProps {
 export function HomePage(props: {}) {
   const dispatch = useDispatch();
   useMount(() => {
-    dispatch(setDriveId(undefined));
+    const conf = getConfig();
+    if (conf.REACT_APP_ROOT_DRIVE_ID) {
+      dispatch(setDriveId(conf.REACT_APP_ROOT_DRIVE_ID));
+      if (conf.REACT_APP_ROOT_ID) {
+        dispatch(setRootFolderId(conf.REACT_APP_ROOT_ID));
+      }
+    } else {
+      dispatch(setDriveId('root'));
+    }
   });
   return <Page />;
 }
+
 function Page(props: PageProps) {
   const id = useUpdateSiderFromPath('id') || 'root';
   return <PageId key={id} id={id} {...props} />;
