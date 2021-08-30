@@ -317,7 +317,7 @@ function FileAction(props: { file: DriveFile, allOverflow?: boolean }) {
     }
 
     return commands;
-  }, [file, outerFolder.file, settingsCommand]);
+  }, [file, outerFolder.file, settingsCommand, rootId]);
 
   const switchDocMode = useCallback(
     (item) => {

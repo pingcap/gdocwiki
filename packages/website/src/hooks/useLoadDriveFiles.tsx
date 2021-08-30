@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getConfig } from '../config';
-import Drives from '../pages/Location/Drives';
 import {
   setDrive,
   setDriveId,
@@ -15,7 +14,7 @@ import {
   updateFile,
 } from '../reduxSlices/files';
 import { resetFiles, selectActiveId, activate, expand } from '../reduxSlices/siderTree';
-import { driveToFolder, handleGapiError, MimeTypes } from '../utils';
+import { driveToFolder, handleGapiError, DriveFile, MimeTypes } from '../utils';
 
 export default function useLoadDriveFiles() {
   const dispatch = useDispatch();
@@ -139,6 +138,34 @@ export default function useLoadDriveFiles() {
     },
     [mapIdToFile, driveId, drives, dispatch]
   );
+
+  /*
+  useEffect(
+    // If for example the user presses the back button
+    // Then the drive id may not be updated
+    // We can probably walk back from the active id to the drive
+    function updateDriveForActiveId() {
+      console.log('updatedDriveForActiveId', activeId, driveId, mapIdToFile);
+      if (!driveId || activeId === driveId) {
+        return;
+      }
+      let current = null as null | DriveFile;
+      let currentId = activeId;
+      let parentId = activeId as string | undefined;
+      while (parentId) {
+        currentId = parentId;
+        current = mapIdToFile[parentId];
+        parentId = current?.parents?.[0];
+      }
+      if (!current || currentId === driveId) {
+        return;
+      }
+      console.log('updated drive for active id', activeId, current.name);
+      dispatch(setDrive(current));
+    },
+    [activeId, driveId, mapIdToFile, dispatch]
+  );
+  */
 
   useEffect(
     function doLoadDrive() {
