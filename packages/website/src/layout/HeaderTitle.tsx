@@ -11,7 +11,7 @@ function HeaderTitle_() {
   const driveId = useSelector(selectDriveId);
   const driveName = !rootId ? '' : mapIdToFile?.[rootId]?.name ?? '';
   const conf = getConfig();
-  const appName = conf.APP_NAME || 'Gdoc Wiki';
+  const appName = conf.APP_NAME;
   const confDriveId = conf.REACT_APP_ROOT_DRIVE_ID;
   const isConfiguredDrive = confDriveId && confDriveId === driveId;
 
