@@ -458,13 +458,13 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
             </TreeView>
           </AccordionItem>
         )}
-        <AccordionItem
-          key="folders"
-          open={true}
-          title={'All Folders in ' + ((!loading && id && rootId && mapIdToFile[rootId]?.name) || '')}
-        >
-          {loading && <InlineLoading description="Loading Drive..." />}
-          {!loading && !error && id && rootId && (
+        {loading && <InlineLoading description="Loading Drive..." />}
+        {!loading && !error && id && rootId && (
+          <AccordionItem
+            key="folders"
+            open={true}
+            title={'All Folders in ' + (mapIdToFile[rootId]?.name || '')}
+          >
             <TreeView
               label="All Folders"
               hideLabel={true}
@@ -483,8 +483,8 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
                 handleToggle
               )}
             </TreeView>
-          )}
-        </AccordionItem>
+          </AccordionItem>
+        )}
       </Accordion>
     </div>
   );
