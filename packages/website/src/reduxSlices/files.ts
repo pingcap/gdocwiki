@@ -31,7 +31,7 @@ function addFileToMap(state: FilesState, file: DriveFile) {
   }
 }
 
-let myDriveRootId = null as null | string;
+let myDriveRootId = 'root';
 
 function setDriveId_(state: FilesState, driveId: string | undefined): boolean {
   if (driveId === state.driveId) {
@@ -46,8 +46,8 @@ function setDriveId_(state: FilesState, driveId: string | undefined): boolean {
   }
 
   state.drive = undefined;
-  if (driveId === myDriveRootId || driveId === undefined) {
-    state.driveId = 'root';
+  if (driveId === undefined) {
+    state.driveId = myDriveRootId;
   } else {
     state.driveId = driveId;
   }

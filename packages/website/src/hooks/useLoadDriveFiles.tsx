@@ -128,7 +128,7 @@ export default function useLoadDriveFiles() {
         return;
       }
       const driveFileName = mapIdToFile[driveId]?.name;
-      if (driveFileName === 'Drive' || driveFileName === 'Loading Drive...') {
+      if (driveFileName === 'Drive' || driveFileName === 'Loading Drive...' || !driveFileName) {
         for (const drive of drives) {
           if (drive.id === driveId) {
             dispatch(setDrive(drive));
@@ -136,7 +136,7 @@ export default function useLoadDriveFiles() {
         }
       }
     },
-    [mapIdToFile, driveId, drives, dispatch]
+    [mapIdToFile, driveId, drives, drives.length, dispatch]
   );
 
   useEffect(
