@@ -10,7 +10,7 @@ import useFileMeta from '../hooks/useFileMeta';
 import useTitle from '../hooks/useTitle';
 import useUpdateSiderFromPath from '../hooks/useUpdateSiderFromPath';
 import { selectDocMode, setDocMode, resetDocMode } from '../reduxSlices/doc';
-import { setDriveId, selectDriveId, setRootFolderId } from '../reduxSlices/files';
+import { setDriveId, setRootFolderId } from '../reduxSlices/files';
 import { selectPageReloadToken } from '../reduxSlices/pageReload';
 import { selectSidebarOpen } from '../reduxSlices/siderTree';
 import { DocMode, DriveFile, MimeTypes, canEdit, viewable, inlineEditable } from '../utils';
@@ -43,8 +43,7 @@ export function HomePage(props: {}) {
 }
 
 function Page(props: PageProps) {
-  const driveId = useSelector(selectDriveId);
-  const id = useUpdateSiderFromPath('id') || driveId || 'root';
+  const id = useUpdateSiderFromPath('id') || 'root';
   return <PageId key={id} id={id} {...props} />;
 }
 

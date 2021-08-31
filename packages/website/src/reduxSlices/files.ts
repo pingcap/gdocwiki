@@ -31,7 +31,7 @@ function addFileToMap(state: FilesState, file: DriveFile) {
   }
 }
 
-let myDriveRootId = 'root';
+let myDriveRootId = null as null | string;
 
 function setDriveId_(state: FilesState, driveId: string | undefined): boolean {
   if (driveId === state.driveId) {
@@ -46,8 +46,9 @@ function setDriveId_(state: FilesState, driveId: string | undefined): boolean {
   }
 
   state.drive = undefined;
-  if (driveId === undefined) {
-    state.driveId = myDriveRootId;
+  if (driveId === undefined || driveId === myDriveRootId || driveId === 'root') {
+    state.driveId = 'root';
+    state.rootFolderId = myDriveRootId || 'root';
   } else {
     state.driveId = driveId;
   }
@@ -90,14 +91,16 @@ export const slice = createSlice({
     },
     setDrive: (state, { payload }: { payload: DriveFile | undefined }) => {
       if (payload && payload.name === myDriveName) {
-        // update to the id from 'root' to the actual
-        if (payload.id !== 'root' && state.drives[0]?.id !== 'root') {
+        if (payload.id !== 'root') {
+          // update to the id from 'root' to the actual
           myDriveRootId = payload.id!;
-          console.debug('adding real my drive', payload);
-          if (state.drives[0]?.name === myDriveName) {
-            state.drives[0] = payload;
-          } else {
-            state.drives.unshift(payload);
+          if (state.drives[0]?.id !== 'root') {
+            console.debug('adding real my drive', payload);
+            if (state.drives[0]?.name === myDriveName) {
+              state.drives[0] = payload;
+            } else {
+              state.drives.unshift(payload);
+            }
           }
         }
       }
