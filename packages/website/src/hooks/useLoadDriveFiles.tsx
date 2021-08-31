@@ -14,7 +14,7 @@ import {
   updateFile,
 } from '../reduxSlices/files';
 import { resetFiles, selectActiveId, activate, expand } from '../reduxSlices/siderTree';
-import { driveToFolder, handleGapiError, DriveFile, MimeTypes } from '../utils';
+import { driveToFolder, handleGapiError, MimeTypes } from '../utils';
 
 export default function useLoadDriveFiles() {
   const dispatch = useDispatch();
@@ -146,7 +146,6 @@ export default function useLoadDriveFiles() {
           return;
         }
         try {
-          // TODO: this may be unecessary if setDrive was called
           if (driveId === 'root') {
             console.log('get my drive folder');
             const resp = await gapi.client.drive.files.get({

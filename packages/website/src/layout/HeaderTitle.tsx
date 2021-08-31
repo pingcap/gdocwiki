@@ -26,17 +26,16 @@ function HeaderTitle_() {
       </>
     );
   } else {
-    const isMyDrive = rootId === 'root' || driveName === 'My Drive';
-    const linkTo = rootId === undefined || isMyDrive ? '/' : `/view/${rootId}`;
-    const locationName = !driveName || isMyDrive ? '' : driveName;
+    const isMyDrive = driveId === 'root' || driveName === 'My Drive';
+    const linkTo = driveId === undefined || isMyDrive ? '/' : `/view/${rootId ?? driveId}`;
     return (
       <>
         <HeaderName<LinkProps> prefix="" key="app-name" element={Link} to="/">
           {appName}
         </HeaderName>
-        {locationName && (
+        {driveName && (
           <HeaderName<LinkProps> prefix="" key="location-name" element={Link} to={linkTo}>
-            {locationName}
+            {driveName}
           </HeaderName>
         )}
       </>

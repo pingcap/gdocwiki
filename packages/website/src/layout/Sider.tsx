@@ -9,7 +9,7 @@ import { useHistory } from 'react-router-dom';
 import { DriveIcon, FolderChildrenList } from '../components';
 import { useFolderFilesMeta } from '../hooks/useFolderFilesMeta';
 import { selectHeaders, selectDriveFile, selectDriveLinks } from '../reduxSlices/doc';
-import files, {
+import {
   selectDrives,
   setDrive,
   selectDriveId,
@@ -395,44 +395,47 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
   return (
     <div className={cx(styles.sider, { [styles.isExpanded]: isExpanded })}>
       <HeaderExtraActionsForMobile />
-      {loading && <InlineLoading description="Loading Drive..." />}
       {!loading && error && (
         <div className={styles.skeleton}>
           <InlineLoading description={`Error: ${error.message}`} status="error" />
         </div>
       )}
       <Accordion>
-        {driveLinks.length > 0 && (
-          <AccordionItem key="links" title="Links">
-            <div style={{ padding: '1rem' }}>
-              <FolderChildrenList
-                files={driveLinks.map((dl) => dl.file).filter((f) => f) as DriveFile[]}
-              />
-            </div>
-          </AccordionItem>
-        )}
-        {headerTreeNodes.length > 0 && (
-          <AccordionItem key="outline" title="Outline">
-            <TreeView
-              label="Document Outline"
-              hideLabel={true}
-              selected={[headerTreeNodes[0].key?.toString() ?? 0]}
-              id="tree-document-headers"
-            >
-              <Stack
-                style={{ padding: '0.5rem', display: 'flex', justifyContent: 'center' }}
-                verticalAlign="center"
-                horizontal
-              >
-                <p>{file?.name}</p>
-              </Stack>
-              {headerTreeNodes}
-            </TreeView>
-          </AccordionItem>
+        {file?.id === activeId && (
+          <>
+            {driveLinks.length > 0 && (
+              <AccordionItem key="links" title="Links">
+                <div style={{ padding: '1rem' }}>
+                  <FolderChildrenList
+                    files={driveLinks.map((dl) => dl.file).filter((f) => f) as DriveFile[]}
+                  />
+                </div>
+              </AccordionItem>
+            )}
+            {headerTreeNodes.length > 0 && (
+              <AccordionItem key="outline" title="Outline">
+                <TreeView
+                  label="Document Outline"
+                  hideLabel={true}
+                  selected={[headerTreeNodes[0].key?.toString() ?? 0]}
+                  id="tree-document-headers"
+                >
+                  <Stack
+                    style={{ padding: '0.5rem', display: 'flex', justifyContent: 'center' }}
+                    verticalAlign="center"
+                    horizontal
+                  >
+                    <p>{file?.name}</p>
+                  </Stack>
+                  {headerTreeNodes}
+                </TreeView>
+              </AccordionItem>
+            )}
+          </>
         )}
         {/* > 1 because of My Drive */}
         {drives.length > 1 && (
-          <AccordionItem key="drives" open={!id || driveId === 'root'} title="Shared Drives">
+          <AccordionItem key="drives" title="Shared Drives">
             <TreeView
               label="Shared Drives"
               hideLabel={true}
@@ -455,12 +458,13 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
             </TreeView>
           </AccordionItem>
         )}
-        {!loading && !error && id && rootId && (
-          <AccordionItem
-            key="folders"
-            open={true}
-            title={'All Folders in ' + mapIdToFile[rootId]?.name}
-          >
+        <AccordionItem
+          key="folders"
+          open={true}
+          title={'All Folders in ' + ((!loading && id && rootId && mapIdToFile[rootId]?.name) || '')}
+        >
+          {loading && <InlineLoading description="Loading Drive..." />}
+          {!loading && !error && id && rootId && (
             <TreeView
               label="All Folders"
               hideLabel={true}
@@ -479,8 +483,8 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
                 handleToggle
               )}
             </TreeView>
-          </AccordionItem>
-        )}
+          )}
+        </AccordionItem>
       </Accordion>
     </div>
   );
