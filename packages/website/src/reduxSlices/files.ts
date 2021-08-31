@@ -24,7 +24,11 @@ const initialState: FilesState = {
 };
 
 function addFileToMap(state: FilesState, file: DriveFile) {
-  state.mapIdToFile[file.id ?? ''] = file;
+  if (file.id) {
+    state.mapIdToFile[file.id] = file;
+  } else {
+    console.warn('file has no id', file)
+  }
 }
 
 let myDriveRootId = null as null | string;
@@ -57,6 +61,12 @@ export const slice = createSlice({
   name: 'files',
   initialState,
   reducers: {
+    setActiveFileId: (state, { payload }: { payload: string }) => {
+      const file = state.mapIdToFile[payload];
+      if (file) {
+        setDriveId_(state, file.driveId);
+      }
+    },
     setLoading: (state, { payload }: { payload: boolean }) => {
       state.isLoading = payload;
     },
@@ -106,11 +116,17 @@ export const slice = createSlice({
       state.rootFolderId = payload;
     },
     updateFile: (state, { payload }: { payload: DriveFile }) => {
-      const adjustedFile =
-        payload.parents === undefined && payload.name === 'Drive'
-          ? { ...payload, name: 'Loading Drive...' }
-          : payload;
-      addFileToMap(state, adjustedFile);
+      if (payload.id && payload.parents === undefined && payload.name === 'Drive') {
+        const drive = state.mapIdToFile[payload.id];
+        if (!drive || drive.name === 'Drive') {
+          addFileToMap(state, { ...payload, name: 'Loading Drive...' });
+          return;
+        }
+        if (drive && drive.name !== 'Drive' && drive.name !== 'Loading Drive...') {
+          return;
+        }
+      }
+      addFileToMap(state, payload);
     },
     updateFiles: (state, { payload }: { payload: DriveFile[] }) => {
       for (const file of payload) {
@@ -124,6 +140,7 @@ export const slice = createSlice({
 });
 
 export const {
+  setActiveFileId,
   setLoading,
   setDrive,
   setDrives,

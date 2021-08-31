@@ -42,7 +42,7 @@ const config = {
   APP_NAME: process.env.APP_NAME ?? '',
 
   DEFAULT_FILE_FIELDS:
-    'nextPageToken, files(properties, appProperties, name, id, parents, mimeType, modifiedTime, createdTime, lastModifyingUser(displayName, photoLink), iconLink, webViewLink, shortcutDetails, capabilities, starred)',
+    'nextPageToken, files(properties, appProperties, name, id, driveId, parents, mimeType, modifiedTime, createdTime, lastModifyingUser(displayName, photoLink), iconLink, webViewLink, shortcutDetails, capabilities, starred)',
 
   NavItems: [] as INavMenuItem[],
 };
