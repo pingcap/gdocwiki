@@ -60,21 +60,25 @@ interface HasEmailAddress {
   emailAddress?: string
 }
 
-function splitByDomain<T extends HasEmailAddress>(domain: string, users: T[]): [T[], T[]] {
-  const usersWith = []
-  const usersWithout = []
-  for (const user of users) {
-    const em = user.emailAddress
-    if (!em) {
-      continue
-    }
-    if (em.split("@")?.[1] === domain) {
-      usersWith.push(user)
+function getDomainFromUser(user: HasEmailAddress): string | undefined {
+  return user.emailAddress?.split("@")?.[1]
+}
+
+function getDomainFromPermission(permission: gapi.client.drive.Permission): string | undefined {
+  return permission.domain ?? getDomainFromUser(permission)
+}
+
+function partitionEquals<Eq, Item>(value: Eq, array: Item[], pluck: (arg: Item) => Eq): [Item[], Item[]] {
+  const equals = []
+  const notEquals = []
+  for (const item of array) {
+    if (pluck(item) === value) {
+      equals.push(item)
     } else {
-      usersWithout.push(user)
+      notEquals.push(item)
     }
   }
-  return [usersWith, usersWithout]
+  return [equals, notEquals]
 }
 
 function initialFileInfo(
@@ -129,7 +133,7 @@ function initialFileInfo(
     const domain = manifestData?.gapiHostedDomain
     const orgOwners = !domain
       ? (file.owners || null)
-      : splitByDomain(domain, file.owners ?? [])[0]
+      : partitionEquals(domain, file.owners ?? [], (user) => getDomainFromUser(user))[0]
 
     return {
       ...fi,
@@ -308,11 +312,11 @@ function useFileInfo(fileId: string, token?: Token): [FileInfo, boolean] {
           supportsAllDrives: true,
         });
         const anyPerm = data.permissions.filter((perm) => perm.type === 'anyone');
-        if (anyPerm) {
+        if (anyPerm.length > 0) {
           log.info('shared to any', anyPerm);
           setSharedExternally(anyPerm);
         } else {
-          const [, notOrgMembers] = splitByDomain(domain, data.permissions)
+          const [, notOrgMembers] = partitionEquals(domain, data.permissions, getDomainFromPermission)
           if (notOrgMembers.length > 0) {
             log.info('shared to not org', notOrgMembers);
             setSharedExternally(notOrgMembers);
@@ -324,7 +328,7 @@ function useFileInfo(fileId: string, token?: Token): [FileInfo, boolean] {
     }
 
     if (file.shared && file.permissions) {
-      const [, notOrgMembers] = splitByDomain(domain, file.permissions)
+      const [, notOrgMembers] = partitionEquals(domain, file.permissions, getDomainFromPermission)
       if (notOrgMembers.length > 0) {
         setSharedExternally(notOrgMembers)
       }
