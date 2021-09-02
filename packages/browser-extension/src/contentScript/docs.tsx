@@ -407,12 +407,7 @@ function App(props: { id: string }) {
 
   return (
     <>
-      {sharedExternally && sharedExternally.length > 0 && (
-        <span className={cx(styles.tag, styles.warning)}>
-          <WarningAltFilled16 style={{ marginRight: 6 }} />
-          Externally Shared
-        </span>
-      )}
+      <SharedExternally shares={sharedExternally} />
       {fileInfo.isOrphanAndOwner && (
         <span className={cx(styles.tag, styles.warning)}>
           <WarningAltFilled16 style={{ marginRight: 6 }} />
@@ -444,6 +439,37 @@ function Loading(props: { isTokenLoading?: boolean; token?: Token; }) {
       GdocWiki Extension Not Enabled
     </a>
   )
+}
+
+function SharedExternally(props: { shares?: gapi.client.drive.Permission[]; }) {
+  const [showExtra, setShowExtra] = useState(false);
+
+  if (!props.shares || props.shares.length === 0) {
+    return null
+  }
+
+  function shareSummary(share: gapi.client.drive.Permission): string {
+    return share.type === 'anyone' ? (
+      'anyone with the link'
+    ) : (
+      `to ${share?.emailAddress || share?.domain || share?.type}`
+    )
+  }
+
+  return showExtra ?
+  <>
+    <WarningAltFilled16 style={{ marginRight: 6 }} />
+    <span className={cx(styles.tag)} onClick={() => {setShowExtra(v => !v)}}>
+      Shared externally to {shareSummary(props.shares[0])}
+      {props.shares.length > 1 && (' and others')}
+    </span>
+  </> :
+  <>
+    <Button className={cx(styles.tag, styles.warning)} onClick={() => {setShowExtra(v => !v)}}>
+      <WarningAltFilled16 style={{ marginRight: 6 }} />
+      Externally Shared
+    </Button>
+  </>
 }
 
 function PrivateOwners(props: { id: string, token: Token, privateOwners: gapi.client.drive.User[]; }) {
