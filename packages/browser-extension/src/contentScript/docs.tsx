@@ -60,11 +60,12 @@ interface HasEmailAddress {
   emailAddress?: string
 }
 
-function getDomainFromUser(user: HasEmailAddress): string | undefined {
-  return user.emailAddress?.split("@")?.[1]
+function getDomainFromUser(user: HasEmailAddress): string | null {
+  const domain = user.emailAddress?.split("@")?.[1]
+  return (!domain || domain === "") ? null : domain
 }
 
-function getDomainFromPermission(permission: gapi.client.drive.Permission): string | undefined {
+function getDomainFromPermission(permission: gapi.client.drive.Permission): string | null {
   return permission.domain ?? getDomainFromUser(permission)
 }
 
@@ -150,26 +151,25 @@ async function loadFileInfo(
   file: FileHasId,
   ): Promise<ParentTree | undefined> {
   // Now we know the drive of the file, let's list parents.
-  log.info(`Listing parents for file ${file.id}`);
+  log.info(`Analyzing parents for file ${file.id}`, file.parents);
   const parents: Array<TreePathItem> = [];
   const visitedParentIds = new Set<string>();
   let currentFile = file as gapi.client.drive.File;
   while (true) {
-    log.info('parents', currentFile.parents)
     const parentId = currentFile.parents?.[0];
     if (!parentId) {
       log.info(`break: no parent id`);
       break;
     }
     if (visitedParentIds.has(parentId)) {
-      log.info(`Parent has been visited, break the loop`);
+      log.info('Parent has been visited, break the loop', currentFile.parents);
       break;
     }
     visitedParentIds.add(parentId);
 
     const { discoveredDrive, discoveredWorkspace } = fileInfo
     if (discoveredDrive && (discoveredDrive.driveId === parentId || discoveredDrive.rootId === parentId)) {
-      log.info(`Parent is the workspace, finished`, discoveredWorkspace, discoveredDrive);
+      log.info(`Parent is the workspace, finished`, discoveredWorkspace, discoveredDrive, parentId);
       parents.push({
         name: discoveredWorkspace!,
         url: buildFolderUrl(parentId, discoveredDrive),
@@ -316,7 +316,20 @@ function useFileInfo(fileId: string, token?: Token): [FileInfo, boolean] {
           log.info('shared to any', anyPerm);
           setSharedExternally(anyPerm);
         } else {
-          const [, notOrgMembers] = partitionEquals(domain, data.permissions, getDomainFromPermission)
+          // Filter out permissions not associated to an email
+          const permissions = data.permissions.filter((perm) => {
+            const inherited = !!perm.permissionDetails?.[0]?.inherited
+            return !!getDomainFromPermission(perm) || (function(){
+              if (inherited) {
+                // TODO: inherited permissions probably require that we look at the folder
+                log.info('ignore inherited permission', perm);
+                return false;
+              }
+              log.info('unknown permission', perm);
+              return false;
+            })()
+          })
+          const [, notOrgMembers] = partitionEquals(domain, permissions, getDomainFromPermission)
           if (notOrgMembers.length > 0) {
             log.info('shared to not org', notOrgMembers);
             setSharedExternally(notOrgMembers);
