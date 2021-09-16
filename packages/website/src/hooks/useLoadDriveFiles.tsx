@@ -3,9 +3,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getConfig } from '../config';
 import {
   setDrive,
+  setDrives,
   setDriveId,
+  selectDrive,
   selectDriveId,
-  selectDrives,
   selectMapIdToFile,
   setLoading,
   setRootFolderId,
@@ -14,12 +15,12 @@ import {
   updateFile,
 } from '../reduxSlices/files';
 import { resetFiles, selectActiveId, activate, expand } from '../reduxSlices/siderTree';
-import { driveToFolder, handleGapiError, MimeTypes } from '../utils';
+import { handleGapiError, MimeTypes } from '../utils';
 
 export default function useLoadDriveFiles() {
   const dispatch = useDispatch();
+  const drive = useSelector(selectDrive);
   const driveId = useSelector(selectDriveId);
-  const drives = useSelector(selectDrives);
   const activeId = useSelector(selectActiveId);
   const mapIdToFile = useSelector(selectMapIdToFile);
   const [loadedDriveFiles, setLoadedDriveFiles] = useState(false);
@@ -30,6 +31,7 @@ export default function useLoadDriveFiles() {
         if (!driveId) {
           return;
         }
+        setLoadedDriveFiles(false);
         dispatch(setLoading(true));
         dispatch(setError(undefined));
         dispatch(resetFiles());
@@ -85,6 +87,7 @@ export default function useLoadDriveFiles() {
   useEffect(
     function doLoadDriveFromParents() {
       async function loadDriveFromParents() {
+        console.log('loadDriveFromParents', drive, driveId, activeId);
         let parentId: string | undefined = activeId;
         while (parentId) {
           const respFile = await gapi.client.drive.files.get({
@@ -96,47 +99,23 @@ export default function useLoadDriveFiles() {
           if (file.driveId === parentId) {
             console.log('found parent drive', file.name, file);
             dispatch(setDriveId(parentId));
-            if (file.name === 'Drive') {
-              dispatch(updateFile({ ...file, name: 'Loading Drive...' }));
-            } else {
-              dispatch(updateFile(file));
-            }
             break;
           }
-          dispatch(updateFile(file));
           if (file.name === 'My Drive') {
             console.log('found parent My Drive');
             dispatch(setDrive(file));
             break;
           }
+          dispatch(updateFile(file));
           parentId = respFile.result.parents?.[0];
         }
       }
 
-      if (!driveId && activeId) {
+      if (!drive && !driveId && activeId) {
         loadDriveFromParents();
       }
     },
-    [activeId, driveId, dispatch]
-  );
-
-  useEffect(
-    // We may already have the drive from listing all the drives
-    // We don't have to wait for doLoadDrive below
-    function alreadyHaveDrive() {
-      if (!driveId) {
-        return;
-      }
-      const driveFileName = mapIdToFile[driveId]?.name;
-      if (driveFileName === 'Drive' || driveFileName === 'Loading Drive...' || !driveFileName) {
-        for (const drive of drives) {
-          if (drive.id === driveId) {
-            dispatch(setDrive(drive));
-          }
-        }
-      }
-    },
-    [mapIdToFile, driveId, drives, drives.length, dispatch]
+    [activeId, driveId, drive, dispatch]
   );
 
   useEffect(
@@ -152,24 +131,43 @@ export default function useLoadDriveFiles() {
               fileId: driveId,
               fields: '*',
             });
-            dispatch(updateFile(resp.result));
             dispatch(setRootFolderId(resp.result.id!));
             dispatch(setDrive(resp.result));
           } else {
+            if (drive) {
+              return;
+            }
             console.log('get drive', driveId);
             const resp = await gapi.client.drive.drives.get({
               driveId: driveId,
               fields: '*',
             });
             dispatch(setDrive(resp.result));
-            dispatch(updateFile(driveToFolder(resp.result)));
           }
         } catch (e) {
           console.error('load Drive', e);
         }
       }
+
       loadDrive();
     },
-    [dispatch, driveId]
+    [dispatch, driveId, drive]
+  );
+
+  useEffect(
+    function doGetDrives() {
+      async function getDrives() {
+        try {
+          const rsp = await gapi.client.drive.drives.list({
+            pageSize: 100,
+          });
+          dispatch(setDrives(rsp.result.drives ?? []));
+        } catch (e) {
+          console.error('getDrives', e);
+        }
+      }
+      getDrives();
+    },
+    [dispatch]
   );
 }

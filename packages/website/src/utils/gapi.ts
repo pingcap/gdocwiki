@@ -3,6 +3,7 @@ export type DriveFile = gapi.client.drive.File;
 export function driveToFolder(drive: gapi.client.drive.Drive): gapi.client.drive.File {
   return {
     id: drive.id,
+    driveId: drive.id,
     name: drive.name,
     capabilities: drive.capabilities,
     createdTime: drive.createdTime,

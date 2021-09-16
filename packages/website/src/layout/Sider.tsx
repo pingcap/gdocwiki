@@ -440,13 +440,13 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
               label="Shared Drives"
               hideLabel={true}
               selected={selected}
-              active={id}
+              active={driveId}
               id={'tree-drives'}
             >
               {drives.map((drive) => (
                 <TreeNode
                   key={drive.id}
-                  id={'drive-' + drive.id}
+                  id={drive.id}
                   isExpanded={false}
                   label={drive.name}
                   onSelect={() => {

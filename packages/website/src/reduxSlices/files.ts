@@ -6,11 +6,15 @@ import { DriveFile, getFileSortKey, driveToFolder, extractTagsIntoSet } from '..
 export interface FilesState {
   isLoading: boolean;
   error: Error | undefined;
-  mapIdToFile: Record<string, DriveFile>;
   driveId: string | undefined;
   rootFolderId: string | undefined;
   drive: DriveFile | undefined;
-  drives: gapi.client.drive.Drive[];
+  // above is application state
+  // below is data storage
+  mapIdToFile: Record<string, DriveFile>;
+  myDriveId: string | undefined;
+  myDrive: DriveFile | undefined;
+  drives?: DriveFile[];
 }
 
 const initialState: FilesState = {
@@ -20,40 +24,64 @@ const initialState: FilesState = {
   driveId: undefined,
   rootFolderId: undefined,
   drive: undefined,
-  drives: [],
+  myDriveId: undefined,
+  myDrive: undefined,
+  drives: undefined,
 };
 
 function addFileToMap(state: FilesState, file: DriveFile) {
   if (file.id) {
     state.mapIdToFile[file.id] = file;
   } else {
-    console.warn('file has no id', file)
+    console.warn('file has no id', file);
   }
 }
-
-let myDriveRootId = null as null | string;
 
 function setDriveId_(state: FilesState, driveId: string | undefined): boolean {
   if (driveId === state.driveId) {
     return false;
   }
+
+  state.driveId = driveId;
+  state.rootFolderId = undefined;
+  state.drive = driveFromId(state);
+
   const conf = getConfig();
   const rootDriveId = conf.REACT_APP_ROOT_DRIVE_ID;
-  if (rootDriveId && driveId === rootDriveId) {
+  if (rootDriveId && state.driveId === rootDriveId) {
     state.rootFolderId = conf.REACT_APP_ROOT_ID;
+  } else if (state.driveId === 'root') {
+    state.rootFolderId = state.myDriveId;
   } else {
-    state.rootFolderId = driveId;
-  }
-
-  state.drive = undefined;
-  if (driveId === undefined || driveId === myDriveRootId || driveId === 'root') {
-    state.driveId = 'root';
-    state.rootFolderId = myDriveRootId || 'root';
-  } else {
-    state.driveId = driveId;
+    state.rootFolderId = state.driveId;
   }
 
   return true;
+}
+
+function driveFromId(state: FilesState): DriveFile | undefined {
+  for (const drive of state.drives ?? []) {
+    if (drive.id === state.driveId) {
+      return drive;
+    }
+  }
+
+  if (state.driveId === 'root') {
+    return getMyDrive(state);
+  }
+}
+
+function getMyDrive(state: FilesState): DriveFile {
+  return (
+    state.myDrive ?? {
+      id: 'root',
+      name: 'My Drive',
+    }
+  );
+}
+
+function getDrives(state: FilesState): DriveFile[] {
+  return [getMyDrive(state), ...(state.drives ?? [])];
 }
 
 const myDriveName = 'My Drive';
@@ -74,44 +102,33 @@ export const slice = createSlice({
     setError: (state, { payload }: { payload: Error | undefined }) => {
       state.error = payload;
     },
+
     setDrives: (state, { payload }: { payload: DriveFile[] }) => {
-      const myDrive1 = state.drives[0];
       state.drives = payload.map(driveToFolder);
-      const myDrive2 = state.drives[0];
-      if (myDrive1?.name === myDriveName && myDrive2?.name !== myDriveName) {
-        state.drives.unshift(myDrive1);
-      } else if (myDrive1?.name !== 'My Drive' && myDrive2?.name !== myDriveName) {
-        console.debug('adding fake my drive', state.drives);
-        // This will end up getting replaced with the real file in setDrive
-        state.drives.unshift({
-          id: 'root',
-          name: 'My Drive',
-        });
+      for (const drive of state.drives) {
+        addFileToMap(state, drive);
+      }
+      if (state.driveId) {
+        state.drive = driveFromId(state);
       }
     },
+
     setDrive: (state, { payload }: { payload: DriveFile | undefined }) => {
       if (payload && payload.name === myDriveName) {
+        state.myDrive = payload;
         if (payload.id !== 'root') {
           // update to the id from 'root' to the actual
-          myDriveRootId = payload.id!;
-          if (state.drives[0]?.id !== 'root') {
-            console.debug('adding real my drive', payload);
-            if (state.drives[0]?.name === myDriveName) {
-              state.drives[0] = payload;
-            } else {
-              state.drives.unshift(payload);
-            }
-          }
+          state.myDriveId = payload.id!;
         }
       }
-      setDriveId_(state, payload?.id);
-      if (state.drive?.id !== payload?.id || state.drive?.name !== payload?.name) {
-        state.drive = payload;
-      }
+
       if (payload) {
         addFileToMap(state, payload);
       }
+
+      setDriveId_(state, payload?.id);
     },
+
     setDriveId: (state, { payload }: { payload: string | undefined }) => {
       setDriveId_(state, payload);
     },
@@ -157,7 +174,7 @@ export const {
 
 export const selectLoading = (state: { files: FilesState }) => state.files.isLoading;
 export const selectDrive = (state: { files: FilesState }) => state.files.drive;
-export const selectDrives = (state: { files: FilesState }) => state.files.drives;
+export const selectDrives = (state: { files: FilesState }) => getDrives(state.files);
 export const selectDriveId = (state: { files: FilesState }) => state.files.driveId;
 export const selectRootFolderId = (state: { files: FilesState }) => state.files.rootFolderId;
 export const selectError = (state: { files: FilesState }) => state.files.error;
