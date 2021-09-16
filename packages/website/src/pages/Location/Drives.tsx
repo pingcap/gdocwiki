@@ -1,13 +1,12 @@
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { FileWithIcon, Typography } from '../../components';
-import useLoadDrives from '../../hooks/useLoadDrives';
 import styles from '../../pages/ContentPage/FolderPage.module.scss';
-import { setDrive } from '../../reduxSlices/files';
+import { setDrive, selectDrives } from '../../reduxSlices/files';
 import RightContainer from '../RightContainer';
 
 export function AllDrivesList() {
-  const driveFolders = useLoadDrives();
+  const driveFolders = useSelector(selectDrives);
   const dispatch = useDispatch();
 
   return (
