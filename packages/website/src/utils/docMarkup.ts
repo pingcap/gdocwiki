@@ -61,10 +61,10 @@ function cleanElem(el: HTMLElement, inherit: AncestorContext): void {
   // These can cause text above/below to be cutoff (vertically).
   // This has been seen after running Chrome's tranlsate
   const elBgColor = el.style.backgroundColor;
-  if (
-    inherit.parentBgColor === elBgColor ||
-    bgColors[inherit.parentBgColor] === bgColors[elBgColor]
-  ) {
+  const lookupParent =
+    (inherit.parentBgColor && bgColors[inherit.parentBgColor]) ?? inherit.parentBgColor;
+  const lookupEl = (elBgColor && bgColors[elBgColor]) ?? elBgColor;
+  if (inherit.parentBgColor === elBgColor || lookupParent === lookupEl) {
     el.style.backgroundColor = '';
   }
 }
@@ -78,11 +78,12 @@ type AncestorContext = {
 // For modifiers that want to forward properties of the ancestors
 function modifyDescendants(el: HTMLElement, inherit: AncestorContext) {
   const current = {
-    parentBgColor: el.style.backgroundColor || inherit.parentBgColor,
+    parentBgColor: inherit.parentBgColor,
     inTable: inherit.inTable || el.nodeName === 'TABLE',
     inList: inherit.inList || el.nodeName === 'LI',
   };
   cleanElem(el, current);
+  current.parentBgColor = el.style.backgroundColor;
 
   const childEl = el.firstElementChild as HTMLElement | null;
   if (childEl) {
