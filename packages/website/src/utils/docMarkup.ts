@@ -96,6 +96,9 @@ function modifyDescendants(el: HTMLElement, inherit: AncestorContext) {
   }
 }
 
+export const gdocIdAttr = '__gdoc_id';
+export const origHrefAttr = 'orig_href';
+
 export function rewriteLink(el: HTMLAnchorElement, styles: any) {
   // Rewrite `https://www.google.com/url?q=`
   if (el.href.indexOf('https://www.google.com/url') === 0) {
@@ -112,8 +115,8 @@ export function rewriteLink(el: HTMLAnchorElement, styles: any) {
   if (id) {
     const wikiHref = `/view/${id}`;
     el.href = wikiHref;
-    el.dataset['__gdoc_id'] = id;
-    el.dataset['orig_href'] = href;
+    el.dataset[gdocIdAttr] = id;
+    el.dataset[origHrefAttr] = href;
     el.classList.add(styles.gdocLink);
   }
 
@@ -275,7 +278,7 @@ function externallyLinkHeaders(baseEl: HTMLElement, file: DriveFile) {
     const base = isTouchScreen ? 'https://docs.google.com/document/d' : '/view';
     const href = `${base}/${fileId}/${path}#heading=${headerId}`;
     link.href = href;
-    link.dataset['__gdoc_id'] = fileId;
+    link.dataset[gdocIdAttr] = fileId;
     return link;
   }
 

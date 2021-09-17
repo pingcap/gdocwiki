@@ -23,7 +23,7 @@ import {
 import { selectSidebarOpen } from '../../reduxSlices/siderTree';
 import { DriveFile, MimeTypes } from '../../utils';
 import { fromHTML, MakeTree } from '../../utils/docHeaders';
-import { prettify, rewriteLink } from '../../utils/docMarkup';
+import { gdocIdAttr, origHrefAttr, prettify, rewriteLink } from '../../utils/docMarkup';
 import { escapeHtml, isModifiedEvent } from '../../utils/html';
 import styles from './DocPage.module.scss';
 
@@ -60,7 +60,7 @@ async function linkPreview(
       : baseEl.querySelectorAll('.' + styles.gdocLink)
     for (const linkEl of linkElems) {
       const link = linkEl as HTMLAnchorElement;
-      const id = link.dataset?.['__gdoc_id'];
+      const id = link.dataset?.[gdocIdAttr];
       if (id && !files[id]) {
         const fields = 'id,name,thumbnailLink,mimeType,iconLink';
         const req = { fileId: id, supportsAllDrives: true, fields };
@@ -70,7 +70,7 @@ async function linkPreview(
         driveLinks.push({
           file: rsp.result,
           wikiLink: link.href,
-          driveLink: link.dataset?.['orig_href'] || link.href,
+          driveLink: link.dataset?.[origHrefAttr] || link.href,
           linkText: link.innerText,
           id: id,
         });
@@ -91,7 +91,11 @@ async function linkPreview(
       }
     }
   } catch (e) {
-    console.error('linkPreview thumbnails', e);
+    if (e.result?.error) {
+      console.error('linkPreview thumbnails', e.result.error);
+    } else {
+      console.error('linkPreview thumbnails', e);
+    }
   }
 
   return driveLinks;
@@ -669,7 +673,7 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
           target = target.parentElement;
         }
       }
-      const id = target.dataset?.['__gdoc_id'];
+      const id = target.dataset?.[gdocIdAttr];
       if (id) {
         ev.preventDefault();
         if ((target as HTMLElement).nodeName === 'A') {
