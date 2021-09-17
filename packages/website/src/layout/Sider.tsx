@@ -421,7 +421,9 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
                       <ul>
                         {externalLinks.map((el) => (
                           <li key={el.href} style={{ marginLeft: '0.5em' }}>
-                            <a href={el.href}>{el.linkText ?? el.href}</a>
+                            <a href={el.href} title={el.href}>
+                              {el.linkText ?? el.href}
+                            </a>
                           </li>
                         ))}
                       </ul>
