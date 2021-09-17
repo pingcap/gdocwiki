@@ -13,12 +13,14 @@ import {
   addDriveLinks,
   setHeaders,
   setDriveLinks,
+  setExternalLinks,
   setComments,
   selectComments,
   selectDriveLinksLookup,
   setFile,
   setNoFile,
   DriveLink,
+  ExternalLink,
 } from '../../reduxSlices/doc';
 import { selectSidebarOpen } from '../../reduxSlices/siderTree';
 import { DriveFile, MimeTypes } from '../../utils';
@@ -50,14 +52,15 @@ type DriveFileLookup = { [fileId: string]: DriveFile };
 async function linkPreview(
   baseEl: HTMLElement,
   driveFileLookup?: DriveFileLookup
-): Promise<DriveLink[]> {
+): Promise<{ driveLinks: DriveLink[], externalLinks: ExternalLink[] }> {
   const files: { [fileId: string]: DriveFile } = driveFileLookup ?? {};
   const driveLinks: DriveLink[] = [];
+  const externalLinks: ExternalLink[] = [];
 
   try {
     const linkElems = baseEl.classList.contains(styles.gdocLink)
       ? [baseEl]
-      : baseEl.querySelectorAll('.' + styles.gdocLink)
+      : baseEl.querySelectorAll('.' + styles.gdocLink);
     for (const linkEl of linkElems) {
       const link = linkEl as HTMLAnchorElement;
       const id = link.dataset?.[gdocIdAttr];
@@ -90,6 +93,21 @@ async function linkPreview(
         link.append(img);
       }
     }
+
+    if (!baseEl.classList.contains(styles.gdocLink)) {
+      const linkElems = baseEl.getElementsByTagName('a');
+      for (const linkEl of linkElems) {
+        const link = linkEl as HTMLAnchorElement;
+        const id = link.dataset?.[gdocIdAttr];
+        const href = link.getAttribute('href');
+        if (!id && href?.match(/https?:/)) {
+          externalLinks.push({
+            linkText: link.textContent,
+            href: link.href,
+          });
+        }
+      }
+    }
   } catch (e) {
     if (e.result?.error) {
       console.error('linkPreview thumbnails', e.result.error);
@@ -98,7 +116,7 @@ async function linkPreview(
     }
   }
 
-  return driveLinks;
+  return { driveLinks, externalLinks };
 }
 
 interface UpgradedComment {
@@ -230,7 +248,8 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
 
       linkPreview(content).then(function (newLinks) {
         setDocContent(content.innerHTML);
-        dispatch(setDriveLinks(newLinks));
+        dispatch(setDriveLinks(newLinks.driveLinks));
+        dispatch(setExternalLinks(newLinks.externalLinks));
         setDocHtmlChangesFinished(true);
       });
     },
@@ -336,6 +355,7 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
       return function () {
         dispatch(setHeaders([]));
         dispatch(setDriveLinks([]));
+        dispatch(setExternalLinks([]));
       };
     },
     [file.id, isSpreadSheet, dispatch, setDocWithPlainText, setDocWithRichContent]
@@ -471,10 +491,10 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
           for (const el of body.getElementsByTagName('a')) {
             rewriteLink(el, styles);
             const newLinks = await linkPreview(el, fileLookup);
-            newDriveLinks = newDriveLinks.concat(newLinks);
+            newDriveLinks = newDriveLinks.concat(newLinks.driveLinks);
           }
           return body.innerHTML;
-        }
+        };
 
         const newComments: UpgradedComment[] = [];
 

@@ -1,5 +1,5 @@
 import { CollapseAll16, Launch16 } from '@carbon/icons-react';
-import { Accordion, AccordionItem, InlineLoading, SkeletonText } from 'carbon-components-react';
+import { Accordion, AccordionItem, InlineLoading } from 'carbon-components-react';
 import TreeView, { TreeNode, TreeNodeProps } from 'carbon-components-react/lib/components/TreeView';
 import cx from 'classnames';
 import { Stack } from 'office-ui-fabric-react';
@@ -8,7 +8,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { DriveIcon, FolderChildrenList } from '../components';
 import { useFolderFilesMeta } from '../hooks/useFolderFilesMeta';
-import { selectHeaders, selectDriveFile, selectDriveLinks } from '../reduxSlices/doc';
+import { selectHeaders, selectDriveFile, selectDriveLinks, selectExternalLinks } from '../reduxSlices/doc';
 import {
   selectDrives,
   setDrive,
@@ -344,6 +344,7 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
   const selected = useSelector(selectSelected);
   const headers = useSelector(selectHeaders);
   const driveLinks = useSelector(selectDriveLinks);
+  const externalLinks = useSelector(selectExternalLinks);
   const file = useSelector(selectDriveFile);
   const showFiles = useSelector(selectShowFiles);
 
@@ -403,12 +404,29 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
       <Accordion>
         {file?.id === activeId && (
           <>
-            {driveLinks.length > 0 && (
+            {(driveLinks.length > 0 || externalLinks.length > 0) && (
               <AccordionItem key="links" title="Links">
-                <div style={{ padding: '1rem' }}>
-                  <FolderChildrenList
-                    files={driveLinks.map((dl) => dl.file).filter((f) => f) as DriveFile[]}
-                  />
+                <div style={{ padding: '1rem', paddingTop: '0.5rem' }}>
+                  {driveLinks.length > 0 && (
+                    <>
+                      <h6>Drive Links</h6>
+                      <FolderChildrenList
+                        files={driveLinks.map((dl) => dl.file).filter((f) => f) as DriveFile[]}
+                      />
+                    </>
+                  )}
+                  {externalLinks.length > 0 && (
+                    <>
+                      <h6>External Links</h6>
+                      <ul>
+                        {externalLinks.map((el) => (
+                          <li key={el.href} style={{ marginLeft: '0.5em' }}>
+                            <a href={el.href}>{el.linkText ?? el.href}</a>
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
                 </div>
               </AccordionItem>
             )}

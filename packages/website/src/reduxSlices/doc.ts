@@ -11,12 +11,18 @@ export interface DriveLink {
   file?: DriveFile;
 }
 
+export interface ExternalLink {
+  href: string;
+  linkText: string | null;
+}
+
 export interface DocState {
   file: DriveFile | null;
   modes: MimeTypePreferredDisplay;
   headers?: (TreeHeading | DocHeader)[];
   comments: gapi.client.drive.Comment[];
   driveLinks: { [fileId: string]: DriveLink };
+  externalLinks: { [fileId: string]: ExternalLink };
 }
 
 let mimeTypePreferredDisplay: MimeTypePreferredDisplay = {};
@@ -29,6 +35,7 @@ const initialStateDoc: DocState = {
   headers: [],
   comments: [],
   driveLinks: {},
+  externalLinks: {},
 };
 
 export const slice = createSlice({
@@ -69,6 +76,20 @@ export const slice = createSlice({
       }
       state.driveLinks = newLinks;
     },
+    addExternalLinks: (state, { payload }: { payload: ExternalLink[] }) => {
+      const newLinks = {};
+      for (const link of payload) {
+        newLinks[link.href] = link;
+      }
+      state.externalLinks = Object.assign({}, newLinks, state.externalLinks);
+    },
+    setExternalLinks: (state, { payload }: { payload: ExternalLink[] }) => {
+      const newLinks = {};
+      for (const link of payload) {
+        newLinks[link.href] = link;
+      }
+      state.externalLinks = newLinks;
+    },
   },
 });
 
@@ -81,6 +102,8 @@ export const {
   setComments,
   addDriveLinks,
   setDriveLinks,
+  addExternalLinks,
+  setExternalLinks,
 } = slice.actions;
 
 export const selectHeaders = (state: { doc: DocState }) => state.doc.headers;
@@ -93,7 +116,10 @@ export const selectDocMode = (mimeType: string) => {
 };
 export const selectDriveLinks = (state: { doc: DocState }) => {
   return Object.values(state.doc.driveLinks);
-}
+};
+export const selectExternalLinks = (state: { doc: DocState }) => {
+  return Object.values(state.doc.externalLinks);
+};
 export const selectDriveLinksLookup = (state: { doc: DocState }) => state.doc.driveLinks;
 
 export default slice.reducer;
