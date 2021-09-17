@@ -442,6 +442,7 @@ function Sider_({ isExpanded = true }: { isExpanded?: boolean }) {
               selected={selected}
               active={driveId}
               id={'tree-drives'}
+              size="compact"
             >
               {drives.map((drive) => (
                 <TreeNode
