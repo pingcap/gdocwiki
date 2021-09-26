@@ -7,6 +7,8 @@ import {
   setDriveId,
   selectDrive,
   selectDriveId,
+  selectMyDrive,
+  selectMyDriveId,
   selectMapIdToFile,
   setLoading,
   setRootFolderId,
@@ -24,6 +26,7 @@ export default function useLoadDriveFiles() {
   const activeId = useSelector(selectActiveId);
   const mapIdToFile = useSelector(selectMapIdToFile);
   const [loadedDriveFiles, setLoadedDriveFiles] = useState(false);
+  const [loadFromParentsCache, setLoadedFromParentsCache] = useState("");
 
   useEffect(
     function doLoadDriveFiles() {
@@ -53,7 +56,12 @@ export default function useLoadDriveFiles() {
               driveId,
               resp.result.files?.length
             );
-            // TODO: need to point their parent to the user's drive
+            let files = resp.result.files || [];
+            if (driveId === 'root') {
+              files = files.map((file) => {
+                return { driveId: 'root', ...file };
+              });
+            }
             dispatch(updateFiles(resp.result.files ?? []));
             setLoadedDriveFiles(true);
             if (resp.result.nextPageToken) {
@@ -86,42 +94,49 @@ export default function useLoadDriveFiles() {
 
   useEffect(
     function doLoadDriveFromParents() {
-      async function loadDriveFromParents() {
-        console.log('loadDriveFromParents', drive, driveId, activeId);
-        let parentId: string | undefined = activeId;
-        while (parentId) {
-          const respFile = await gapi.client.drive.files.get({
-            supportsAllDrives: true,
-            fileId: parentId,
-            fields: '*',
-          });
-          const file = respFile.result;
-          if (file.driveId === parentId) {
-            console.log('found parent drive', file.name, file);
-            dispatch(setDriveId(parentId));
-            break;
+      async function loadDriveFromParent(id: string) {
+        let file = mapIdToFile[id];
+        if (!file) {
+          try {
+            const respFile = await gapi.client.drive.files.get({
+              supportsAllDrives: true,
+              fileId: id,
+              fields: '*',
+            });
+            file = respFile.result;
+            dispatch(updateFile(file));
+          } catch (e) {
+            console.log('error getting file from id', id, e);
           }
-          if (file.name === 'My Drive') {
-            console.log('found parent My Drive');
-            dispatch(setDrive(file));
-            break;
-          }
-          dispatch(updateFile(file));
-          parentId = respFile.result.parents?.[0];
+        }
+        if (file.name === 'My Drive') {
+          console.log('found parent My Drive');
+          dispatch(setDrive(file));
+        }
+        if (file.driveId) {
+          console.log('found drive id from file', file.name);
+          dispatch(setDriveId(file.driveId));
+        }
+        const parentId = file.parents?.[0];
+        if (parentId) {
+          loadDriveFromParent(parentId)
         }
       }
 
-      if (!drive && !driveId && activeId) {
-        loadDriveFromParents();
+      // The dependency checking was not working
+      // we only want activeId and driveId as dependencies
+      if (!driveId && activeId && driveId + activeId !== loadFromParentsCache) {
+        loadDriveFromParent(activeId);
+        setLoadedFromParentsCache(driveId + activeId);
       }
     },
-    [activeId, driveId, drive, dispatch]
+    [activeId, driveId, dispatch, mapIdToFile, loadFromParentsCache]
   );
 
   useEffect(
     function doLoadDrive() {
       async function loadDrive() {
-        if (!driveId) {
+        if (!driveId || (drive && drive.id !== 'root')) {
           return;
         }
         try {
@@ -134,9 +149,6 @@ export default function useLoadDriveFiles() {
             dispatch(setRootFolderId(resp.result.id!));
             dispatch(setDrive(resp.result));
           } else {
-            if (drive) {
-              return;
-            }
             console.log('get drive', driveId);
             const resp = await gapi.client.drive.drives.get({
               driveId: driveId,

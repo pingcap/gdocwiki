@@ -89,7 +89,7 @@ function renderChildren(
   }
 
   let files = mapIdToChildren[parentId];
-  if (!mapIdToChildren[parentId]) {
+  if (!files) {
     return null;
   }
   if (mapIdToFile[parentId]) {

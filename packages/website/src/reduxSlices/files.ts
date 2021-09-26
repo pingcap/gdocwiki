@@ -37,10 +37,38 @@ function addFileToMap(state: FilesState, file: DriveFile) {
   }
 }
 
+function setDrive_(state: FilesState, drive: DriveFile | undefined) {
+  if (drive) {
+    addFileToMap(state, drive);
+  }
+
+  if (drive && drive.name === myDriveName) {
+    console.log('setDrive MyDrive', drive);
+    if (!state.myDrive) {
+      state.myDrive = drive;
+    }
+    setDriveId_(state, 'root');
+    // This lets us know that My drive is being used
+    // The actual drive id is stored below as myDriveId
+    if (drive.id !== 'root') {
+      // update to the id from 'root' to the actual
+      state.myDriveId = drive.id!;
+    }
+  } else {
+    console.log('setDrive', drive);
+    setDriveId_(state, drive?.id);
+    if (state.drive?.id !== drive?.id) {
+      state.drive = drive;
+    }
+  }
+}
+
 function setDriveId_(state: FilesState, driveId: string | undefined): boolean {
   if (driveId === state.driveId) {
+    console.log('setDriveId_ unchanged', driveId);
     return false;
   }
+  console.log('setDriveId_', driveId);
 
   state.driveId = driveId;
   state.rootFolderId = undefined;
@@ -60,13 +88,17 @@ function setDriveId_(state: FilesState, driveId: string | undefined): boolean {
 }
 
 function driveFromId(state: FilesState): DriveFile | undefined {
+  if (!state.driveId) {
+    return undefined;
+  }
+
   for (const drive of state.drives ?? []) {
     if (drive.id === state.driveId) {
       return drive;
     }
   }
 
-  if (state.driveId === 'root') {
+  if (state.driveId === state.myDriveId || state.driveId === 'root') {
     return getMyDrive(state);
   }
 }
@@ -91,10 +123,23 @@ export const slice = createSlice({
   initialState,
   reducers: {
     setActiveFileId: (state, { payload }: { payload: string }) => {
-      const file = state.mapIdToFile[payload];
+      let file = state.mapIdToFile[payload];
       if (file) {
-        setDriveId_(state, file.driveId);
+        while (file && !file.driveId) {
+          if (file.name === 'My Drive') {
+            console.log('setActiveFileId: found parent My Drive');
+            setDrive_(state, file);
+            return;
+          }
+          const parentId = file.parents?.[0];
+          if (!parentId) {
+            break;
+          }
+          file = state.mapIdToFile[parentId];
+        }
       }
+      console.log('setActiveFileId', file);
+      setDriveId_(state, file?.driveId);
     },
     setLoading: (state, { payload }: { payload: boolean }) => {
       state.isLoading = payload;
@@ -109,24 +154,13 @@ export const slice = createSlice({
         addFileToMap(state, drive);
       }
       if (state.driveId) {
-        state.drive = driveFromId(state);
+        console.log('setDrives', state);
+        setDrive_(state, driveFromId(state));
       }
     },
 
     setDrive: (state, { payload }: { payload: DriveFile | undefined }) => {
-      if (payload && payload.name === myDriveName) {
-        state.myDrive = payload;
-        if (payload.id !== 'root') {
-          // update to the id from 'root' to the actual
-          state.myDriveId = payload.id!;
-        }
-      }
-
-      if (payload) {
-        addFileToMap(state, payload);
-      }
-
-      setDriveId_(state, payload?.id);
+      setDrive_(state, payload);
     },
 
     setDriveId: (state, { payload }: { payload: string | undefined }) => {
@@ -174,6 +208,8 @@ export const {
 
 export const selectLoading = (state: { files: FilesState }) => state.files.isLoading;
 export const selectDrive = (state: { files: FilesState }) => state.files.drive;
+export const selectMyDrive = (state: { files: FilesState }) => state.files.myDrive;
+export const selectMyDriveId = (state: { files: FilesState }) => state.files.myDriveId;
 export const selectDrives = (state: { files: FilesState }) => getDrives(state.files);
 export const selectDriveId = (state: { files: FilesState }) => state.files.driveId;
 export const selectRootFolderId = (state: { files: FilesState }) => state.files.rootFolderId;
@@ -193,41 +229,50 @@ export const selectAllTags = (state: { files: FilesState }) => {
 // A map to lookup all childrens for a file id.
 export const selectMapIdToChildren: (state: {
   files: FilesState;
-}) => Record<string, DriveFile[]> = createSelector([selectMapIdToFile], (mapIdToFile) => {
-  const map: Record<string, Set<string>> = {};
+}) => Record<string, DriveFile[]> = createSelector(
+  [selectMapIdToFile, selectMyDriveId],
+  (mapIdToFile, myDriveId) => {
+    const map: Record<string, Set<string>> = {};
 
-  for (const id in mapIdToFile) {
-    const file = mapIdToFile[id];
-    const parentId = file.parents?.[0];
-    if (!parentId) {
-      continue;
-    }
-    if (map[parentId] === undefined) {
-      // This may happen when parent is not in the tree.
-      // We can still create a list for its children though.
-      map[parentId] = new Set();
-    }
-    map[parentId].add(id);
-  }
-
-  const retMap: Record<string, DriveFile[]> = {};
-  for (const id in map) {
-    retMap[id] = [];
-    for (const childId of map[id]) {
-      retMap[id].push(mapIdToFile[childId]);
-    }
-
-    retMap[id].sort((a, b) => {
-      const sortKeyA = getFileSortKey(a);
-      const sortKeyB = getFileSortKey(b);
-      if (sortKeyA !== sortKeyB) {
-        return sortKeyA - sortKeyB;
+    for (const id in mapIdToFile) {
+      const file = mapIdToFile[id];
+      const parentId = file.parents?.[0];
+      if (!parentId) {
+        continue;
       }
-      return naturalCompare(a.name?.toLowerCase() ?? '', b.name?.toLowerCase() ?? '');
-    });
-  }
+      if (map[parentId] === undefined) {
+        // This may happen when parent is not in the tree.
+        // We can still create a list for its children though.
+        map[parentId] = new Set();
+      }
+      if (parentId === myDriveId) {
+        if (map['root'] === undefined) {
+          map['root'] = new Set();
+        }
+        map['root'].add(id);
+      }
+      map[parentId].add(id);
+    }
 
-  return retMap;
-});
+    const retMap: Record<string, DriveFile[]> = {};
+    for (const id in map) {
+      retMap[id] = [];
+      for (const childId of map[id]) {
+        retMap[id].push(mapIdToFile[childId]);
+      }
+
+      retMap[id].sort((a, b) => {
+        const sortKeyA = getFileSortKey(a);
+        const sortKeyB = getFileSortKey(b);
+        if (sortKeyA !== sortKeyB) {
+          return sortKeyA - sortKeyB;
+        }
+        return naturalCompare(a.name?.toLowerCase() ?? '', b.name?.toLowerCase() ?? '');
+      });
+    }
+
+    return retMap;
+  }
+);
 
 export default slice.reducer;
