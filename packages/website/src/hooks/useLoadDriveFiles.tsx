@@ -7,8 +7,6 @@ import {
   setDriveId,
   selectDrive,
   selectDriveId,
-  selectMyDrive,
-  selectMyDriveId,
   selectMapIdToFile,
   setLoading,
   setRootFolderId,
@@ -26,7 +24,7 @@ export default function useLoadDriveFiles() {
   const activeId = useSelector(selectActiveId);
   const mapIdToFile = useSelector(selectMapIdToFile);
   const [loadedDriveFiles, setLoadedDriveFiles] = useState(false);
-  const [loadFromParentsCache, setLoadedFromParentsCache] = useState("");
+  const [loadFromParentsCache, setLoadedFromParentsCache] = useState('');
 
   useEffect(
     function doLoadDriveFiles() {
