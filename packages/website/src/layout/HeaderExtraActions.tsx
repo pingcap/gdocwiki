@@ -19,7 +19,7 @@ export function HeaderExtraActions({ onExtensionAction }) {
   return (
     <HeaderNavigation className={responsiveStyle.hideInPhone} aria-label="navigation" >
       <HeaderMenuItem<LinkProps> element={Link} to="/search/tag">
-        All Tags
+        Tags
       </HeaderMenuItem>
       {getConfig().NavItems.map((item) => {
         switch (item.type) {
@@ -46,7 +46,11 @@ export function HeaderExtraActions({ onExtensionAction }) {
                           return <NavMenu.Divider>{childItem.text ?? ''}</NavMenu.Divider>;
                         case 'link':
                           return (
-                            <NavMenu.Link href={childItem.href} target={childItem.target}>
+                            <NavMenu.Link
+                              key={childItem.href}
+                              href={childItem.href}
+                              target={childItem.target}
+                            >
                               {childItem.text ?? ''}
                             </NavMenu.Link>
                           );
@@ -58,7 +62,7 @@ export function HeaderExtraActions({ onExtensionAction }) {
                 }
                 popupTransitionName="slide-up"
               >
-                <HeaderMenuItem href="javascript:;">
+                <HeaderMenuItem onClick={(ev) => ev.preventDefault()} href="#">
                   <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
                     <span>{item.text ?? ''}</span>
                     <ChevronDown20 />
@@ -142,7 +146,7 @@ function HeaderExtraActionsForMobile_() {
     return items;
   }, []);
 
-  return (
+  return treeItems.length === 0 ? null : (
     <div className={cx(styles.actionTree, responsiveStyle.showInPhone)}>
       <TreeView label="Navigation" selected={[]}>
         {renderTreeNode(treeItems)}

@@ -1,0 +1,26 @@
+.commentsDrawer {
+  padding-top: 30px;
+}
+
+.commentsDrawer.viewing {
+  padding-top: 0px;
+  position: fixed;
+  height: 50%;
+  background: white;
+  bottom: 0;
+  right: 0;
+  overflow-y: auto;
+  z-index: 8999;
+}
+
+.gdocLink {
+  .gdocThumbnail {
+    z-index: 0;
+    display: none;
+  }
+}
+.gdocLink:hover .gdocThumbnail {
+  z-index: 9999;
+  display: inline;
+  position: absolute;
+}

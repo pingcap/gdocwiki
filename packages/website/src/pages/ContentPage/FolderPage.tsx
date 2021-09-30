@@ -1,69 +1,48 @@
+import { Edit16, Minimize16 } from '@carbon/icons-react';
 import { Accordion, AccordionItem, InlineLoading } from 'carbon-components-react';
-import { Stack } from 'office-ui-fabric-react';
-import React, { useMemo } from 'react';
+import { Stack, TooltipHost } from 'office-ui-fabric-react';
+import React, { useMemo, useState, MouseEventHandler } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { DriveFileName, DriveIcon, FileListTable } from '../../components';
+import {
+  FileListTable,
+  FolderChildrenList,
+  IFileListTableProps,
+  IFolderFilesProps,
+  IFolderListProps,
+} from '../../components';
 import { useManagedRenderStack } from '../../context/RenderStack';
-import { useFolderFilesMeta } from '../../hooks/useFolderFilesMeta';
-import { selectMapIdToFile } from '../../reduxSlices/files';
-import { DriveFile, mdLink, parseFolderChildrenDisplaySettings } from '../../utils';
+import { useFolderFilesMeta, IFolderFilesMeta  } from '../../hooks/useFolderFilesMeta';
+import { selectMapIdToFile, selectMapIdToChildren } from '../../reduxSlices/files';
+import { DriveFile, FolderChildrenDisplayMode, canEdit } from '../../utils';
 import styles from './FolderPage.module.scss';
 import ContentPage from '.';
 
-interface IFolderChildrenProps {
-  files?: DriveFile[];
-  openInNewWindow: boolean;
+interface IFolderDisplay extends IFolderFilesProps {
+  display?: FolderChildrenDisplayMode;
+  open?: boolean;
 }
 
-interface IFileInList {
-  file: DriveFile;
-  openInNewWindow: boolean;
+interface ITableShrinkToList extends IFileListTableProps {
+  clickShrinkToList?: MouseEventHandler;
 }
 
-function FileLink({ file, openInNewWindow }: IFileInList) {
-  const link = mdLink.parse(file.name);
-  const target = openInNewWindow ? '_blank' : undefined;
-  const inner = (
-    <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
-      <DriveIcon file={file} />
-      <DriveFileName file={file} />
-    </Stack>
-  );
-  return link ? (
-    <a href={link.url} target="_blank" rel="noreferrer">
-      {inner}
-    </a>
-  ) : (
-    <Link to={`/view/${file.id}`} target={target}>
-      {inner}
-    </Link>
-  );
+type AllFolderViewProps = IFolderListProps & IFolderDisplay & ITableShrinkToList;
+
+interface IFolderAccordionProps extends IFolderFilesProps {
+  children: any;
+  open: boolean;
 }
 
-function FolderChildrenList({ files, openInNewWindow }: IFolderChildrenProps) {
-  return (
-    <div className={styles.content}>
-      <ul>
-        {(files ?? []).map((file: gapi.client.drive.File) => {
-          return (
-            <li key={file.id}>
-              <p>
-                <FileLink file={file} openInNewWindow={openInNewWindow} />
-              </p>
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-  );
-}
-
-function FolderChildrenHide({ files, openInNewWindow }: IFolderChildrenProps) {
+function FolderChildrenHide({ children, files, open }: IFolderAccordionProps) {
   return (
     <Accordion align="start">
-      <AccordionItem title={`Sub pages (${files?.length ?? 0})`}>
-        <FolderChildrenList files={files} openInNewWindow={openInNewWindow} />
+      <AccordionItem
+        className={styles.accordion}
+        open={open}
+        title={`Folder Contents (${files.length})`}
+      >
+        {children}
       </AccordionItem>
     </Accordion>
   );
@@ -76,6 +55,7 @@ export interface IFolderPageProps {
 }
 
 export const folderPageId = 'FolderPage';
+const folderDisplayStorageKey = 'preferredFolderDisplay';
 
 function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPageProps) {
   useManagedRenderStack({
@@ -85,47 +65,155 @@ function FolderPage({ file, shortCutFile, renderStackOffset = 0 }: IFolderPagePr
   });
 
   const mapIdToFile = useSelector(selectMapIdToFile);
+  const mapIdToChildren = useSelector(selectMapIdToChildren);
   const openInNewWindow = useMemo(() => {
     // If current folder is not in the tree, open new window
-    return !mapIdToFile?.[file?.id ?? ''] && shortCutFile;
+    return !mapIdToFile?.[file?.id!] && shortCutFile;
   }, [mapIdToFile, file, shortCutFile]);
 
-  const displaySettings = useMemo(() => parseFolderChildrenDisplaySettings(file), [file]);
+  const filesMeta = useFolderFilesMeta(file.id!);
+  const { loading, error } = filesMeta;
+  const files = mapIdToChildren[file.id!];
 
-  const { files, loading, error } = useFolderFilesMeta(file.id);
+  const defaultDisplay =
+    (localStorage.getItem(folderDisplayStorageKey) as FolderChildrenDisplayMode) || 'list';
+  const [preferredDisplay, setpreferredDisplay] = useState(defaultDisplay);
+
   const readMeFile = useMemo(() => {
     if (!files) {
-      return undefined;
+      return;
     }
     for (const item of files) {
       if (item.name?.toLowerCase() === 'readme') {
+        setpreferredDisplay('list');
         return item;
       }
     }
   }, [files]);
 
+  const clickExpandToTable = (ev) => {
+    ev.preventDefault();
+    setpreferredDisplay('table');
+    if (!readMeFile) {
+      localStorage.setItem(folderDisplayStorageKey, 'table');
+    }
+  };
+
+  const clickShrinkToList = (ev) => {
+    ev.preventDefault();
+    setpreferredDisplay('list');
+    if (!readMeFile) {
+      localStorage.setItem(folderDisplayStorageKey, 'list');
+    }
+  };
+
+  const props = {
+    loading,
+    error,
+    files: files ?? [],
+    openInNewWindow,
+    display: preferredDisplay,
+    clickExpandToTable,
+    clickShrinkToList,
+  };
+
+  if (readMeFile) {
+    const stackProps = {};
+    props.display = 'list';
+    if (preferredDisplay === 'table') {
+      // Still renders as a table, but hidden
+      props.display = 'hide';
+    }
+    if (preferredDisplay === 'list') {
+      stackProps['horizontal'] = 'horizontal';
+    }
+
+    return (
+      <div style={{ marginTop: '0.2rem' }}>
+        {props.display === 'list' && <hr style={{ paddingTop: '0', marginBottom: '1rem' }} />}
+        <Stack {...stackProps} tokens={{ childrenGap: 16 }}>
+          <Stack grow={0}>
+            <Stack>
+              <FilesView {...props} open={true} />
+            </Stack>
+          </Stack>
+          <Stack grow={10}>
+            <Stack horizontal style={{ marginLeft: '1rem' }} tokens={{ childrenGap: 8 }}>
+              <Link to={`/view/${readMeFile.id}`}>{readMeFile.name}</Link>
+              {canEdit(readMeFile) && (
+                <TooltipHost content="edit">
+                  <Link to={`/view/${readMeFile.id}/edit`}>
+                    <Edit16 />
+                  </Link>
+                </TooltipHost>
+              )}
+            </Stack>
+            <ContentPage
+              splitWithFileListing={props.display === 'list'}
+              file={readMeFile}
+              renderStackOffset={renderStackOffset + 1}
+            />
+          </Stack>
+        </Stack>
+      </div>
+    );
+  }
+
+  return <FilesView {...props} />;
+}
+
+function FilesView(props: IFolderFilesMeta & AllFolderViewProps) {
+  const { error, loading } = props;
+  const hasFiles = props.files.length > 0;
   return (
     <div>
-      {loading && <InlineLoading description="Loading folder contents..." />}
-      {readMeFile && <ContentPage file={readMeFile} renderStackOffset={renderStackOffset + 1} />}
-      {!loading && !!error && error}
-      {!loading && !error && (
-        <div style={{ marginTop: 32 }}>
-          {displaySettings.displayInContent === 'table' && (
-            <FileListTable openInNewWindow={openInNewWindow} files={files} />
-          )}
-          {displaySettings.displayInContent === 'list' && (
-            <div style={{ maxWidth: '50rem' }}>
-              <FolderChildrenList openInNewWindow={openInNewWindow} files={files} />
-            </div>
-          )}
-          {displaySettings.displayInContent === 'hide' && (
-            <div style={{ maxWidth: '50rem' }}>
-              <FolderChildrenHide openInNewWindow={openInNewWindow} files={files} />
-            </div>
-          )}
-        </div>
+      {error}
+      {!error && loading && !hasFiles && <InlineLoading description="Loading folder contents..." />}
+      {(!loading || hasFiles) && <ListForSettings {...props} />}
+      {!error && loading && hasFiles && (
+        <InlineLoading description="Refreshing folder contents..." />
       )}
+    </div>
+  );
+}
+
+function ListForSettings(props: AllFolderViewProps) {
+  const { display, files, open, openInNewWindow, clickExpandToTable } = props;
+  const listProps = { files, openInNewWindow };
+  if (display === 'hide') {
+    return (
+      <div style={{ maxWidth: '50rem' }}>
+        <FolderChildrenHide open={!!open} files={files}>
+          <FileListTable {...listProps} />
+        </FolderChildrenHide>
+      </div>
+    );
+  }
+
+  if (display === 'table') {
+    return <FileListTableShrinkable {...listProps} clickShrinkToList={props.clickShrinkToList} />;
+  }
+
+  // default to list
+  return (
+    <div style={{ maxWidth: '50rem' }}>
+      <FolderChildrenList {...listProps} clickExpandToTable={clickExpandToTable} />
+    </div>
+  );
+}
+
+function FileListTableShrinkable(props: ITableShrinkToList & IFileListTableProps) {
+  const { clickShrinkToList } = props;
+  return (
+    <div className={styles.tableView}>
+      {clickShrinkToList && (
+        <TooltipHost content="shrink to list view" styles={{ root: { alignSelf: 'center' } }}>
+          <a href="#" title="expand" onClick={clickShrinkToList} style={{ marginLeft: '0.3em' }}>
+            <Minimize16 />
+          </a>
+        </TooltipHost>
+      )}
+      <FileListTable {...props} />
     </div>
   );
 }

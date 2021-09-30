@@ -1,9 +1,5 @@
 @import '../mixin.scss';
 
 .actionBar {
-  margin-bottom: 2rem;
-
-  @include for-size(phone-and-tablet) {
-    margin-bottom: 1rem;
-  }
+  padding-top: 0.5rem;
 }

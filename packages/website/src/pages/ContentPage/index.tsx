@@ -1,5 +1,7 @@
 import React from 'react';
-import { DriveFile, MimeTypes, PreviewableMimeTypes } from '../../utils';
+import { useSelector } from 'react-redux';
+import { selectDocMode } from '../../reduxSlices/doc';
+import { DriveFile, inlineEditable, MimeTypes, previewable } from '../../utils';
 import DocPage from './DocPage';
 import FolderPage from './FolderPage';
 import PreviewPage from './PreviewPage';
@@ -9,27 +11,80 @@ export interface IContentPageProps {
   file: DriveFile;
   shortCutFile?: DriveFile;
   renderStackOffset?: number;
+  splitWithFileListing?: boolean;
+  versions?: boolean;
 }
 
-function ContentPage({ file, shortCutFile, renderStackOffset = 0 }: IContentPageProps) {
-  if (PreviewableMimeTypes.indexOf(file?.mimeType ?? '') > -1) {
-    return <PreviewPage file={file!} renderStackOffset={renderStackOffset} />;
+interface PageProps {
+  renderStackOffset: number;
+  file: { id?: string };
+  versions?: boolean;
+}
+
+function ContentPage({
+  file,
+  shortCutFile,
+  splitWithFileListing = false,
+  renderStackOffset = 0,
+  versions = false,
+}: IContentPageProps) {
+  const docMode = useSelector(selectDocMode(file?.mimeType ?? ''));
+  function docPage(props: PageProps) {
+    let style = {};
+    if (!splitWithFileListing) {
+      style = Object.assign(style, { marginLeft: '1rem' });
+    }
+    return (
+      <div style={style}>
+        <DocPage key={file.id} {...props} />
+      </div>
+    );
   }
 
-  switch (file?.mimeType ?? '') {
-    case MimeTypes.GoogleDocument:
-      return <DocPage file={file!} renderStackOffset={renderStackOffset} />;
+  // Assume a document for speed if we are still loading the file metadata
+  // We might be wrong, but that will get corrected without issue.
+  if (!file.name && file.id !== 'root') {
+    return docPage({
+      file,
+      renderStackOffset: renderStackOffset,
+    });
+  }
+
+  const pageProps: PageProps = {
+    renderStackOffset: renderStackOffset,
+    file,
+    versions,
+  };
+
+  if (docMode) {
+    const noVersionsPreview = versions && !inlineEditable(file.mimeType ?? '');
+    return docMode === 'view' || noVersionsPreview ? (
+      docPage(pageProps)
+    ) : (
+      <PreviewPage {...pageProps} />
+    );
+  }
+
+  if (previewable(file.mimeType ?? '')) {
+    // Use key to force an unmount when the file changes
+    // This resets event handlers
+    return <PreviewPage {...pageProps} />;
+  }
+
+  switch (file.mimeType ?? '') {
     case MimeTypes.GoogleFolder:
-      return (
-        <FolderPage
-          file={file!}
-          shortCutFile={shortCutFile}
-          renderStackOffset={renderStackOffset}
+      return <FolderPage {...pageProps} shortCutFile={shortCutFile} />;
+    case MimeTypes.GoogleShortcut:
+      const child = (pointingFile: DriveFile) => (
+        <ContentPage
+          file={pointingFile}
+          shortCutFile={file}
+          splitWithFileListing={splitWithFileListing}
+          renderStackOffset={renderStackOffset + 1}
         />
       );
-    case MimeTypes.GoogleShortcut:
       if (!shortCutFile) {
-        return <ShortcutPage file={file!} renderStackOffset={renderStackOffset} />;
+        return <ShortcutPage file={file} child={child} renderStackOffset={renderStackOffset} />;
       }
       break;
   }

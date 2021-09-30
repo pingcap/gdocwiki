@@ -8,9 +8,11 @@ import ContentPage from '.';
 export interface IShortcutPageProps {
   file: DriveFile;
   renderStackOffset?: number;
+  child: (file: DriveFile) => React.ReactNode;
 }
 
-function ShortcutPage({ file, renderStackOffset = 0 }: IShortcutPageProps) {
+function ShortcutPage(props: IShortcutPageProps) {
+  const { file, renderStackOffset = 0 } = props;
   useManagedRenderStack({
     depth: renderStackOffset,
     id: 'ShortcutPage',
@@ -22,13 +24,7 @@ function ShortcutPage({ file, renderStackOffset = 0 }: IShortcutPageProps) {
     <>
       {loading && <InlineLoading description="Loading shortcut metadata..." />}
       {!loading && !!error && error}
-      {!loading && !!pointingFile && (
-        <ContentPage
-          file={pointingFile}
-          shortCutFile={file}
-          renderStackOffset={renderStackOffset + 1}
-        />
-      )}
+      {!loading && !!pointingFile && props.child(pointingFile)}
     </>
   );
 }

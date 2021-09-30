@@ -1,53 +1,167 @@
-import cx from 'classnames';
+import { View16, Edit16 } from '@carbon/icons-react';
+import fileEdit from '@iconify-icons/mdi/file-edit';
+import { Icon } from '@iconify/react';
 import dayjs from 'dayjs';
 import {
   CommandBar,
   ICommandBarItemProps,
   IContextualMenuItem,
+  Pivot,
+  PivotItem,
   Stack,
+  TooltipHost,
 } from 'office-ui-fabric-react';
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useCallback, useMemo, useEffect, useState } from 'react';
 import Avatar from 'react-avatar';
-import { useHistory } from 'react-router-dom';
-import { DriveIcon } from '../components';
-import { getConfig } from '../config';
-import { useRender } from '../context/RenderStack';
+import { useDispatch, useSelector } from 'react-redux';
+import { useHistory, Link } from 'react-router-dom';
+import { DriveIcon, Tags } from '../components';
 import useFileMeta from '../hooks/useFileMeta';
-import { MimeTypes, shouldShowFolderChildrenSettings, shouldShowTagSettings } from '../utils';
+import responsiveStyle from '../layout/responsive.module.scss';
+import { selectDocMode, resetDocMode } from '../reduxSlices/doc';
+import { selectDriveId, selectRootFolderId } from '../reduxSlices/files';
+import {
+  canChangeSettings,
+  canEdit,
+  inlineEditable,
+  DocMode,
+  DriveFile,
+  MimeTypes,
+  docModes,
+  isTouchScreen,
+} from '../utils';
+import { folderPageId } from './ContentPage/FolderPage';
 import { showCreateFile } from './FileAction.createFile';
 import { showCreateLink } from './FileAction.createLink';
 import styles from './FileAction.module.scss';
 import { showMoveFile } from './FileAction.moveFile';
 import { showRenameFile } from './FileAction.renameFile';
 import { showTrashFile } from './FileAction.trashFile';
-import responsiveStyle from '../layout/responsive.module.scss';
-import { folderPageId } from './ContentPage/FolderPage';
 
-function FileAction() {
-  // Support we have a folder, containing a shortcut to a README document,
-  // the rInner is README and the rOuter is the folder.
-  const { inMost: rInner, outMost: rOuter } = useRender();
-  const [revisionsEnabled, setRevisionsEnabled] = useState("");
-  function toggleRevisions() {
-    setRevisionsEnabled(v => v === rInner?.file.id! ? "" : rInner?.file.id!);
-  }
-  const revs: Array<gapi.client.drive.Revision> = []
+function Revisions(props: { file: DriveFile }) {
+  const revs: Array<gapi.client.drive.Revision> = [];
   const [revisions, setRevisions] = useState(revs);
+  const [isLoading, setIsLoading] = useState(true);
+  const { file } = props;
 
+  useEffect(() => {
+    if (file.id === folderPageId) {
+      return;
+    }
+    const fields = 'revisions(id, modifiedTime, lastModifyingUser, exportLinks)';
+    async function loadRevisions() {
+      try {
+        const resp = await gapi.client.drive.revisions.list({ fileId: file.id!, fields })
+        setRevisions(resp.result.revisions!.reverse());
+      } catch (e) {
+        console.error('DocPage files.revisions', file, e);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadRevisions();
+  }, [file]);
+
+  const link = inlineEditable(file.mimeType ?? '') ? `/view/${file.id}/versions` : null;
+  return (
+    <div className="revisions">
+      {isLoading && <p>Loading Revisions ...</p>}
+      {revisions.map((revision) => {
+        const timeAgo = dayjs(revision.modifiedTime).fromNow();
+        return (
+          <Stack
+            key={revision.id}
+            verticalAlign="center"
+            horizontal
+            tokens={{ childrenGap: 16, padding: 2 }}
+            className={styles.note}
+          >
+            {link ? <Link to={link}>{timeAgo}</Link> : <span>{timeAgo}</span>}
+            <div>
+              <Avatar
+                name={revision.lastModifyingUser?.displayName}
+                src={revision.lastModifyingUser?.photoLink}
+                size="20"
+                round
+              />
+              <span>
+                &nbsp;
+                {revision.lastModifyingUser?.displayName}
+              </span>
+            </div>
+          </Stack>
+        )
+      })}
+      <hr />
+    </div>
+  );
+}
+
+function FileAction(props: { file: DriveFile, allOverflow?: boolean }) {
+  const [revisionsEnabled, setRevisionsEnabled] = useState(false);
+  const dispatch = useDispatch();
   const history = useHistory();
 
-  const outerFolderId =
-    rOuter?.file.mimeType === MimeTypes.GoogleFolder ? rOuter?.file.id : rOuter?.file.parents?.[0];
+  let file = props.file;
+  const outerFolderId = file.mimeType === MimeTypes.GoogleFolder ? file.id : file.parents?.[0];
   const outerFolder = useFileMeta(outerFolderId);
+  const docMode = useSelector(selectDocMode(file.mimeType ?? '')) || 'view';
+  const rootId = useSelector(selectRootFolderId);
+
+  useEffect(() => {
+    return () => {
+      if (!file.mimeType) {
+        return;
+      }
+      dispatch(resetDocMode(file.mimeType));
+    };
+  }, [dispatch, file]);
+
+  const settingsCommand = useCallback(
+    (file: DriveFile) => {
+      return {
+        key: 'settings',
+        text: 'Tag',
+        iconProps: { iconName: 'Settings' },
+        onClick: () => {
+          history.push(`/view/${file.id}/settings`);
+        },
+      };
+    },
+    [history]
+  );
+
+  const chooseDocMode = useMemo(() => {
+    return !isTouchScreen && file.mimeType && docModes(file.mimeType).length > 1;
+  }, [file.mimeType]);
 
   const commandBarItems: ICommandBarItemProps[] = useMemo(() => {
+    function toggleRevisions() {
+      setRevisionsEnabled((v) => !v);
+    }
     const commands: ICommandBarItemProps[] = [];
 
-    if (rInner?.file && rInner.file.mimeType !== MimeTypes.GoogleFolder) {
+    if (file.mimeType !== MimeTypes.GoogleFolder) {
+      if (file.webViewLink) {
+        const showText = props.allOverflow || !chooseDocMode;
+        commands.push({
+          key: 'launch',
+          text: showText ? 'Open in Google' : undefined,
+          title: showText ? undefined : 'Open in Google',
+          iconProps: { iconName: 'Launch' },
+          onClick: () => {
+            window.open(file.webViewLink, '_blank');
+          },
+        });
+      }
+
       // For non-folder, show modify date, and how to open it.
       commands.push({
         key: 'modify_user',
-        onClick: () => { toggleRevisions(); },
+        onClick: () => {
+          toggleRevisions();
+        },
         text: (
           <Stack
             verticalAlign="center"
@@ -56,47 +170,23 @@ function FileAction() {
             className={styles.note}
           >
             <Avatar
-              name={rInner.file.lastModifyingUser?.displayName}
-              src={rInner.file.lastModifyingUser?.photoLink}
+              name={file.lastModifyingUser?.displayName}
+              src={file.lastModifyingUser?.photoLink}
               size="20"
               round
             />
             <span className={responsiveStyle.hideInPhone}>
-              Last modified by {rInner.file.lastModifyingUser?.displayName}
-              {' at '}
-              {dayjs(rInner.file.modifiedTime).fromNow()}
+              {file.lastModifyingUser?.displayName}
+              {' edited '}
+              {dayjs(file.modifiedTime).fromNow()}
             </span>
             <span className={responsiveStyle.showInPhone}>
-              {rInner.file.lastModifyingUser?.displayName}
+              {file.lastModifyingUser?.displayName}
             </span>
           </Stack>
         ) as any,
       });
-
-      let previewText = 'Open Preview';
-      let previewIcon = 'Launch';
-
-      switch (rInner.file.mimeType) {
-        case MimeTypes.GoogleDocument:
-        case MimeTypes.GoogleSpreadsheet:
-        case MimeTypes.GooglePresentation:
-          previewText = 'Open Google Doc';
-          previewIcon = 'MdiFileEdit';
-          break;
-      }
-
-      if (rInner.file.webViewLink) {
-        commands.push({
-          key: 'view',
-          text: previewText,
-          iconProps: { iconName: previewIcon },
-          onClick: () => {
-            window.open(rInner.file.webViewLink, '_blank');
-          },
-        });
-      }
-    }
-    {
+    } else {
       // Open folder command
       const folderValid =
         outerFolder.file?.mimeType === MimeTypes.GoogleFolder && outerFolder.file?.webViewLink;
@@ -111,8 +201,9 @@ function FileAction() {
         },
       });
     }
+
     return commands;
-  }, [rInner?.file, outerFolder.file]);
+  }, [file, outerFolder.file, props.allOverflow]);
 
   const commandBarOverflowItems = useMemo(() => {
     const commands: ICommandBarItemProps[] = [];
@@ -170,9 +261,14 @@ function FileAction() {
         },
       });
     }
-    if (rOuter?.file) {
+
+    if (file && canChangeSettings(file)) {
+      commands.push(settingsCommand(file));
+    }
+
+    if (file) {
       let fileKind;
-      switch (rOuter.file.mimeType) {
+      switch (file.mimeType) {
         case MimeTypes.GoogleFolder:
           fileKind = 'Folder';
           break;
@@ -182,102 +278,111 @@ function FileAction() {
         default:
           fileKind = 'File';
       }
-      if (rOuter.file.capabilities?.canRename) {
+      if (file.capabilities?.canRename) {
         // Rename
         commands.push({
           key: 'rename',
           text: `Rename ${fileKind}`,
           iconProps: { iconName: 'Edit' },
           onClick: () => {
-            showRenameFile(fileKind, rOuter.file);
+            showRenameFile(fileKind, file);
           },
         });
       }
+
+      if (file.mimeType !== MimeTypes.GoogleFolder && file.webViewLink) {
+        commands.push({
+          key: 'launch_preview',
+          text: 'Preview in Google',
+          iconProps: { iconName: 'DocumentView' },
+          onClick: () => {
+            const link = file.webViewLink?.replace(/\/(edit|view)\?usp=drivesdk/, '/preview');
+            window.open(link, '_blank');
+          },
+        });
+      }
+
       // Do not allow trash root folder..
-      if (rOuter?.file.id !== getConfig().REACT_APP_ROOT_ID && rOuter.file.capabilities?.canTrash) {
+      if (file.id !== rootId && file.capabilities?.canTrash) {
         // Trash
         commands.push({
           key: 'trash',
           text: `Trash ${fileKind}`,
           iconProps: { iconName: 'Trash' },
           onClick: () => {
-            showTrashFile(fileKind, rOuter.file);
-          },
-        });
-      }
-      if (shouldShowTagSettings(rOuter.file) || shouldShowFolderChildrenSettings(rInner?.file)) {
-        commands.push({
-          key: 'settings',
-          text: `Settings`,
-          iconProps: { iconName: 'Settings' },
-          onClick: () => {
-            history.push(`/view/${rOuter.file.id}/settings`);
+            showTrashFile(fileKind, file);
           },
         });
       }
     }
 
     return commands;
-  }, [rInner?.file, rOuter?.file, outerFolder.file, history]);
+  }, [file, outerFolder.file, settingsCommand, rootId]);
 
-  useEffect(() => {
-    if (rInner?.id === folderPageId) { return }
-    const fields = "revisions(id, modifiedTime, lastModifyingUser, exportLinks)"
-    async function loadRevisions() {
-      try {
-        const resp = await gapi.client.drive.revisions.list({fileId: rInner?.file.id!, fields})
-        setRevisions(resp.result.revisions!.reverse());
-      } catch(e) {
-        console.error('DocPage files.revisions', rInner, e);
+  const switchDocMode = useCallback(
+    (item) => {
+      const mode = item.props['itemKey'];
+      if (file) {
+        history.push(`/view/${file.id}/${mode}`);
       }
-    }
+    },
+    [history, file]
+  );
 
-    if (revisionsEnabled) {
-      loadRevisions();
-    }
-  }, [rInner?.file, revisionsEnabled]);
-
-  if (commandBarItems.length === 0 && commandBarOverflowItems.length === 0) {
+  if (!file) {
+    console.log('no file, return null');
     return null;
   }
-  const showRevisions = revisionsEnabled && (revisionsEnabled === rInner?.file.id) && (revisions.length > 0);
+
+  if (commandBarItems.length === 0 && commandBarOverflowItems.length === 0) {
+    console.log('no command bar items, return null');
+    return null;
+  }
+
+  function tooltip(mode: DocMode, icon: JSX.Element) {
+    return () => <TooltipHost content={mode}>{icon}</TooltipHost>;
+  }
+
+  const showEditLink = file.mimeType && inlineEditable(file.mimeType) && canEdit(file);
 
   return (
-    <div>
-      <CommandBar items={commandBarItems} overflowItems={commandBarOverflowItems} />
-      {showRevisions && (
-        <div className="revisions">
-          <hr/>
-          {revisions.map((revision) => {
-            const htmlLink = (revision.exportLinks ?? {})["text/html"];
-            return (<Stack
-              key={revision.id}
-              verticalAlign="center"
-              horizontal
-              tokens={{ childrenGap: 16, padding: 2 }}
-              className={styles.note}
-            >
-              <a href={htmlLink}>
-                {dayjs(revision.modifiedTime).fromNow()}
-              </a>
-              <div>
-                <Avatar
-                  name={revision.lastModifyingUser?.displayName}
-                  src={revision.lastModifyingUser?.photoLink}
-                  size="20"
-                  round
-                />
-                <span>
-                  &nbsp;
-                  {revision.lastModifyingUser?.displayName}
-                </span>
-              </div>
-            </Stack>
-            )
-          })
-          }
-          <hr/>
-        </div>
+    <div style={{ marginLeft: '1rem' }}>
+      <Stack horizontal>
+        {chooseDocMode && (
+          <Stack.Item disableShrink>
+            <Pivot onLinkClick={switchDocMode} selectedKey={docMode}>
+              <PivotItem
+                itemKey="view"
+                onRenderItemLink={tooltip('view', <Icon icon={fileEdit} />)}
+              />
+              <PivotItem itemKey="preview" onRenderItemLink={tooltip('preview', <View16 />)} />
+              {showEditLink && (
+                <PivotItem itemKey="edit" onRenderItemLink={tooltip('edit', <Edit16 />)} />
+              )}
+            </Pivot>
+          </Stack.Item>
+        )}
+        <Stack.Item disableShrink grow={1} style={{ paddingLeft: '1em' }}>
+          {file.mimeType === MimeTypes.GoogleFolder ? (
+            <CommandBar items={commandBarItems.concat(commandBarOverflowItems)} />
+          ) : props.allOverflow ? (
+            <CommandBar
+              items={[]}
+              overflowItems={commandBarItems.concat(commandBarOverflowItems)}
+            />
+          ) : (
+            <CommandBar items={commandBarItems} overflowItems={commandBarOverflowItems} />
+          )}
+        </Stack.Item>
+        {docMode !== 'view' && (
+          <Stack.Item disableShrink grow={1}>
+            <Tags file={file} add={true} style={{ paddingLeft: 8, paddingTop: 12 }} />
+          </Stack.Item>
+        )}
+      </Stack>
+      {revisionsEnabled && <Revisions file={file} />}
+      {docMode === 'view' && (
+        <Tags file={file} add={true} style={{ marginTop: '0.5rem', padding: '0.4rem' }} />
       )}
     </div>
   );

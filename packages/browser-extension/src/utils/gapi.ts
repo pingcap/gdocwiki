@@ -40,6 +40,20 @@ export class GapiClient {
     }
   }
 
+  async addComment(
+    fileId: string,
+    content: string,
+  ): Promise<null> {
+    try {
+      await this.client.post(`https://www.googleapis.com/drive/v3/files/${fileId}/comments?fields=*`, {
+          content,
+      });
+      return null;
+    } catch (e) {
+      throw new Error(`Failed to post user comment: ${e.message}`);
+    }
+  }
+
   async getDriveFile(
     fileId: string,
     params: {
@@ -64,6 +78,35 @@ export class GapiClient {
       } catch (e) {
         log.error(e);
         throw new Error(`Failed to get drive file: ${e.message}`);
+      }
+    };
+    return this.sf.do(fileId, fn);
+  }
+
+  async getFilePermissions(
+    fileId: string,
+    params: {
+      /** Whether the user is acknowledging the risk of downloading known malware or other abusive files. This is only applicable when alt=media. */
+      acknowledgeAbuse?: boolean;
+      /** Selector specifying which fields to include in a partial response. */
+      fields?: string;
+      /** Specifies which additional view's permissions to include in the response. Only 'published' is supported. */
+      includePermissionsForView?: string;
+      /** Whether the requesting application supports both My Drives and shared drives. */
+      supportsAllDrives?: boolean;
+      /** Deprecated use supportsAllDrives instead. */
+      supportsTeamDrives?: boolean;
+    }
+  ): Promise<{ permissions: gapi.client.drive.Permission[] }> {
+    const fn = async () => {
+      try {
+        const r = await this.client.get(`https://www.googleapis.com/drive/v3/files/${fileId}/permissions`, {
+          params,
+        });
+        return r.data as { permissions: gapi.client.drive.Permission[] };
+      } catch (e) {
+        log.error(e);
+        throw new Error(`Failed to get drive file permissions: ${e.message}`);
       }
     };
     return this.sf.do(fileId, fn);

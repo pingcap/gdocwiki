@@ -1,7 +1,9 @@
 import { usePersistFn } from 'ahooks';
 import { useEffect, useRef, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { getConfig } from '../../config';
+import { updateFiles } from '../../reduxSlices/files';
 import { DriveFile } from '../../utils';
 
 export function escapeSearchQuery(keyword: string): string {
@@ -11,6 +13,7 @@ export function escapeSearchQuery(keyword: string): string {
 export function useSearch(fieldName: string, queryBuilder: (value: string) => string) {
   const param = useParams<any>();
   const fieldValue = param[fieldName];
+  const dispatch = useDispatch();
 
   const [loading, setLoading] = useState(false);
   const [files, setFiles] = useState<DriveFile[]>([]);
@@ -26,25 +29,20 @@ export function useSearch(fieldName: string, queryBuilder: (value: string) => st
         for (let i = 0; i < 10; i++) {
           const resp = await gapi.client.drive.files.list({
             pageToken,
-            corpora: 'drive',
-            driveId: getConfig().REACT_APP_ROOT_DRIVE_ID,
+            corpora: 'allDrives ',
             includeItemsFromAllDrives: true,
             supportsAllDrives: true,
             pageSize: 500,
             q: queryBuilderMemo(fieldValue),
             fields: getConfig().DEFAULT_FILE_FIELDS,
           });
-          console.log(
-            `SearchByQuery files.list (page #${i + 1})`,
-            fieldValue,
-            getConfig().REACT_APP_ROOT_DRIVE_ID,
-            resp
-          );
+          console.debug(`SearchByQuery allDrives (page #${i + 1})`, fieldValue, resp.result);
           if (reqRef.current !== checkpoint) {
             return;
           }
 
           const filesTmp = resp?.result?.files ?? [];
+          dispatch(updateFiles(filesTmp));
           fileList.push(...filesTmp);
           // Update file list each search
           setFiles(fileList);
@@ -60,11 +58,11 @@ export function useSearch(fieldName: string, queryBuilder: (value: string) => st
         }
         console.error(e);
       } finally {
-        console.log(reqRef.current, checkpoint);
+        console.debug('search', reqRef.current, checkpoint);
         if (reqRef.current !== checkpoint) {
           return;
         }
-        console.log('set not loading');
+        console.debug('search set not loading');
         setLoading(false);
       }
     }

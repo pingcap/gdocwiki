@@ -1,9 +1,8 @@
-import naturalCompare from 'natural-compare-lite';
-import React, { useEffect, useRef, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { GapiErrorDisplay } from '../components';
-import { updateFiles } from '../reduxSlices/files';
-import { DriveFile } from '../utils';
+import { updateFiles, selectMapIdToChildren } from '../reduxSlices/files';
+import { DriveFile, compareFiles, MakeRequestQueue } from '../utils';
 
 export interface IFolderFilesMeta {
   loading: boolean;
@@ -11,19 +10,45 @@ export interface IFolderFilesMeta {
   error?: React.ReactNode;
 }
 
+const inProgressRequests: { [fileId: string]: boolean } = {};
+
+const enqueueRequest = MakeRequestQueue();
+
 export function useFolderFilesMeta(id?: string) {
   const dispatch = useDispatch();
   const [data, setData] = useState<IFolderFilesMeta>({ loading: true });
-  const reqRef = useRef(0);
+  const mapIdToChildren = useSelector(selectMapIdToChildren);
+  if (id) {
+    const files = mapIdToChildren[id] ?? [];
+    if (
+      data.loading &&
+      (data.files === undefined || (data.files && files.length > data.files.length))
+    ) {
+      // We may already have the files
+      // Still go ahead and do the API call to refresh the data
+      // The caller can use the existing data in the mean time.
+      setData((d) => ({ ...d, files }));
+    }
+  }
 
   useEffect(() => {
     if (!id) {
-      setData({ loading: true });
+      console.log('useFolderFilesMeta no id');
+      setData((v) => ({ ...v, loading: true }));
       return;
     }
 
-    async function loadFolderFilesMetadata(checkpoint: number) {
-      setData({ loading: true });
+    // Synchronize access when there are multiple callers.
+    if (inProgressRequests[id]) {
+      console.debug('second request, bailing', id);
+      // TOD: This isn't correct, but the other will not cancel this one
+      setData((v) => ({ ...v, loading: false }));
+      return;
+    }
+    inProgressRequests[id!] = true;
+
+    async function loadFolderFilesMetadata() {
+      setData((d) => ({ ...d, loading: true }));
 
       try {
         let pageToken = '';
@@ -38,15 +63,13 @@ export function useFolderFilesMeta(id?: string) {
             fields: '*',
             pageSize: 1000,
           });
-          console.debug(`loadFolderFilesMetadata files.list (page #${i + 1})`, id, resp);
+          const newFiles = resp.result.files ?? [];
+          console.debug(`loadFolderFilesMetadata files.list (page #${i + 1})`, id, newFiles.length);
 
-          if (reqRef.current !== checkpoint) {
-            break;
-          }
-          for (const file of resp.result.files ?? []) {
+          for (const file of newFiles) {
             files[file.id ?? ''] = file;
           }
-          dispatch(updateFiles(resp.result.files ?? []));
+          dispatch(updateFiles(newFiles));
           if (resp.result.nextPageToken) {
             pageToken = resp.result.nextPageToken;
           } else {
@@ -55,28 +78,16 @@ export function useFolderFilesMeta(id?: string) {
         }
 
         const filesArray = Object.values(files);
-        filesArray.sort((a, b) => {
-          return naturalCompare(a.name?.toLowerCase() ?? '', b.name?.toLowerCase() ?? '');
-        });
+        filesArray.sort(compareFiles);
         setData({ loading: false, files: filesArray });
       } catch (e) {
-        if (reqRef.current === checkpoint) {
-          console.log(e);
-          setData((d) => ({ ...d, error: <GapiErrorDisplay error={e} /> }));
-        }
+        setData((d) => ({ ...d, loading: false, error: <GapiErrorDisplay error={e} /> }));
       } finally {
-        if (reqRef.current === checkpoint) {
-          setData((d) => ({ ...d, loading: false }));
-        }
+        delete inProgressRequests[id!];
       }
     }
 
-    // if (mapIdToChildren?.[id] === undefined) {
-    reqRef.current++;
-    loadFolderFilesMetadata(reqRef.current);
-    // } else {
-    //   setData({ loading: false, files: mapIdToChildren[id] });
-    // }
+    enqueueRequest(loadFolderFilesMetadata);
   }, [id, dispatch]);
 
   return data;

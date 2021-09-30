@@ -1,5 +1,5 @@
 import cx from 'classnames';
-import { Breadcrumb, IBreadcrumbItem, Stack } from 'office-ui-fabric-react';
+import { Breadcrumb, IBreadcrumbProps, IBreadcrumbItem, Stack } from 'office-ui-fabric-react';
 import React, { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
@@ -11,7 +11,7 @@ import styles from './FileBreadcrumb.module.scss';
 
 export function CurrentFileBreadcrumbItem({ file }: { file: DriveFile }) {
   return (
-    <Stack wrap verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
+    <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
       <span>{file.name}</span>
       <DriveIcon file={file} />
       {file.mimeType === MimeTypes.GoogleShortcut && <ShortcutIcon />}
@@ -19,7 +19,7 @@ export function CurrentFileBreadcrumbItem({ file }: { file: DriveFile }) {
   );
 }
 
-function useFilePathBreadcrumb(file?: DriveFile) {
+function useFilePathBreadcrumb(file?: DriveFile, foldersOnly?: boolean) {
   const mapIdToFile = useSelector(selectMapIdToFile);
   const history = useHistory();
 
@@ -30,6 +30,9 @@ function useFilePathBreadcrumb(file?: DriveFile) {
     let paths: IBreadcrumbItem[] = [];
 
     if (!mapIdToFile?.[file.id ?? '']) {
+      if (foldersOnly) {
+        return [];
+      }
       // File is not in the doc tree
       paths = [
         {
@@ -50,10 +53,15 @@ function useFilePathBreadcrumb(file?: DriveFile) {
       if (!currentItem.name || !currentItem.id) {
         break;
       }
+      const lastIterateId = iterateId;
+      iterateId = (currentItem.parents ?? [])[0];
 
       let text: any = currentItem.name;
       let onClick: any = () => history.push(`/view/${currentItem.id}`);
-      if (iterateId === file.id) {
+      if (lastIterateId === file.id) {
+        if (foldersOnly) {
+          continue;
+        }
         text = (<CurrentFileBreadcrumbItem file={currentItem} />) as any;
       }
       paths.push({
@@ -61,11 +69,6 @@ function useFilePathBreadcrumb(file?: DriveFile) {
         key: currentItem.id,
         onClick,
       });
-
-      if (!currentItem.parents) {
-        break;
-      }
-      iterateId = currentItem.parents[0];
     }
 
     // Only needed when rootId is a drive.
@@ -78,16 +81,17 @@ function useFilePathBreadcrumb(file?: DriveFile) {
     // });
 
     return paths.reverse();
-  }, [file, mapIdToFile, history]);
+  }, [file, mapIdToFile, history, foldersOnly]);
 }
 
 export interface IFileBreadcrumbProps {
   file?: DriveFile;
   extraItems?: IBreadcrumbItem[];
+  foldersOnly?: boolean;
 }
 
-function FileBreadcrumb({ file, extraItems }: IFileBreadcrumbProps) {
-  const paths = useFilePathBreadcrumb(file);
+function FileBreadcrumb({ file, extraItems, foldersOnly }: IFileBreadcrumbProps) {
+  const paths = useFilePathBreadcrumb(file, foldersOnly);
   const items = useMemo(() => {
     const r = [...(paths ?? []), ...(extraItems ?? [])];
     if (r.length > 0) {
@@ -96,17 +100,37 @@ function FileBreadcrumb({ file, extraItems }: IFileBreadcrumbProps) {
     return r;
   }, [paths, extraItems]);
   if ((items.length ?? 0) > 0) {
+    const props = { items } as IBreadcrumbProps;
+    if (foldersOnly) {
+      props.maxDisplayedItems = 3;
+      props.onRenderItem = (item, defaultRender) => {
+        if (!item || !defaultRender) {
+          return null;
+        }
+        if (!item.style) {
+          item.style = { fontWeight: 300 };
+        }
+        return defaultRender(item);
+      };
+    }
     return (
-      <>
+      <div style={{ marginLeft: '1rem' }}>
         <div className={responsiveStyle.hideInPhone}>
-          <Breadcrumb items={items} />
+          <Breadcrumb
+            styles={{
+              itemLink: { fontSize: 'inherit' },
+              item: { fontSize: 'inherit' },
+              root: { margin: 0, fontSize: 'inherit' },
+            }}
+            {...props}
+          />
         </div>
-        {Boolean(file) && (
+        {Boolean(file) && !foldersOnly && (
           <div className={cx(responsiveStyle.showInPhone, styles.fileName)}>
             <CurrentFileBreadcrumbItem file={file!} />
           </div>
         )}
-      </>
+      </div>
     );
   } else {
     return null;

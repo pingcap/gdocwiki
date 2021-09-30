@@ -1,10 +1,11 @@
 import cx from 'classnames';
 import isArray from 'lodash/isArray';
+import { Stack } from 'office-ui-fabric-react';
 import openColor from 'open-color/open-color.json';
-import React from 'react';
-import { useMemo } from 'react';
-import { useHistory } from 'react-router-dom';
+import React, { useMemo } from 'react';
+import { Link, useHistory } from 'react-router-dom';
 import seedrandom from 'seedrandom';
+import { extractTags, DriveFile } from '../utils';
 import styles from './Tag.module.scss';
 
 const tagColors: string[] = [];
@@ -53,3 +54,26 @@ function LinkTag({ text }: ITagProps) {
 }
 
 Tag.Link = React.memo(LinkTag);
+
+export function Tags({ file, style, add = false }: { file: DriveFile, add?: boolean, style?: React.CSSProperties }) {
+  const tags = useMemo(() => extractTags(file), [file]);
+
+  if (tags.length === 0) {
+    return null;
+  }
+
+  return (
+    <Stack horizontal>
+      <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 4 }} style={style}>
+        {tags.map((tag) => (
+          <Tag.Link key={tag} text={tag} />
+        ))}
+      </Stack>
+      {add && (
+        <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 4 }} style={style}>
+          <Link to={`/view/${file.id}/settings`}>Add Tag</Link>
+        </Stack>
+      )}
+    </Stack>
+  );
+}

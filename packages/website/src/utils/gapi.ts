@@ -1,5 +1,18 @@
 export type DriveFile = gapi.client.drive.File;
 
+export function driveToFolder(drive: gapi.client.drive.Drive): gapi.client.drive.File {
+  return {
+    id: drive.id,
+    driveId: drive.id,
+    name: drive.name,
+    capabilities: drive.capabilities,
+    createdTime: drive.createdTime,
+    kind: drive.kind,
+    mimeType: MimeTypes.GoogleFolder,
+    webViewLink: `https://drive.google.com/drive/folders/${drive.id}`,
+  };
+}
+
 export function handleGapiError(e: any): Error {
   if (e?.result?.error) {
     return e.result.error;
@@ -11,9 +24,11 @@ export function handleGapiError(e: any): Error {
 }
 
 export function parseDriveLink(url: string) {
-  let m = url.match(/^https:\/\/docs\.google\.com\/[^/]+(\/u\/\d+)?\/d\/([^/]+)\/edit/);
+  let m = url.match(
+    /^https:\/\/docs\.google\.com\/[^/?]+(\/u\/\d+)?\/d\/([^/?]+)(\/)?(edit|preview)?/
+  );
   if (!m) {
-    m = url.match(/^https:\/\/drive\.google\.com\/[^/]+(\/u\/\d+)?\/[^/]+\/([^/]+)$/);
+    m = url.match(/^https:\/\/drive\.google\.com\/[^/?]+(\/u\/\d+)?\/[^/?]+\/([^/?]+)(\?.*)?$/);
   }
   if (m) {
     return m[2];
@@ -39,8 +54,24 @@ export const MimeTypes = {
   VideoMKV: 'video/x-matroska',
 };
 
+// Support a view mode (html) in addition to preview
+const ViewableMimeTypes = [MimeTypes.GoogleDocument, MimeTypes.GoogleSpreadsheet]
+export function viewable(mimeType: string) {
+  return ViewableMimeTypes.indexOf(mimeType) > -1;
+}
+
+const EditableMimeTypes = [MimeTypes.GoogleDocument, MimeTypes.GoogleSpreadsheet]
+export function inlineEditable(mimeType: string) {
+  return EditableMimeTypes.indexOf(mimeType) > -1;
+}
+
+export function previewable(mimeType: string) {
+  return PreviewableMimeTypes.indexOf(mimeType) > -1;
+}
+
 export const PreviewableMimeTypes = [
   MimeTypes.GoogleSpreadsheet,
+  MimeTypes.GoogleDocument,
   MimeTypes.GooglePresentation,
   MimeTypes.GoogleDrawing,
   MimeTypes.MSOpenWord,
@@ -77,7 +108,15 @@ export function extractTags(file: DriveFile): string[] {
 }
 
 export function shouldShowTagSettings(file?: DriveFile): boolean {
+  return canEdit(file);
+}
+
+export function canEdit(file?: DriveFile): boolean {
   return !!file?.capabilities?.canEdit;
+}
+
+export function canChangeSettings(file?: DriveFile): boolean {
+  return canEdit(file);
 }
 
 export function shouldShowFolderChildrenSettings(file?: DriveFile): boolean {
@@ -94,19 +133,26 @@ export interface FolderChildrenDisplaySettings {
 export const FOLDER_CHILDREN_SETTINGS_PROPERTY = 'folderChildrenSettings';
 
 export function parseFolderChildrenDisplaySettings(file: DriveFile): FolderChildrenDisplaySettings {
-  const def: FolderChildrenDisplaySettings = {
-    displayInSidebar: true,
-    displayInContent: 'list',
-  };
-  let parsed = {};
   const value = file.appProperties?.[FOLDER_CHILDREN_SETTINGS_PROPERTY] ?? '';
   if (value) {
-    parsed = JSON.parse(value);
+    const placeHolder: FolderChildrenDisplaySettings = {
+      displayInSidebar: true,
+      displayInContent: 'list',
+    };
+    const parsed = JSON.parse(value);
+    for (const key of Object.keys(placeHolder)) {
+      if (typeof parsed[key] === typeof placeHolder[key]) {
+        placeHolder[key] = parsed[key];
+      } else {
+        delete placeHolder[key];
+      }
+    }
+    return placeHolder;
+  } else {
+    return {
+      displayInSidebar: true,
+    };
   }
-  return {
-    ...def,
-    ...parsed,
-  };
 }
 
 export function fileIsFolderOrFolderShortcut(file: DriveFile) {

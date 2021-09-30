@@ -5,10 +5,9 @@ import { useSelector } from 'react-redux';
 import useFileMeta from '../../hooks/useFileMeta';
 import useUpdateSiderFromPath from '../../hooks/useUpdateSiderFromPath';
 import { selectPageReloadToken } from '../../reduxSlices/pageReload';
-import { shouldShowFolderChildrenSettings, shouldShowTagSettings } from '../../utils';
+import { shouldShowTagSettings } from '../../utils';
 import FileBreadcrumb from '../FileBreadcrumb';
 import RightContainer from '../RightContainer';
-import SettingsChildrenDisplay from './Settings.childrenDisplay';
 import SettingsTag from './Settings.tags';
 
 function Settings() {
@@ -33,7 +32,6 @@ function Settings() {
       <div style={{ maxWidth: '30rem' }}>
         <Stack tokens={{ childrenGap: 50 }}>
           {shouldShowTagSettings(file) && <SettingsTag file={file!} />}
-          {shouldShowFolderChildrenSettings(file) && <SettingsChildrenDisplay file={file!} />}
         </Stack>
       </div>
     </RightContainer>

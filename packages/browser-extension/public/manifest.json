@@ -11,7 +11,8 @@
   "content_scripts": [
     {
       "matches": ["https://docs.google.com/*", "https://drive.google.com/*"],
-      "js": ["contentScript.bundle.js"]
+      "js": ["contentScript.bundle.js"],
+      "all_frames": true
     },
     {
       "matches": ["https://gdocwiki-api.web.app/oauth/redirect*"],

@@ -1,5 +1,3 @@
-import ky from 'ky';
-
 type INavMenuItem = INavMenuLink | INavMenuGroup;
 export interface INavMenuLink {
   type: 'link';
@@ -38,38 +36,74 @@ const config = {
   REACT_APP_ROOT_ID: process.env.REACT_APP_ROOT_ID ?? '',
   // Ued to list all files in a fast way.
   REACT_APP_ROOT_DRIVE_ID: process.env.REACT_APP_ROOT_DRIVE_ID ?? '',
+  // This is not an app name but instead the name of the location of the REACT_APP_ROOT_*
   REACT_APP_NAME: process.env.REACT_APP_NAME ?? '',
+  APP_NAME: process.env.APP_NAME ?? 'Gdoc Wiki',
 
   DEFAULT_FILE_FIELDS:
-    'nextPageToken, files(properties, appProperties, name, id, parents, mimeType, modifiedTime, createdTime, lastModifyingUser(displayName, photoLink), iconLink, webViewLink, shortcutDetails, capabilities)',
+    'nextPageToken, files(properties, appProperties, name, id, driveId, parents, mimeType, modifiedTime, createdTime, lastModifyingUser(displayName, photoLink), iconLink, webViewLink, shortcutDetails, capabilities, starred)',
 
   NavItems: [] as INavMenuItem[],
 };
 
 if (!config.REACT_APP_USE_CONFIG_FILE) {
-  for (const f of [
-    'REACT_APP_GAPI_KEY',
-    'REACT_APP_GAPI_CLIENT_ID',
-    'REACT_APP_ROOT_ID',
-    'REACT_APP_ROOT_DRIVE_ID',
-  ]) {
+  for (const f of ['REACT_APP_GAPI_KEY', 'REACT_APP_GAPI_CLIENT_ID']) {
     if (!config[f]) {
       throw new Error(`Environment variable ${f} is not configured`);
     }
   }
 }
 
-export async function overwriteConfig() {
-  try {
-    const url = `${process.env.PUBLIC_URL}/config.json?_=${Date.now()}`;
-    const oc = (await ky(url).json()) as Record<string, any>;
+const configStorageKey = 'app-config';
+
+function loadSavedConfig() {
+  const savedConfig = localStorage?.getItem(configStorageKey);
+  if (savedConfig) {
+    const oc = JSON.parse(savedConfig);
     for (const key in oc) {
       if (oc[key]) {
         config[key] = oc[key];
       }
     }
+    return true;
+  }
+  return false;
+}
+
+export async function loadConfig() {
+  if (loadSavedConfig()) {
+    // Update the config in the background.
+    // On next reload the new config will be used.
+    // Wait 5 seconds to avoid increasing the number of requests at startup and document load
+    setTimeout(function () {
+      overwriteConfig();
+    }, 5000);
+  } else {
+    await overwriteConfig();
+  }
+}
+
+async function getJSON(url: string): Promise<any> {
+  const rsp = await fetch(url, { headers: { Accept: 'application/json' } });
+  if (!rsp.ok) {
+    throw new Error(`Fetch error ${rsp.statusText}`);
+  }
+  return rsp.json();
+}
+
+async function overwriteConfig() {
+  try {
+    const url = `${window.location.origin}/config.json?_=${Date.now()}`;
+    const oc = await getJSON(url);
+    for (const key in oc as Record<string, any>) {
+      if (oc[key]) {
+        config[key] = oc[key];
+      }
+    }
+    localStorage?.setItem(configStorageKey, JSON.stringify(config));
   } catch (e) {
     if (config.REACT_APP_USE_CONFIG_FILE) {
+      console.error('overwriteConfig', e);
       throw e;
     }
   }
@@ -78,3 +112,6 @@ export async function overwriteConfig() {
 export function getConfig() {
   return config;
 }
+
+export const browserExtensionUrl =
+  'https://chrome.google.com/webstore/detail/gdocwiki-integration/pcnhielddaaanlfkifllbjahdbndndea';

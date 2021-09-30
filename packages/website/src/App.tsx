@@ -1,19 +1,13 @@
 import { Add20, Close20, Menu20, Subtract20 } from '@carbon/icons-react';
-import {
-  Header,
-  HeaderGlobalAction,
-  HeaderGlobalBar,
-  InlineLoading,
-} from 'carbon-components-react';
+import { Header, HeaderGlobalAction, HeaderGlobalBar } from 'carbon-components-react';
 import Trigger from 'rc-trigger';
-import React, { useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Redirect, Router, Switch, Route } from 'react-router-dom';
 import { useLocalStorage } from 'react-use';
 import { ExtensionBanner } from './components';
 import { ExtInstallStatusProvider } from './context/ExtInstallStatus';
 import { RenderStackProvider } from './context/RenderStack';
-import useGapi from './hooks/useGapi';
 import useLoadDriveFiles from './hooks/useLoadDriveFiles';
 import {
   HeaderExtraActions,
@@ -25,15 +19,20 @@ import {
   HeaderUserMenu,
 } from './layout';
 import responsiveStyle from './layout/responsive.module.scss';
-import Page from './pages/Page';
+import Drives from './pages/Location/Drives';
+import Page, { HomePage } from './pages/Page';
 import { SearchResult, SearchTag } from './pages/Search';
 import SearchAllTags from './pages/Search/AllTags';
 import Settings from './pages/Settings';
 import { selectMapIdToFile } from './reduxSlices/files';
-import { collapseAll, expand } from './reduxSlices/siderTree';
-import { history } from './utils';
-
-const expandSidebarByDefault = window.innerWidth >= 600;
+import {
+  collapseAll,
+  expand,
+  selectSidebarOpen,
+  closeSidebar,
+  openSidebar,
+} from './reduxSlices/siderTree';
+import { history, isTouchScreen } from './utils';
 
 function DriveFilesLoader({ children }) {
   useLoadDriveFiles();
@@ -44,10 +43,14 @@ function useExtensionBannerController() {
   const [isDismissed, setIsDismissed] = useLocalStorage('extension.banner.dismissed', false);
   const [visible, setVisible] = useState(!isDismissed);
 
-  const handleDismiss = useCallback(() => {
-    setIsDismissed(true);
-    setVisible(false);
-  }, [setIsDismissed]);
+  const handleDismiss = useCallback(
+    (ev: any) => {
+      ev?.preventDefault();
+      setIsDismissed(true);
+      setVisible(false);
+    },
+    [setIsDismissed]
+  );
 
   const showBanner = useCallback(() => {
     setVisible(true);
@@ -62,26 +65,21 @@ function useExtensionBannerController() {
 
 function App() {
   const dispatch = useDispatch();
-  const { gapiLoaded } = useGapi();
-  const [isExpanded, setIsExpanded] = useState(expandSidebarByDefault);
+  const sidebarOpen = useSelector(selectSidebarOpen);
   const mapIdToFile = useSelector(selectMapIdToFile);
 
-  const handleOpenTOC = useCallback(() => setIsExpanded(true), []);
-  const handleCloseTOC = useCallback(() => setIsExpanded(false), []);
+  const handleOpenTOC = () => dispatch(openSidebar());
+  const handleCloseTOC = () => dispatch(closeSidebar());
   const handleTreeExpand = useCallback(() => {
     let ids: string[] = [];
     for (let id in mapIdToFile) {
       ids.push(id);
     }
-    dispatch(expand(ids));
+    dispatch(expand({ arg: ids, mapIdToFile }));
   }, [mapIdToFile, dispatch]);
   const handleTreeCollapse = useCallback(() => dispatch(collapseAll()), [dispatch]);
 
   const extBannerCtrl = useExtensionBannerController();
-
-  if (!gapiLoaded) {
-    return <InlineLoading description="Loading Google API..." />;
-  }
 
   return (
     <ExtInstallStatusProvider>
@@ -89,17 +87,15 @@ function App() {
       <Router history={history}>
         <DriveFilesLoader>
           <Header aria-label="global actions">
-            {!isExpanded && (
+            {!sidebarOpen && (
               <HeaderGlobalAction key="open" aria-label="Open TOC" onClick={handleOpenTOC}>
                 <Menu20 />
               </HeaderGlobalAction>
             )}
-            {isExpanded && (
+            {sidebarOpen && [
               <HeaderGlobalAction key="close" aria-label="Close TOC" onClick={handleCloseTOC}>
                 <Close20 />
-              </HeaderGlobalAction>
-            )}
-            {isExpanded && (
+              </HeaderGlobalAction>,
               <HeaderGlobalAction
                 key="expand"
                 aria-label="Expand All"
@@ -107,9 +103,7 @@ function App() {
                 className={responsiveStyle.hideInPhone}
               >
                 <Add20 />
-              </HeaderGlobalAction>
-            )}
-            {isExpanded && (
+              </HeaderGlobalAction>,
               <HeaderGlobalAction
                 key="collapse"
                 aria-label="Collapse All"
@@ -117,8 +111,8 @@ function App() {
                 className={responsiveStyle.hideInPhone}
               >
                 <Subtract20 />
-              </HeaderGlobalAction>
-            )}
+              </HeaderGlobalAction>,
+            ]}
             <HeaderTitle />
             <HeaderExtraActions onExtensionAction={extBannerCtrl.showBanner} />
             <HeaderGlobalBar className={responsiveStyle.hideInPhone}>
@@ -138,19 +132,45 @@ function App() {
                 </div>
               </Trigger>
             </HeaderGlobalBar>
-            <Sider isExpanded={isExpanded} />
+            <Sider isExpanded={sidebarOpen} />
           </Header>
-          <Content isExpanded={isExpanded}>
+          <Content isExpanded={sidebarOpen}>
             <RenderStackProvider>
               <Switch>
+                {/* translate lazy copy & paste from Google Docs */}
+                <Redirect to="/view/:id" from="/document/d/:id" />
+                <Redirect to="/view/:id" from="/document/d/:id/*" />
+                <Redirect to="/view/:id" from="/https\://:domain/document/d/:id" />
+                <Redirect to="/view/:id" from="/https\://:domain/document/d/:id/*" />
+
                 <Route exact path="/">
-                  <Page />
+                  <HomePage />
                 </Route>
-                <Route exact path="/view/:id">
-                  <Page />
+                <Route exact path="/view/:id/view">
+                  <Page docMode="view" />
                 </Route>
                 <Route exact path="/view/:id/settings">
                   <Settings />
+                </Route>
+                {isTouchScreen
+                  ? [
+                      <Redirect to="/view/:id/view" from="/view/:id/preview" key="preview" />,
+                      <Redirect to="/view/:id/view" from="/view/:id/edit" key="edit" />,
+                      <Redirect to="/view/:id/view" from="/view/:id/versions" key="versions" />,
+                    ]
+                  : [
+                      <Route path="/view/:id/edit" key="edit">
+                        <Page docMode="edit" />
+                      </Route>,
+                      <Route path="/view/:id/preview" key="preview">
+                        <Page docMode="preview" />
+                      </Route>,
+                      <Route exact path="/view/:id/versions" key="versions">
+                        <Page docMode="edit" versions={true} />
+                      </Route>,
+                    ]}
+                <Route path="/view/:id">
+                  <Page />
                 </Route>
                 <Route exact path="/search/keyword/:keyword">
                   <SearchResult />
@@ -161,12 +181,12 @@ function App() {
                 <Route exact path="/search/tag/:tag">
                   <SearchTag />
                 </Route>
-                {/* translate lazy copy & paste from Google Docs */}
-                <Redirect to="/view/:id" from="/view/:id/*" />
-                <Redirect to="/view/:id" from="/d/:id" />
-                <Redirect to="/view/:id" from="/d/:id/*" />
-                <Redirect to="/view/:id" from="/document/d/:id" />
-                <Redirect to="/view/:id" from="/document/d/:id/*" />
+                <Route path="/n/:slug/:id">
+                  <Page />
+                </Route>
+                <Route path="/drives">
+                  <Drives />
+                </Route>
               </Switch>
             </RenderStackProvider>
           </Content>
