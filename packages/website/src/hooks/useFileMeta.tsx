@@ -52,11 +52,10 @@ export default function useFileMeta(id?: string) {
         dispatch(updateFile(respFile.result));
         setData({ loading: false, file: respFile.result });
       } catch (e) {
-        console.log(e);
-        setData((d) => ({ ...d, error: <GapiErrorDisplay error={e} /> }));
+        setData((d) => ({ ...d, loading: false, error: <GapiErrorDisplay error={e} /> }));
+        console.log('useFileMeta catch', id, e);
       } finally {
         delete inProgressRequests[id!];
-        setData((d) => ({ ...d, loading: false }));
       }
     }
 
