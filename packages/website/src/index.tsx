@@ -43,11 +43,12 @@ async function main() {
         };
 
         await gapi.client.init(initConfig);
+        const isSignedIn = gapi.auth2.getAuthInstance().isSignedIn.get();
 
         ReactDOM.render(
           <React.StrictMode>
             <Provider store={store}>
-              <App />
+              <App isSignedIn={isSignedIn} />
             </Provider>
           </React.StrictMode>,
           document.getElementById('root')

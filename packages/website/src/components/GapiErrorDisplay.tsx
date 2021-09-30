@@ -5,8 +5,9 @@ import { Stack } from 'office-ui-fabric-react';
 import React, { useMemo } from 'react';
 import { handleGapiError, signIn } from '../utils';
 
-function GapiErrorDisplay_({ error }: { error: any }) {
+function GapiErrorDisplay_({ error, subtitle }: { error: any; subtitle?: string }) {
   const e = useMemo(() => handleGapiError(error), [error]);
+  const isSignedIn = gapi.auth2.getAuthInstance().isSignedIn.get();
 
   if (false) {
     return (
@@ -30,14 +31,23 @@ function GapiErrorDisplay_({ error }: { error: any }) {
       <InlineNotification
         kind="error"
         actions={
-          <NotificationActionButton onClick={signIn}>
-            <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
-              <InlineIcon icon={googleIcon} />
-              <span>Sign In</span>
-            </Stack>
-          </NotificationActionButton>
+          isSignedIn ? null : (
+            <NotificationActionButton onClick={signIn}>
+              <Stack verticalAlign="center" horizontal tokens={{ childrenGap: 8 }}>
+                <InlineIcon icon={googleIcon} />
+                <span>Sign In</span>
+              </Stack>
+            </NotificationActionButton>
+          )
         }
-        subtitle={<div style={{ marginTop: 8 }}>You may need to sign-in to view the content.</div>}
+        subtitle={
+          subtitle ||
+          (isSignedIn ? (
+            ''
+          ) : (
+            <div style={{ marginTop: 8 }}>You may need to sign-in to view the content.</div>
+          ))
+        }
         title={`Failed to load content: ${e.message}`}
         hideCloseButton
       />
