@@ -138,8 +138,10 @@ export const slice = createSlice({
           file = state.mapIdToFile[parentId];
         }
       }
-      console.log('setActiveFileId', file);
-      setDriveId_(state, file?.driveId);
+      if (file?.driveId) {
+        console.log('setActiveFileId', file);
+        setDriveId_(state, file.driveId);
+      }
     },
     setLoading: (state, { payload }: { payload: boolean }) => {
       state.isLoading = payload;

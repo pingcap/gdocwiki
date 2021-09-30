@@ -11,6 +11,9 @@ export default function useUpdateSiderFromPath(field: string) {
   const id = paramId ?? rootId;
 
   useEffect(() => {
+    if (!id) {
+      return;
+    }
     // Update the ActiveId when it is changed.
     // Note: We will react with the ActiveId to expand nodes in Sider later.
     dispatch(setActiveId(id));
