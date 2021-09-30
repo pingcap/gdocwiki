@@ -41,20 +41,24 @@ function ContentPage({
     );
   }
 
-  // Assume a document for speed if we are still loading the file metadata
-  // We might be wrong, but that will get corrected without issue.
-  if (!file.name && file.id !== 'root') {
-    return docPage({
-      file,
-      renderStackOffset: renderStackOffset,
-    });
-  }
-
   const pageProps: PageProps = {
     renderStackOffset: renderStackOffset,
     file,
     versions,
   };
+
+  // Assume a document for speed if we are still loading the file metadata
+  // We might be wrong, but that will get corrected without issue.
+  if (!file.name) {
+    if (file.id !== 'root') {
+      return docPage({
+        file,
+        renderStackOffset: renderStackOffset,
+      });
+    } else {
+      return <FolderPage {...pageProps} shortCutFile={shortCutFile} />;
+    }
+  }
 
   if (docMode) {
     const noVersionsPreview = versions && !inlineEditable(file.mimeType ?? '');
@@ -86,7 +90,6 @@ function ContentPage({
       if (!shortCutFile) {
         return <ShortcutPage file={file} child={child} renderStackOffset={renderStackOffset} />;
       }
-      break;
   }
 
   return (

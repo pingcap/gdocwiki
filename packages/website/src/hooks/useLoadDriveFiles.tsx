@@ -105,6 +105,7 @@ export default function useLoadDriveFiles() {
             dispatch(updateFile(file));
           } catch (e) {
             console.log('error getting file from id', id, e);
+            throw e;
           }
         }
         if (file.name === 'My Drive') {
