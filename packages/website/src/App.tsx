@@ -5,7 +5,7 @@ import { useCallback, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Redirect, Router, Switch, Route } from 'react-router-dom';
 import { useLocalStorage } from 'react-use';
-import { ExtensionBanner } from './components';
+import { ExtensionBanner, GapiErrorDisplay } from './components';
 import { ExtInstallStatusProvider } from './context/ExtInstallStatus';
 import { RenderStackProvider } from './context/RenderStack';
 import useLoadDriveFiles from './hooks/useLoadDriveFiles';
@@ -63,7 +63,7 @@ function useExtensionBannerController() {
   };
 }
 
-function App() {
+function App(props: { isSignedIn: boolean }) {
   const dispatch = useDispatch();
   const sidebarOpen = useSelector(selectSidebarOpen);
   const mapIdToFile = useSelector(selectMapIdToFile);
@@ -135,60 +135,64 @@ function App() {
             <Sider isExpanded={sidebarOpen} />
           </Header>
           <Content isExpanded={sidebarOpen}>
-            <RenderStackProvider>
-              <Switch>
-                {/* translate lazy copy & paste from Google Docs */}
-                <Redirect to="/view/:id" from="/document/d/:id" />
-                <Redirect to="/view/:id" from="/document/d/:id/*" />
-                <Redirect to="/view/:id" from="/https\://:domain/document/d/:id" />
-                <Redirect to="/view/:id" from="/https\://:domain/document/d/:id/*" />
+            {!props.isSignedIn ? (
+              <GapiErrorDisplay subtitle=" " error={new Error('Please sign in')} />
+            ) : (
+              <RenderStackProvider>
+                <Switch>
+                  {/* translate lazy copy & paste from Google Docs */}
+                  <Redirect to="/view/:id" from="/document/d/:id" />
+                  <Redirect to="/view/:id" from="/document/d/:id/*" />
+                  <Redirect to="/view/:id" from="/https\://:domain/document/d/:id" />
+                  <Redirect to="/view/:id" from="/https\://:domain/document/d/:id/*" />
 
-                <Route exact path="/">
-                  <HomePage />
-                </Route>
-                <Route exact path="/view/:id/view">
-                  <Page docMode="view" />
-                </Route>
-                <Route exact path="/view/:id/settings">
-                  <Settings />
-                </Route>
-                {isTouchScreen
-                  ? [
-                      <Redirect to="/view/:id/view" from="/view/:id/preview" key="preview" />,
-                      <Redirect to="/view/:id/view" from="/view/:id/edit" key="edit" />,
-                      <Redirect to="/view/:id/view" from="/view/:id/versions" key="versions" />,
-                    ]
-                  : [
-                      <Route path="/view/:id/edit" key="edit">
-                        <Page docMode="edit" />
-                      </Route>,
-                      <Route path="/view/:id/preview" key="preview">
-                        <Page docMode="preview" />
-                      </Route>,
-                      <Route exact path="/view/:id/versions" key="versions">
-                        <Page docMode="edit" versions={true} />
-                      </Route>,
-                    ]}
-                <Route path="/view/:id">
-                  <Page />
-                </Route>
-                <Route exact path="/search/keyword/:keyword">
-                  <SearchResult />
-                </Route>
-                <Route exact path="/search/tag">
-                  <SearchAllTags />
-                </Route>
-                <Route exact path="/search/tag/:tag">
-                  <SearchTag />
-                </Route>
-                <Route path="/n/:slug/:id">
-                  <Page />
-                </Route>
-                <Route path="/drives">
-                  <Drives />
-                </Route>
-              </Switch>
-            </RenderStackProvider>
+                  <Route exact path="/">
+                    <HomePage />
+                  </Route>
+                  <Route exact path="/view/:id/view">
+                    <Page docMode="view" />
+                  </Route>
+                  <Route exact path="/view/:id/settings">
+                    <Settings />
+                  </Route>
+                  {isTouchScreen
+                    ? [
+                        <Redirect to="/view/:id/view" from="/view/:id/preview" key="preview" />,
+                        <Redirect to="/view/:id/view" from="/view/:id/edit" key="edit" />,
+                        <Redirect to="/view/:id/view" from="/view/:id/versions" key="versions" />,
+                      ]
+                    : [
+                        <Route path="/view/:id/edit" key="edit">
+                          <Page docMode="edit" />
+                        </Route>,
+                        <Route path="/view/:id/preview" key="preview">
+                          <Page docMode="preview" />
+                        </Route>,
+                        <Route exact path="/view/:id/versions" key="versions">
+                          <Page docMode="edit" versions={true} />
+                        </Route>,
+                      ]}
+                  <Route path="/view/:id">
+                    <Page />
+                  </Route>
+                  <Route exact path="/search/keyword/:keyword">
+                    <SearchResult />
+                  </Route>
+                  <Route exact path="/search/tag">
+                    <SearchAllTags />
+                  </Route>
+                  <Route exact path="/search/tag/:tag">
+                    <SearchTag />
+                  </Route>
+                  <Route path="/n/:slug/:id">
+                    <Page />
+                  </Route>
+                  <Route path="/drives">
+                    <Drives />
+                  </Route>
+                </Switch>
+              </RenderStackProvider>
+            )}
           </Content>
         </DriveFilesLoader>
       </Router>
