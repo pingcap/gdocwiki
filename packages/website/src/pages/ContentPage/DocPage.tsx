@@ -129,6 +129,7 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
   const docContentElement = useRef(null as null | HTMLBodyElement);
   const [docContent, setDocContent] = useState('');
   const docContentHasBeenRendered = !!docContentElement.current;
+  const [docName] = useState(file.name ?? '');
 
   const [isLoading, setIsLoading] = useState(true);
   const [viewingComment, setViewingComment] = useState(null as string | null);
@@ -347,18 +348,28 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
             console.debug('DocPage files.export', file.id);
             loadHtmlBody(resp.body, true);
           }
+        } catch (e) {
+          // To speed things up we do optimistic rendering just with the id
+          // That would result in throwing an error here
+          if (docName) {
+            setDocWithPlainText('Error Loading Document');
+            throw e;
+          }
+          console.debug('ignore optimistic export error');
         } finally {
           setIsLoading(false);
         }
       }
+
       loadHtmlView();
+
       return function () {
         dispatch(setHeaders([]));
         dispatch(setDriveLinks([]));
         dispatch(setExternalLinks([]));
       };
     },
-    [file.id, isSpreadSheet, dispatch, setDocWithPlainText, setDocWithRichContent]
+    [file.id, isSpreadSheet, dispatch, setDocWithPlainText, setDocWithRichContent, docName]
   );
 
   useEffect(
@@ -657,7 +668,7 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
         return;
       }
 
-      // check another fiel field lik mimeType for the case of optimistic rendering
+      // check another field like mimeType for the case of optimistic rendering
       if (!file.id || !file.mimeType) {
         return;
       }
