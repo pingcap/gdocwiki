@@ -733,7 +733,7 @@ function DocPage({ match, file, renderStackOffset = 0 }: IDocPageProps) {
   const fixSidebar = { position: 'fixed' as 'fixed', right: 0, left: sidebarOpen ? '320px' : '0' };
 
   return (
-    <div id="doc-page-outer" onClick={handleDocContentClick}>
+    <div id="doc-page-outer" style={{ maxWidth: '50rem' }} onClick={handleDocContentClick}>
       <div
         key="gdoc-html-content"
         id="gdoc-html-content"
