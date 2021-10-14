@@ -51,7 +51,7 @@ function PreviewPage({ file, versions, renderStackOffset = 0 }: IPreviewPageProp
       qp = qp + location.hash;
     }
     return file.webViewLink?.replace(
-      /\/(edit|view)\?usp=drivesdk/,
+      /\/(edit|view)(\?usp=drivesdk)?/,
       docMode === 'edit' ? `/edit${qp}` : `/preview${qp}`
     );
   }, [sidebarOpen, file.webViewLink, location, docMode, versions]);

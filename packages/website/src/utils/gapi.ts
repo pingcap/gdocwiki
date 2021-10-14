@@ -44,6 +44,7 @@ export const MimeTypes = {
   GoogleSpreadsheet: 'application/vnd.google-apps.spreadsheet',
   GooglePresentation: 'application/vnd.google-apps.presentation',
   GoogleDrawing: 'application/vnd.google-apps.drawing',
+  GoogleSite: 'application/vnd.google-apps.site',
   MSOpenExcel: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   MSOpenWord: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   MSOpenPPT: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
@@ -70,10 +71,10 @@ export function previewable(mimeType: string) {
 }
 
 export const PreviewableMimeTypes = [
-  MimeTypes.GoogleSpreadsheet,
   MimeTypes.GoogleDocument,
-  MimeTypes.GooglePresentation,
   MimeTypes.GoogleDrawing,
+  MimeTypes.GooglePresentation,
+  MimeTypes.GoogleSpreadsheet,
   MimeTypes.MSOpenWord,
   MimeTypes.MSOpenExcel,
   MimeTypes.MSOpenPPT,

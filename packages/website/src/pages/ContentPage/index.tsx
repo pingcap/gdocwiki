@@ -94,10 +94,12 @@ function ContentPage({
 
   return (
     <div>
-      This file cannot be previewed.{' '}
-      <a href={file.webViewLink} target="_blank" rel="noreferrer">
-        View in Google Drive
-      </a>
+      <p>
+        <a href={file.webViewLink} target="_blank" rel="noreferrer">
+          View in Google Drive
+        </a>
+      </p>
+      <p>This file type cannot be previewed. File type {file.mimeType ?? 'unknown'}</p>
     </div>
   );
 }
