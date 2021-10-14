@@ -10,7 +10,8 @@ export default function useGapi() {
       apiKey: getConfig().REACT_APP_GAPI_KEY,
       clientId: getConfig().REACT_APP_GAPI_CLIENT_ID,
       discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
-      scope: 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/documents',
+      scope:
+        'https://www.googleapis.com/auth/drive.metadata https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/documents.readonly',
       hosted_domain: getConfig().REACT_APP_GAPI_HOSTED_DOMAIN,
       cookie_policy: getConfig().REACT_APP_GAPI_COOKIE_POLICY,
     };
