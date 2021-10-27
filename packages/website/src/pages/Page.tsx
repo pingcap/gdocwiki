@@ -136,36 +136,38 @@ function RecentChanges({ file, docMode }: { file: DriveFile, docMode: DocMode })
   return (
     <>
       <hr />
-      {!file.viewedByMe ? (
-        <p>This is your first time viewing this file.</p>
-      ) : (
-        <p>
-          {hasVersions && changesSinceLastView ? (
-            <>
-              <Link to={`/view/${file.id}/versions`}>View changes since your last view</Link>
-              &nbsp;
-              {dayjs(file.viewedByMeTime).fromNow()}.&nbsp;
-              <span style={{ fontSize: '10pt' }}>
-                Requires the&nbsp;
-                <a href={browserExtensionUrl} target="_blank" rel="noreferrer">
-                  browser extension
-                </a>
-                .
+      <div style={{ marginLeft: '1rem' }}>
+        {!file.viewedByMe ? (
+          <p>This is your first time viewing this file.</p>
+        ) : (
+          <p>
+            {hasVersions && changesSinceLastView ? (
+              <>
+                <Link to={`/view/${file.id}/versions`}>View changes since your last view</Link>
+                &nbsp;
+                {dayjs(file.viewedByMeTime).fromNow()}.&nbsp;
+                <span style={{ fontSize: '10pt' }}>
+                  Requires the&nbsp;
+                  <a href={browserExtensionUrl} target="_blank" rel="noreferrer">
+                    browser extension
+                  </a>
+                  .
+                </span>
+              </>
+            ) : changesSinceLastView ? (
+              <span>
+                There have been changes since your last view&nbsp;
+                {dayjs(file.viewedByMeTime).fromNow()}.
               </span>
-            </>
-          ) : changesSinceLastView ? (
-            <span>
-              There have been changes since your last view&nbsp;
-              {dayjs(file.viewedByMeTime).fromNow()}.
-            </span>
-          ) : (
-            <span>
-              There are no changes to this file since your last view&nbsp;
-              {dayjs(file.viewedByMeTime).fromNow()}.
-            </span>
-          )}
-        </p>
-      )}
+            ) : (
+              <span>
+                There are no changes to this file since your last view&nbsp;
+                {dayjs(file.viewedByMeTime).fromNow()}.
+              </span>
+            )}
+          </p>
+        )}
+      </div>
       <hr />
     </>
   );
