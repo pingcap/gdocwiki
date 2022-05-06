@@ -126,10 +126,23 @@ export function rewriteLink(el: HTMLAnchorElement, styles: any) {
   }
 }
 
+function changeLineHeight(el: HTMLElement) {
+  const lineHeightN = parseFloat(el.style.lineHeight);
+  if (!Number.isNaN(lineHeightN)) {
+    el.style.lineHeight = String(lineHeightN * 1.2);
+  }
+}
+
 export function prettify(baseEl: HTMLElement, styles: any, file?: DriveFile) {
   timed('padding fixes', () => {
     for (const li of baseEl.querySelectorAll('li')) {
       fixPaddingLi(li as HTMLLIElement);
+    }
+  });
+
+  timed('extra line-height', () => {
+    for (const el of baseEl.querySelectorAll('p, li, h1, h2, h3, h4, h5')) {
+      changeLineHeight(el as HTMLElement);
     }
   });
 
@@ -223,7 +236,7 @@ function fixPaddingLi(li: HTMLLIElement): boolean {
 
 // Highlight commented text just as in Google Docs.
 // Link to the comment text at the bottom of the doc.
-function highlightAndLinkComment(sup: HTMLElement){
+function highlightAndLinkComment(sup: HTMLElement) {
   const supLink = sup.children?.[0];
   if (supLink?.id.startsWith('cmnt_')) {
     const span = sup.previousElementSibling as HTMLElement;
