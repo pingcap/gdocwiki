@@ -19,6 +19,7 @@ import {
   showModal,
   store,
 } from '../utils';
+import { googleAccessToken } from '../utils/google-auth';
 import { promptError } from './FileAction.utils';
 
 interface IMoveFileModalBodyProps {
@@ -80,7 +81,7 @@ function MoveFileModalBody({ files, targetFolderId, closeFn }: IMoveFileModalBod
         succeeded++;
         dispatch(updateFile(fileResponse.result));
       } catch (e) {
-        errors.push(e);
+        errors.push(e as Error);
       } finally {
         setFinished((f) => f + 1);
       }
@@ -160,7 +161,7 @@ export function showMoveFile(parentFolder: DriveFile) {
         .enableFeature(google.picker.Feature.MULTISELECT_ENABLED)
         .enableFeature(google.picker.Feature.SUPPORT_TEAM_DRIVES)
         .setOAuthToken(
-          gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().access_token
+          googleAccessToken?.access_token ?? ''
         )
         .setDeveloperKey(getConfig().REACT_APP_GAPI_KEY)
         .setCallback(async (data) => {

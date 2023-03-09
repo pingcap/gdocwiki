@@ -2,13 +2,14 @@ import { UserAvatar20 } from '@carbon/icons-react';
 import { HeaderGlobalAction } from 'carbon-components-react';
 import React, { useMemo } from 'react';
 import Avatar from 'react-avatar';
+import { isUserSignedIn, userProfile } from '../utils/google-auth';
 
 function HeaderUserAction_() {
   // TODO: Respond to sign in state change
-  const isSignedIn = gapi.auth2.getAuthInstance().isSignedIn.get();
+  const isSignedIn = isUserSignedIn();
   const profile = useMemo(() => {
     if (isSignedIn) {
-      return gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile();
+      return userProfile;
     } else {
       return null;
     }
@@ -23,7 +24,7 @@ function HeaderUserAction_() {
   } else {
     return (
       <HeaderGlobalAction aria-label="Sign Out">
-        <Avatar name={profile!.getName()} src={profile!.getImageUrl()} size="30" round />
+        <Avatar name={profile?.name} src={profile?.picture} size="30" round />
       </HeaderGlobalAction>
     );
   }

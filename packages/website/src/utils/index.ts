@@ -1,4 +1,4 @@
-export * from './auth';
+export * from './google-auth';
 export * from './extensionApi';
 export * from './gapi';
 export * from './history';
