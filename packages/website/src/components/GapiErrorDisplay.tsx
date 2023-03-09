@@ -3,29 +3,14 @@ import { InlineIcon } from '@iconify/react';
 import { InlineNotification, NotificationActionButton } from 'carbon-components-react';
 import { Stack } from 'office-ui-fabric-react';
 import React, { useMemo } from 'react';
-import { handleGapiError, signIn } from '../utils';
+import { handleGapiError } from '../utils';
+import { isUserSignedIn, signIn, userProfile } from '../utils/google-auth';
 
 function GapiErrorDisplay_({ error, subtitle }: { error: any; subtitle?: string }) {
   const e = useMemo(() => handleGapiError(error), [error]);
-  const isSignedIn = gapi.auth2.getAuthInstance().isSignedIn.get();
+  const isSignedIn = isUserSignedIn();
 
   if (false) {
-    return (
-      <InlineNotification
-        kind="error"
-        subtitle={
-          <Stack tokens={{ childrenGap: 8 }} style={{ marginTop: 8 }}>
-            <div>
-              You are signed in with{' '}
-              {gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile().getEmail()}.
-            </div>
-            <div>Are you using the incorrect Google account, or typing a wrong URL?</div>
-          </Stack>
-        }
-        title={`Failed to load content: ${e.message}`}
-        hideCloseButton
-      />
-    );
   } else {
     return (
       <InlineNotification

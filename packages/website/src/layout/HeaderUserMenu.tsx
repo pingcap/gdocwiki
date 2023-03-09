@@ -5,13 +5,13 @@ import { Stack } from 'office-ui-fabric-react';
 import React, { useMemo } from 'react';
 import Avatar from 'react-avatar';
 import { NavMenu } from '../components';
-import { signIn, signOut } from '../utils';
+import { isUserSignedIn, signIn, signOut, userProfile } from '../utils/google-auth';
 
 export function HeaderUserMenu() {
-  const isSignedIn = gapi.auth2.getAuthInstance().isSignedIn.get();
+  const isSignedIn = isUserSignedIn();
   const profile = useMemo(() => {
     if (isSignedIn) {
-      return gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile();
+      return userProfile;
     } else {
       return null;
     }
@@ -32,10 +32,10 @@ export function HeaderUserMenu() {
         <>
           <NavMenu.Link href="https://myaccount.google.com/profile">
             <Stack horizontal verticalAlign="center" tokens={{ childrenGap: 8 }}>
-              <Avatar name={profile!.getName()} src={profile!.getImageUrl()} size="30" round />
+              <Avatar name={profile?.name} src={profile?.picture} size="30" round />
               <Stack tokens={{ childrenGap: 8 }}>
-                <div>{profile!.getEmail()}</div>
-                <div>{profile!.getName()}</div>
+                <div>{profile?.email}</div>
+                <div>{profile?.name}</div>
               </Stack>
             </Stack>
           </NavMenu.Link>
